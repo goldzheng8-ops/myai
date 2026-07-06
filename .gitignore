@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+
+# 虚拟环境
+.venv/
+**/.venv/
+
+# IDE
+.vscode/
+
+# 日志
+logs/
+*.log
+
+# 临时文件
+temp/
+*.tmp
+
+# Python 环境变量
+.env
+
+# Playwright
+playwright/.cache/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
