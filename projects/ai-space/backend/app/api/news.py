@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.get("/fetch")
 async def fetch_news(db: Session = Depends(get_db)):
-    return await news_service.fetch_news(db)
+    return await news_service.fetch_news_list(db)
 
 
 @router.get("/list")
