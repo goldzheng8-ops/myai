@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import insert
 
 from app.crud.news import create_news, list_news
 from app.models.news import News
@@ -45,29 +46,21 @@ class NewsService:
         if total == 0:
             return {"total": 0, "inserted": 0, "duplicated": 0}
 
-        urls = [n["url"] for n in news_list if n.get("url")]
-
-        existing = db.query(News.url).filter(News.url.in_(urls)).all()
-        existing_urls = set()
-        for r in existing:
-            if isinstance(r, tuple) or isinstance(r, list):
-                existing_urls.add(r[0])
-            else:
-                existing_urls.add(r)
-
-        to_insert = []
-        for n in news_list:
-            u = n.get("url")
-            if not u or u in existing_urls:
-                continue
-            to_insert.append(News(title=n.get("title") or "", url=u, source=n.get("source", "unknown")))
-
-        inserted = 0
-        if to_insert:
-            db.add_all(to_insert)
-            db.commit()
-            inserted = len(to_insert)
-
+        stmt = insert(News).values([
+            {
+                "title": n["title"],
+                "url": n["url"],
+                "source": n["source"]
+            }
+            for n in news_list
+        ])
+        stmt = stmt.on_conflict_do_nothing(
+            index_elements=["url"]
+        )
+        result = db.execute(stmt)
+        db.commit()
+        inserted = result.rowcount if result.rowcount is not None else 0
+        inserted = max(0, inserted)  # Ensure non-negative
         duplicated = total - inserted
         return {"total": total, "inserted": inserted, "duplicated": duplicated}
 
