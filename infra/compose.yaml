@@ -1,0 +1,328 @@
+name: ai-workspace
+
+services:
+
+  ##############################################################
+  # PostgreSQL
+  ##############################################################
+
+  postgres:
+
+    image: postgres:17.5-alpine
+
+    container_name: postgres
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+      TZ: ${TZ}
+
+    ports:
+
+      - "${POSTGRES_PORT}:5432"
+
+    volumes:
+
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./config/postgres/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+    logging:
+
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+  ##############################################################
+  # Redis
+  ##############################################################
+
+  redis:
+
+    image: redis:7.2.5-alpine
+
+    container_name: redis
+
+    restart: unless-stopped
+
+    command: redis-server --appendonly yes
+
+    env_file:
+      - .env
+
+    ports:
+
+      - "${REDIS_PORT}:6379"
+
+    volumes:
+
+      - ./data/redis:/data
+
+    healthcheck:
+
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+  ##############################################################
+  # Qdrant
+  ##############################################################
+
+  qdrant:
+
+    image: qdrant/qdrant:v1.11.0
+
+    container_name: qdrant
+
+    restart: unless-stopped
+
+    ports:
+
+      - "${QDRANT_HTTP_PORT}:6333"
+
+      - "${QDRANT_GRPC_PORT}:6334"
+
+    volumes:
+
+      - ./data/qdrant:/qdrant/storage
+
+    healthcheck:
+
+      test: ["CMD", "bash", "-c", "wget -qO- http://127.0.0.1:6333/collections || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+  ##############################################################
+  # MinIO
+  ##############################################################
+
+  minio:
+
+    image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+
+    container_name: minio
+
+    restart: unless-stopped
+
+    command: server /data --console-address ":9001"
+
+    env_file:
+      - .env
+
+    environment:
+
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
+    ports:
+
+      - "${MINIO_API_PORT}:9000"
+
+      - "${MINIO_CONSOLE_PORT}:9001"
+
+    volumes:
+
+      - ./data/minio:/data
+
+    healthcheck:
+
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+  ##############################################################
+  # n8n
+  ##############################################################
+
+  n8n:
+
+    image: n8nio/n8n:2.30.0
+
+    container_name: n8n
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+
+      - "${N8N_PORT}:5678"
+
+    environment:
+
+      TZ: ${TZ}
+
+      GENERIC_TIMEZONE: ${TZ}
+
+      N8N_SECURE_COOKIE: false
+
+      DB_TYPE: postgresdb
+
+      DB_POSTGRESDB_HOST: postgres
+
+      DB_POSTGRESDB_PORT: 5432
+
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+    depends_on:
+
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    volumes:
+
+      - ./data/n8n:/home/node/.n8n
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+  ##############################################################
+  # Open WebUI
+  ##############################################################
+
+  open-webui:
+
+    image: openwebui/open-webui:0.10.2
+
+    container_name: open-webui
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+
+      - "${OPENWEBUI_PORT}:8080"
+
+    environment:
+
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+
+    extra_hosts:
+
+      - "host.docker.internal:host-gateway"
+
+    depends_on:
+
+      qdrant:
+        condition: service_healthy
+
+    volumes:
+
+      - ./data/open-webui:/app/backend/data
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - backend
+
+networks:
+
+  backend:
+
+    driver: bridge

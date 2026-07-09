@@ -1,0 +1,123 @@
+services:
+
+
+  postgres:
+    image: postgres:17.5-alpine
+
+    container_name: ai-postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: aiuser
+      POSTGRES_PASSWORD: aipassword
+      POSTGRES_DB: ai_space
+
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
+
+
+
+  redis:
+
+    image: redis:7.2.5-alpine
+
+    container_name: ai-redis
+
+    restart: always
+
+    volumes:
+      - ./data/redis:/data
+
+    ports:
+      - "6379:6379"
+
+
+
+  backend:
+
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+
+
+    container_name: ai-backend
+
+
+    restart: always
+
+
+    depends_on:
+
+      - postgres
+
+      - redis
+
+
+    environment:
+
+      DATABASE_URL: postgresql://aiuser:aipassword@postgres:5432/ai_space
+
+      REDIS_URL: redis://redis:6379/0
+
+
+    ports:
+
+      - "8000:8000"
+
+
+    volumes:
+
+      - ./backend:/app
+
+
+
+  n8n:
+
+    image: n8nio/n8n:2.30.0
+
+
+    container_name: ai-n8n
+
+
+    restart: always
+
+
+    ports:
+
+      - "5678:5678"
+
+
+    environment:
+
+      N8N_BASIC_AUTH_ACTIVE: true
+
+      N8N_BASIC_AUTH_USER: admin
+
+      N8N_BASIC_AUTH_PASSWORD: admin
+
+
+      DB_TYPE: postgresdb
+
+      DB_POSTGRESDB_HOST: postgres
+
+      DB_POSTGRESDB_PORT: 5432
+
+      DB_POSTGRESDB_DATABASE: ai_space
+
+      DB_POSTGRESDB_USER: aiuser
+
+      DB_POSTGRESDB_PASSWORD: aipassword
+
+
+    depends_on:
+
+      - postgres
+
+
+    volumes:
+
+      - ./n8n:/home/node/.n8n

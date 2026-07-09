@@ -28,3 +28,5 @@ playwright/.cache/
 
 # Windows
 Thumbs.db
+
+infra/data/
