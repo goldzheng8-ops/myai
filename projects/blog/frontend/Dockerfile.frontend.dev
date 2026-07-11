@@ -1,0 +1,19 @@
+# 3. Dockerfile.frontend.dev
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+
+RUN npm install -g pnpm
+RUN pnpm install
+
+COPY . .
+
+EXPOSE 3000
+
+# 显式指定加载 .env.development
+# ENV NODE_ENV=development
+
+CMD ["sh", "-c", "pnpm devdocker"]

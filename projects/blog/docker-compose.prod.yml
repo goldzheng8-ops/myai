@@ -1,0 +1,82 @@
+# projects/myblog/docker-compose.prod.yml
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_prod:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mynet
+
+  postgres:
+    image: postgres:15
+    env_file:
+      - .env.compose.prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_prod:/var/lib/postgresql/data
+    networks:
+      - mynet
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.prod
+      args:
+        HTTP_PROXY: "http://192.168.0.9:1081"
+        HTTPS_PROXY: "http://192.168.0.9:1081"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./alembic:/app/alembic:ro
+      - ./scripts:/app/scripts:ro
+      - ./blog.db:/app/blog.db
+      - images-data:/usr/share/nginx/html/images
+      - pdfs-data:/usr/share/nginx/html/pdfs
+      - videos-data:/usr/share/nginx/html/videos
+    env_file:
+      - .env.production
+    environment:
+      - PYTHONPATH=/app
+      - HTTP_PROXY=http://192.168.0.9:1081
+      - HTTPS_PROXY=http://192.168.0.9:1081
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - mynet
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile.frontend.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      - ./ssl/key.pem:/etc/nginx/ssl/key.pem:ro
+      - ./uploads:/usr/share/nginx/uploads
+      - images-data:/usr/share/nginx/html/images
+      - pdfs-data:/usr/share/nginx/html/pdfs
+      - videos-data:/usr/share/nginx/html/videos
+    depends_on:
+      - backend
+    networks:
+      - mynet
+
+
+volumes:
+  redis_data_prod:
+  pg_data_prod:
+  images-data:
+  pdfs-data:
+  videos-data:
+
+networks:
+  mynet:
+    driver: bridge

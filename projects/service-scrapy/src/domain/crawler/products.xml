@@ -1,0 +1,14 @@
+<products>
+    <product>
+        <id>1001</id>
+        <name>洗衣液</name>
+        <price>39.00</price>
+        <url>https://example.com/product/1001</url>
+    </product>
+    <product>
+        <id>1002</id>
+        <name>洗洁精</name>
+        <price>29.00</price>
+        <url>https://example.com/product/1002</url>
+    </product>
+</products>

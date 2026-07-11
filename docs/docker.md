@@ -32,7 +32,7 @@ Open WebUI: http://localhost:3000
 Qdrant: http://localhost:6333
 MinIO: http://localhost:9000
 PostgreSQL: localhost:5432
-
+Grafana：http://localhost:3001
 
 
 docker images
@@ -44,3 +44,6 @@ docker compose logs -f open-webui
 退出日志：
 Ctrl + C
 不会停止容器。
+
+docker build -t scrapy-service .
+docker run -p 8001:8001 scrapy-service

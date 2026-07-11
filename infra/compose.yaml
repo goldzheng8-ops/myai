@@ -51,7 +51,7 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
 
   ##############################################################
   # Redis
@@ -98,7 +98,7 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
 
   ##############################################################
   # Qdrant
@@ -142,7 +142,7 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
 
   ##############################################################
   # MinIO
@@ -197,7 +197,7 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
 
   ##############################################################
   # n8n
@@ -238,6 +238,10 @@ services:
 
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
 
+    extra_hosts:
+
+      - "host.docker.internal:host-gateway"
+
     depends_on:
 
       postgres:
@@ -269,7 +273,7 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
 
   ##############################################################
   # Open WebUI
@@ -319,10 +323,62 @@ services:
 
     networks:
 
-      - backend
+      - ai-network
+
+  ##############################################################
+  # Grafana
+  ##############################################################
+
+  grafana:
+
+    image: grafana/grafana:11.4.0
+
+    container_name: grafana
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+
+      GF_USERS_ALLOW_SIGN_UP: "false"
+
+      TZ: ${TZ}
+
+    ports:
+
+      - "${GRAFANA_PORT:-3000}:3000"
+
+    volumes:
+
+      - ./data/grafana:/var/lib/grafana
+
+    depends_on:
+
+      postgres:
+        condition: service_healthy
+
+    logging:
+
+      driver: json-file
+
+      options:
+
+        max-size: "20m"
+
+        max-file: "5"
+
+    networks:
+
+      - ai-network
 
 networks:
 
-  backend:
+  ai-network:
 
-    driver: bridge
+    external: true
