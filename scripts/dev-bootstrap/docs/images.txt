@@ -1,0 +1,5 @@
+python:3.12-bookworm-slim
+mcr.microsoft.com/playwright/python:v1.60.0-jammy
+postgres:17
+redis:8
+qdrant/qdrant:latest

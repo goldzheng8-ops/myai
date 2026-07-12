@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "service-scrapy-example"
+version = "0.1.0"
+description = "Scrapy microservice for AI-SPACE"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi>=0.116",
+    "uvicorn[standard]>=0.35",
+    "scrapy>=2.13",
+    "httpx>=0.28",
+    "fake-useragent>=2.2.0",
+    "scrapy-playwright>=0.0.48",
+    "scrapy-rotating-proxies>=0.6.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+    "black",
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "app*",
+    "crawler*"
+]

@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+service_playwright_example.egg-info/PKG-INFO
+service_playwright_example.egg-info/SOURCES.txt
+service_playwright_example.egg-info/dependency_links.txt
+service_playwright_example.egg-info/requires.txt
+service_playwright_example.egg-info/top_level.txt
