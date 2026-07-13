@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+  from fastapi import FastAPI
 
 from app.api.routes import router
 from app.application.use_cases import NewsCrawlerService

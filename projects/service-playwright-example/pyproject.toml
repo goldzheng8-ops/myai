@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116",
     "uvicorn[standard]>=0.35",
-    "playwright",
+    "playwright==1.60.0",
     "httpx>=0.28",
 ]
 
@@ -25,10 +25,11 @@ dev = [
 ]
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 include-package-data = true
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = [
     "app*",
     "crawler*"

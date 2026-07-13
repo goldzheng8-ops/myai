@@ -2,16 +2,21 @@
 .gitignore
 
 .venv
-__pycache__
 
 .pytest_cache
+
 .mypy_cache
 
-tests
+.ruff_cache
+
+.vscode
+
+__pycache__
 
 *.pyc
 
-.idea
-.vscode
+tests
 
-logs
+dist
+
+build
