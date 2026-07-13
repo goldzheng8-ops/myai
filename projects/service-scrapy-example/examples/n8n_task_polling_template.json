@@ -1,0 +1,19 @@
+{
+  "name": "Poll Crawl Task Status",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://service-scrapy-example:8001/crawl/tasks/{{$json.task_id}}",
+        "sendBody": false
+      },
+      "name": "Poll Task Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        300
+      ]
+    }
+  ]
+}

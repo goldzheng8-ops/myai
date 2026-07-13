@@ -1,0 +1,77 @@
+{
+  "name": "Crawl -> Wait -> AI-SPACE Callback",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://service-scrapy-example:8001/crawl/tasks",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"spider\": \"template\",\n  \"url\": \"https://example.com\",\n  \"crawler_config\": {\n    \"template\": \"list\",\n    \"request\": {\n      \"url\": \"https://example.com\",\n      \"method\": \"GET\",\n      \"headers\": {\n        \"User-Agent\": \"Mozilla/5.0\"\n      }\n    },\n    \"browser\": {\n      \"enabled\": false\n    },\n    \"list\": {\n      \"selector\": \"article\"\n    },\n    \"extract\": {\n      \"fields\": {\n        \"title\": {\n          \"selector\": \"h2::text\",\n          \"type\": \"text\"\n        },\n        \"url\": {\n          \"selector\": \"a::attr(href)\",\n          \"type\": \"text\"\n        }\n      }\n    },\n    \"pipeline\": {\n      \"deduplicate\": true\n    },\n    \"output\": {\n      \"format\": \"json\"\n    },\n    \"workflow\": {\n      \"task_name\": \"n8n-crawl-task\",\n      \"ai_space_callback\": \"http://ai-space:8000/api/ingest\"\n    }\n  },\n  \"callback_url\": \"http://ai-space:8000/api/ingest\"\n}"
+      },
+      "id": "1",
+      "name": "Submit Crawl Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "2",
+      "name": "Wait for Completion",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ai-space:8000/api/ingest",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}"
+      },
+      "id": "3",
+      "name": "AI-SPACE Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Submit Crawl Task": {
+      "main": [
+        [
+          {
+            "node": "Wait for Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Completion": {
+      "main": [
+        [
+          {
+            "node": "AI-SPACE Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

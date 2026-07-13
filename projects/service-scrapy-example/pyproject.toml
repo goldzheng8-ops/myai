@@ -17,6 +17,9 @@ dependencies = [
     "fake-useragent>=2.2.0",
     "scrapy-playwright>=0.0.48",
     "scrapy-rotating-proxies>=0.6.2",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "aiosqlite>=0.10",
 ]
 
 [dependency-groups]

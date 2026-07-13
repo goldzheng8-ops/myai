@@ -1,0 +1,18 @@
+{
+  "task_id": "uuid",
+  "status": "completed",
+  "spider": "template",
+  "executor": "scrapy",
+  "items": [
+    {
+      "title": "example title",
+      "url": "https://example.com/item/1",
+      "source": "https://example.com"
+    }
+  ],
+  "meta": {
+    "collected_at": "2026-07-13T00:00:00Z",
+    "source_url": "https://example.com",
+    "count": 1
+  }
+}

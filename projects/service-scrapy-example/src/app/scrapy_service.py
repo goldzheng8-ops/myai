@@ -11,6 +11,10 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
+from domain.crawler.config import CrawlerConfig
+from domain.crawler.executors import select_executor
+from domain.crawler.templates import build_template_spider
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SPIDER_PROJECT_ROOT = PROJECT_ROOT / "src" / "domain" / "crawler"
 
@@ -34,6 +38,20 @@ def run_scrapy_job(payload: dict[str, Any]) -> dict[str, Any]:
     task_id = payload["task_id"]
     spider_name = payload["spider"]
     target_url = payload.get("url")
+    crawler_config = payload.get("crawler_config")
+
+    if spider_name == "template" and crawler_config:
+        config = crawler_config if isinstance(crawler_config, CrawlerConfig) else CrawlerConfig.from_dict(crawler_config)
+        executor = select_executor(config)
+        result = executor.execute(config, task_id)
+        return {
+            "task_id": task_id,
+            "status": result["status"],
+            "spider": spider_name,
+            "executor": executor.name,
+            "message": f"Executor {executor.name} completed",
+            "items": result.get("items", []),
+        }
 
     spider_cls = resolve_spider_class(spider_name)
 
@@ -50,7 +68,7 @@ def run_scrapy_job(payload: dict[str, Any]) -> dict[str, Any]:
         settings = get_project_settings()
         settings.set("LOG_LEVEL", settings.get("LOG_LEVEL", "INFO"))
 
-        if target_url:
+        if target_url and not getattr(spider_cls, "start_urls", None):
             class DynamicSpider(spider_cls):  # type: ignore[valid-type, misc]
                 name = f"{spider_cls.name}-{task_id}"
                 start_urls = [target_url]

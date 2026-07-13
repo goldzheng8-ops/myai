@@ -1,0 +1,28 @@
+spider: template
+request:
+  url: https://example.com
+  method: GET
+  headers:
+    User-Agent: Mozilla/5.0
+browser:
+  enabled: false
+list:
+  selector: article
+pagination:
+  enabled: false
+  max_pages: 3
+extract:
+  fields:
+    title:
+      selector: h2::text
+      type: text
+    url:
+      selector: a::attr(href)
+      type: text
+pipeline:
+  deduplicate: true
+output:
+  format: json
+workflow:
+  task_name: example-news-crawl
+  ai_space_callback: http://ai-space:8000/api/ingest

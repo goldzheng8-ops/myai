@@ -1,0 +1,51 @@
+{
+  "method": "POST",
+  "url": "http://service-scrapy-example:8001/crawl/tasks",
+  "json": {
+    "spider": "template",
+    "url": "https://example.com",
+    "crawler_config": {
+      "template": "list",
+      "request": {
+        "url": "https://example.com",
+        "method": "GET",
+        "headers": {
+          "User-Agent": "Mozilla/5.0"
+        }
+      },
+      "browser": {
+        "enabled": false
+      },
+      "list": {
+        "selector": "article"
+      },
+      "pagination": {
+        "enabled": false,
+        "max_pages": 3
+      },
+      "extract": {
+        "fields": {
+          "title": {
+            "selector": "h2::text",
+            "type": "text"
+          },
+          "url": {
+            "selector": "a::attr(href)",
+            "type": "text"
+          }
+        }
+      },
+      "pipeline": {
+        "deduplicate": true
+      },
+      "output": {
+        "format": "json"
+      },
+      "workflow": {
+        "task_name": "n8n-crawl-task",
+        "ai_space_callback": "http://ai-space:8000/api/ingest"
+      }
+    },
+    "callback_url": "http://ai-space:8000/api/ingest"
+  }
+}

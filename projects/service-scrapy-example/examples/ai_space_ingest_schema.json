@@ -1,0 +1,18 @@
+{
+  "task_id": "uuid",
+  "source": "crawler-service",
+  "status": "completed",
+  "payload": {
+    "spider": "template",
+    "items": [
+      {
+        "title": "Example",
+        "url": "https://example.com"
+      }
+    ],
+    "meta": {
+      "collected_at": "2026-07-13T00:00:00Z",
+      "source_url": "https://example.com"
+    }
+  }
+}
