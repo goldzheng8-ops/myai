@@ -1,0 +1,242 @@
+# CrawlerConfig
+
+# Extractor
+
+# SelectorEngine
+
+# TransformEngine
+
+# RequestFactory
+
+# PaginationEngine
+
+# TemplateListSpider
+
+class TemplateListSpider:
+
+    parse():
+
+        nodes = selector.select(...)
+
+        for node in nodes:
+
+            yield extractor.extract(node)
+
+        yield pager.next(...)
+
+# TemplateDetailSpider
+
+parse()
+
+↓
+
+得到URL
+
+↓
+
+follow
+
+↓
+
+extractor.extract()
+
+# TemplateBrowserSpider
+Request
+
+↓
+
+Playwright
+
+↓
+
+parse()
+
+↓
+
+extractor
+
+# CrawlerRunner
+
+FastAPI
+
+↓
+
+收到CrawlerConfig
+
+↓
+
+选择Spider
+
+↓
+
+启动CrawlerProcess
+
+↓
+
+返回JSON
+
+
+crawler/
+│
+├── config/
+│
+│   crawler_config.py
+│
+├── selector/
+│
+│   selector_engine.py
+│
+├── extractor/
+│
+│   extractor.py
+│
+│   transform_engine.py
+│
+├── request/
+│
+│   request_factory.py
+│
+├── pagination/
+│
+│   pagination_engine.py
+│
+├── spiders/
+│
+│   template_list.py
+│
+│   template_detail.py
+│
+│   template_api.py
+│
+│   template_browser.py
+│
+├── runner/
+│
+│   crawler_runner.py
+│
+└── api/
+
+因为以后：
+
+新增：
+
+Playwright
+
+不用改 Extractor。
+
+新增：
+
+XPath
+
+不用改 Spider。
+
+新增：
+
+JSONPath
+
+不用改 Spider。
+
+新增：
+
+replace
+
+不用改 Spider。
+
+新增：
+
+代理池
+
+不用改 Spider。
+
+Spider 永远只负责：
+Request
+
+↓
+
+Response
+
+↓
+
+Selector
+
+↓
+
+Extractor
+
+↓
+
+Yield
+##############################################
+① CrawlerConfig                ✅ 已完成
+
+↓
+
+② SelectorEngine              ⭐⭐⭐⭐⭐
+
+↓
+
+③ TransformEngine             ⭐⭐⭐⭐⭐
+
+↓
+
+④ Extractor                   ⭐⭐⭐⭐⭐
+
+↓
+
+⑤ RequestFactory              ⭐⭐⭐⭐
+
+↓
+
+⑥ PaginationEngine            ⭐⭐⭐⭐
+
+↓
+
+⑦ TemplateListSpider          ⭐⭐⭐
+
+↓
+
+⑧ TemplateDetailSpider        ⭐⭐⭐
+
+↓
+
+⑨ TemplateApiSpider           ⭐⭐
+
+↓
+
+⑩ TemplateBrowserSpider       ⭐⭐
+
+↓
+
+⑪ CrawlerRunner               ⭐⭐⭐⭐⭐
+
+↓
+
+⑫ FastAPI接口                 ⭐⭐⭐⭐⭐
+
+↓
+
+⑬ n8n调用                     ⭐⭐⭐⭐⭐
+我建议我们的实现顺序
+
+不要一次性把所有功能做完，而是采用迭代开发：
+
+第一版（MVP）
+✅ SelectorEngine
+✅ XPathHandler
+✅ CSSHandler
+✅ 支持 many
+✅ 支持 default
+第二版
+RegexHandler
+required
+attr
+完善异常处理
+第三版
+JSONPath / JMESPath
+嵌套选择器
+链式 Selector
+Playwright 适配
+
+很好，这也是我实际开发时采用的顺序。我们先让 XPath 跑起来，再扩展 CSS、Regex。
+
+不过，在开始写代码之前，我想先调整一下我们之前的设计，因为有一个地方如果现在不改，以后支持 Playwright、BeautifulSoup、JSON 时会比较痛苦。
