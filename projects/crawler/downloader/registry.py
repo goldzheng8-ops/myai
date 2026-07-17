@@ -1,7 +1,7 @@
 
 
 from downloader.base import DownloaderPlugin
-from downloader.plugins.scrapy import ScrapyDownloader
+from downloader.plugins.playwright import PlaywrightDownloader
 from downloader.plugins.requests import RequestsDownloader
 
 
@@ -19,5 +19,6 @@ class DownloaderRegistry:
     
 
 registry = DownloaderRegistry()
-registry.register("scrapy", ScrapyDownloader())
+
 registry.register("requests", RequestsDownloader())
+registry.register("playwright", PlaywrightDownloader())

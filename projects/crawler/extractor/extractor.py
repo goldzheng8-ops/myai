@@ -8,7 +8,7 @@ from selector.engine import SelectorEngine
 from transform.engine import TransformEngine
 
 
-class Extractor:
+class ExtractorEngine:
     """
     负责协调 SelectorEngine 和 TransformEngine，
     完成整个页面的数据抽取。

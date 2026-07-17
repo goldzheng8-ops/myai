@@ -1,4 +1,3 @@
-from httpcore import Response
 from playwright.async_api import Page
 
 from typing import Any
@@ -11,11 +10,9 @@ class PlaywrightResponseAdapter(ResponseAdapter):
 
     def __init__(
         self,
-        page: Page,
-        response: Response | None,
+        page: Page
     ):
         self._page = page
-        self._response = response
 
     def select(self, selector: SelectorConfig) -> Any:
         """

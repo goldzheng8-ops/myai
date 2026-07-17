@@ -115,7 +115,7 @@ class RequestConfig(BaseModel):
     method: HttpMethod = HttpMethod.GET
     body: Any = None
     timeout: int = 30
-    retry_times: int = 3
+    retry: int = 3
     proxy: str | None = None
 
 
