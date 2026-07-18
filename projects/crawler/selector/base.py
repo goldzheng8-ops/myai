@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from adapters.base import ResponseAdapter
-from config.config import SelectorConfig
+from selector.config.base import SelectorConfig
 
 
 class SelectorPlugin(ABC):

@@ -1,12 +1,17 @@
-
-
+from transform.config.enums import TransformType
 from transform.base import TransformPlugin
+from transform.config.join import JoinTransformConfig
 
 
-class JoinTransform(TransformPlugin):
-    name = "join"
+class JoinTransform(TransformPlugin[JoinTransformConfig]):
+    
+    @property
+    def type(self)->TransformType:
+        return TransformType.DATETIME
 
-    def apply(self, value, **kwargs):
-        if isinstance(value, list):
-            return " ".join(str(v) for v in value)
-        return value
+    def transform_one(
+        self,
+        value: str,
+        config:JoinTransformConfig ,
+    ):
+        ...

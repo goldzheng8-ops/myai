@@ -1,10 +1,14 @@
-
-
+from transform.config.enums import TransformType
 from transform.base import TransformPlugin
+from transform.config.upper import UpperTransformConfig
 
 
-class UpperTransform(TransformPlugin):
-    name = "upper"
+class UpperTransform(TransformPlugin[UpperTransformConfig]):
 
-    def transform(self, value: str) -> str:
+
+    @property
+    def type(self):
+        return TransformType.UPPER
+
+    def transform_one(self, value:str, config:UpperTransformConfig):
         return value.upper()

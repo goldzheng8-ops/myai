@@ -1,12 +1,17 @@
-
-
+from transform.config.enums import TransformType
 from transform.base import TransformPlugin
+from transform.config.strip import StripTransformConfig
 
 
-class SplitTransform(TransformPlugin):
-    name = "split"
+class StripTransform(TransformPlugin[StripTransformConfig]):
+    
+    @property
+    def type(self)->TransformType:
+        return TransformType.DATETIME
 
-    def apply(self, value: str, delimiter: str = ",") -> list:
-        if not isinstance(value, str):
-            raise ValueError("Input value must be a string.")
-        return value.split(delimiter)
+    def transform_one(
+        self,
+        value: str,
+        config:StripTransformConfig ,
+    ):
+        ...

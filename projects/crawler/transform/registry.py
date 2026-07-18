@@ -1,29 +1,16 @@
-from transform.base import TransformPlugin
-from transform.plugins.datetime import DateTimeTransform
-from transform.plugins.strip import StripTransform
-from transform.plugins.replace import ReplaceTransform
-from transform.plugins.number import NumberTransform
+from typing import Any
 
+from transform.base import TransformPlugin
+from transform.config.enums import TransformType
 
 
 class TransformRegistry:
 
     def __init__(self):
-        self._plugins = dict[str, TransformPlugin]()
+        self._plugins = dict[TransformType, TransformPlugin[Any]]()
 
-    def register(self, plugin : TransformPlugin):
+    def register(self, plugin: TransformPlugin[Any]):
+        self._plugins[plugin.type] = plugin
 
-        self._plugins[plugin.name] = plugin  
-
-    def get(self, name:str) -> TransformPlugin:
-
-        return self._plugins[name]  
-    
-registry = TransformRegistry()
-registry.register(StripTransform())
-
-registry.register(ReplaceTransform())
-
-registry.register(NumberTransform())
-
-registry.register(DateTimeTransform())
+    def get(self, type:TransformType) -> TransformPlugin[Any]:
+        return self._plugins[type]

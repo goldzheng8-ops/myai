@@ -1,12 +1,11 @@
 
-
-from adapters.base import ResponseAdapter
-from config.config import SelectorConfig
+from selector.config.enums import SelectorType
 from selector.base import SelectorPlugin
 
 
-class CssSelector(SelectorPlugin):
-    name = "css"
+class CssSelectorPlugin(SelectorPlugin):
 
-    def select(self, adapter: ResponseAdapter, selector: SelectorConfig, **kwargs):
-        return adapter.select(selector)
+    type: SelectorType = SelectorType.CSS
+
+    def select(self, response, config):
+        return response.select(config)

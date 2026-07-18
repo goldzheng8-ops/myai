@@ -1,16 +1,21 @@
 
-
-from typing import Any
-
+from transform.config.enums import TransformType
 from transform.base import TransformPlugin
+from transform.config.replace import ReplaceTransformConfig
 
 
-class ReplaceTransform(TransformPlugin):
-    name = "replace"
+class ReplaceTransformPlugin(TransformPlugin[ReplaceTransformConfig]):
 
-    def apply(self, value: Any, **kwargs) -> Any:
-        if isinstance(value, str):
-            old = kwargs.get("old", "")
-            new = kwargs.get("new", "")
-            return value.replace(old, new)
-        return value
+    @property
+    def type(self)->TransformType:
+        return TransformType.REPLACE
+
+    def transform_one(
+        self,
+        value: str,
+        config: ReplaceTransformConfig,
+    ):
+        return value.replace(
+            config.pattern,
+            config.replacement,
+        )

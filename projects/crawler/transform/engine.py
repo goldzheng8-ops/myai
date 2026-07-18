@@ -1,27 +1,24 @@
-from transform.registry import registry as transform_registry
+from typing import Any
 
-from config.config import TransformConfig
+from .registry import TransformRegistry
+from .config.base import TransformConfig
+
 
 class TransformEngine:
 
-    def __init__(self):
+    def __init__(self, registry: TransformRegistry):
+        self.registry = registry
 
-        self.registry = transform_registry
-    def execute(
+    def transform(
         self,
-        value:str,
+        value: Any,
         configs: list[TransformConfig],
-    ) -> str:
+    ) -> Any:
 
         result = value
 
         for config in configs:
-
-            transform = self.registry.get(config.type)
-
-            result = transform.apply(
-                result,
-                *config.args,
-            )
+            plugin = self.registry.get(config.type)
+            result = plugin.transform(result, config)
 
         return result

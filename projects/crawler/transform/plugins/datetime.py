@@ -1,16 +1,17 @@
-
-
+from transform.config.datetime import DatetimeTransformConfig
+from transform.config.enums import TransformType
 from transform.base import TransformPlugin
 
 
-class DateTimeTransform(TransformPlugin):
-    name = "datetime"
+class DateTimeTransform(TransformPlugin[DatetimeTransformConfig]):
+    
+    @property
+    def type(self)->TransformType:
+        return TransformType.DATETIME
 
-    def apply(self, value, **kwargs):
-        from datetime import datetime
-        # Assuming the input value is a string representation of a date and time
-        try:
-            dt = datetime.fromisoformat(value)
-            return dt
-        except ValueError:
-            raise ValueError(f"Invalid datetime format: {value}")
+    def transform_one(
+        self,
+        value: str,
+        config: DatetimeTransformConfig,
+    ):
+        ...

@@ -9,7 +9,6 @@ from config.config import CrawlerConfig, RequestConfig
 @dataclass(slots=True)
 class RequestContext:
 
-    downloader: str = "requests"
 
     request: RequestConfig
 
@@ -17,5 +16,6 @@ class RequestContext:
 
     meta: dict[str, Any] = field(default_factory=dict)
 
+    downloader: str = "requests"
 
 

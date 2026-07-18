@@ -5,6 +5,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from selector.base import SelectorConfig
+
 
 
 class HttpMethod(str, Enum):
@@ -17,15 +19,7 @@ class HttpMethod(str, Enum):
 
     DELETE = "DELETE"
 
-class SelectorType(str, Enum):
 
-    CSS = "css"
-
-    XPATH = "xpath"
-
-    JSONPATH = "jsonpath"
-
-    REGEX = "regex"
 
 
 class BrowserEngine(str, Enum):
@@ -68,25 +62,7 @@ class SpiderTemplate(str,Enum):
 
     BROWSER="browser"
 
-class TransformType(str,Enum):
 
-    STRIP="strip"
-
-    LOWER="lower"
-
-    UPPER="upper"
-
-    TO_INT="to_int"
-
-    TO_FLOAT="to_float"
-
-    DATETIME="datetime"
-
-    PREFIX="prefix"
-
-    SUFFIX="suffix"
-
-    REPLACE="replace"
 
 class BrowserWaitUntil(str,Enum):
     
@@ -97,15 +73,7 @@ class BrowserWaitUntil(str,Enum):
     NETWORKIDLE="networkidle"
 
 
-class SelectorConfig(BaseModel):
 
-    type: SelectorType
-
-    query: str
-
-    attr: str | None = None
-
-    many: bool = False
 
 class RequestConfig(BaseModel):
     url: str
@@ -119,11 +87,7 @@ class RequestConfig(BaseModel):
     proxy: str | None = None
 
 
-class TransformConfig(BaseModel):
 
-    type: TransformType
-
-    args: list[str] = Field(default_factory=list)
 
 class BrowserConfig(BaseModel):
 
