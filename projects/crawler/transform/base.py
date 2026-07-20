@@ -1,29 +1,37 @@
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
-from typing import Any
+from collections.abc import Iterable
+from typing import ClassVar, Generic, TypeVar
+
 
 from transform.config.base import TransformConfig
 from transform.config.enums import TransformType
 
-T = TypeVar("T", bound=TransformConfig)
 
-class TransformPlugin(Generic[T],ABC):
+InputT = TypeVar("InputT")
+OutputT = TypeVar("OutputT")
 
-    @property
-    @abstractmethod
-    def type(self)-> TransformType:
-        ...
 
-    def transform(self, value: Any, config:T) -> Any:
+class TransformPlugin(
+    Generic[InputT,OutputT],
+    ABC,
+):
 
-        if isinstance(value, list):
-            return [
-                self.transform_one(v, config)
-                for v in value
-            ]
-
-        return self.transform_one(value, config)
+    type: ClassVar[TransformType]
 
     @abstractmethod
-    def transform_one(self, value: Any, config: T) -> Any:
+    def transform_one(
+        self,
+        value: InputT,
+        config: TransformConfig,
+    ) -> OutputT:
         ...
+
+    def transform_many(
+        self,
+        values: Iterable[InputT],
+        config: TransformConfig,
+    ) -> list[OutputT]:
+        return [
+            self.transform_one(v, config)
+            for v in values
+        ]

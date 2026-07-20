@@ -3,7 +3,7 @@ requires = ["setuptools>=80", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "service-scrapy-example"
+name = "crawler"
 version = "0.1.0"
 description = "Scrapy microservice for AI-SPACE"
 readme = "README.md"
@@ -21,6 +21,7 @@ dependencies = [
     "asyncpg>=0.29",
     "aiosqlite>=0.10",
     "beautifulsoup4>=4.15.0",
+    "jsonpath-ng>=1.8.0",
 ]
 
 [dependency-groups]

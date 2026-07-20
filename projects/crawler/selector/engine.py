@@ -2,14 +2,14 @@ from typing import Any
 
 from adapters.base import ResponseAdapter
 from config.config import SelectorConfig
-from selector.registry import registry as selector_registry
+from selector.registry import SelectorRegistry
 
 
 
 class SelectorEngine:
 
-    def __init__(self):
-        self.registry = selector_registry
+    def __init__(self, registry: SelectorRegistry):
+        self.registry = registry
 
     def select(
         self,

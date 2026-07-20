@@ -1,11 +1,13 @@
-
-from selector.config.enums import SelectorType
+from adapters.base import ResponseAdapter
+from config.config import SelectorConfig
 from selector.base import SelectorPlugin
+from selector.config.enums import SelectorType
 
 
 class CssSelectorPlugin(SelectorPlugin):
 
-    type: SelectorType = SelectorType.CSS
+    type = SelectorType.CSS
 
-    def select(self, response, config):
-        return response.select(config)
+    def css(self, adapter: ResponseAdapter, selector: SelectorConfig):
+        # Implement JSONPath selection logic here
+        return adapter.jsonpath(selector)

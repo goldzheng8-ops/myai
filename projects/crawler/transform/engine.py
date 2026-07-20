@@ -4,6 +4,8 @@ from .registry import TransformRegistry
 from .config.base import TransformConfig
 
 
+from typing import Any, cast
+
 class TransformEngine:
 
     def __init__(self, registry: TransformRegistry):
@@ -11,14 +13,24 @@ class TransformEngine:
 
     def transform(
         self,
-        value: Any,
+        value: object,
         configs: list[TransformConfig],
-    ) -> Any:
+    ) -> object:
 
-        result = value
+        result: object = value
 
         for config in configs:
             plugin = self.registry.get(config.type)
-            result = plugin.transform(result, config)
+
+            if isinstance(result, list):
+                result = plugin.transform_many(
+                    cast(list[Any], result),
+                    config,
+                )
+            else:
+                result = plugin.transform_one(
+                    result,
+                    config,
+                )
 
         return result
