@@ -6,6 +6,6 @@ class SelectorType(str, Enum):
 
     XPATH = "xpath"
 
-    JSONPATH = "jsonpath"
+    JMESPATH = "jmespath"
 
     REGEX = "regex"

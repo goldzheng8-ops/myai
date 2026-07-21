@@ -1,0 +1,10 @@
+{
+    "typeCheckingMode": "strict",
+    "stubPath": "./typings",
+    "include": [
+        "src"
+    ],
+    "reportMissingTypeStubs": "warning",
+    "reportUnknownMemberType": "warning",
+    "reportUnknownVariableType": "warning"
+}

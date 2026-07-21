@@ -15,7 +15,7 @@ Requires-Dist: sqlalchemy[asyncio]>=2.0
 Requires-Dist: asyncpg>=0.29
 Requires-Dist: aiosqlite>=0.10
 Requires-Dist: beautifulsoup4>=4.15.0
-Requires-Dist: jsonpath-ng>=1.8.0
+Requires-Dist: jmespath>=1.1.0
 
 # CrawlerConfig
 
