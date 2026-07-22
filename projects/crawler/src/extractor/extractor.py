@@ -10,7 +10,7 @@ from transform.engine import TransformEngine
 
 class ExtractorEngine:
     """
-    负责协调 SelectorEngine 和 TransformEngine，
+    负责协调 SelectorEngine 和 TransformEngine,
     完成整个页面的数据抽取。
     """
 
@@ -81,7 +81,7 @@ class ExtractorEngine:
 
         if field.transforms:
 
-            value = self.transform_engine.execute(
+            value = self.transform_engine.transform(
                 value,
                 field.transforms,
             )

@@ -4,7 +4,7 @@
     "include": [
         "src"
     ],
-    "reportMissingTypeStubs": "warning",
+    "reportMissingTypeStubs": "none",
     "reportUnknownMemberType": "warning",
     "reportUnknownVariableType": "warning"
 }

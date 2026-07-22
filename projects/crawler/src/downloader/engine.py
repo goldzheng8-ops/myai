@@ -1,13 +1,13 @@
 from downloader.result import DownloadResult
 from request import pipeline
 from request.context import RequestContext
-from downloader.registry import registry as downloader_registry
+from downloader.registry import DownloaderRegistry
 
 class DownloaderEngine:
 
-    def __init__(self):
+    def __init__(self,registry:DownloaderRegistry):
 
-        self.registry = downloader_registry
+        self.registry = registry
         self.pipeline = pipeline
 
     def download(self, request: RequestContext) -> DownloadResult:

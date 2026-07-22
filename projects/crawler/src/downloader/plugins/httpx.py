@@ -1,5 +1,7 @@
 
 
+from downloader.base import DownloaderPlugin
+from downloader.config.enums import DownloaderType
 from downloader.result import DownloadResult
 
 
@@ -7,7 +9,7 @@ class HttpxDownloader(DownloaderPlugin):
     """
     使用 httpx 库进行网页下载的插件。
     """
-
+    type=DownloaderType.AIOHTTP
     def download(self, request: RequestContext) -> DownloadResult:
         """
         使用 httpx 下载网页，并返回统一的 ResponseAdapter。

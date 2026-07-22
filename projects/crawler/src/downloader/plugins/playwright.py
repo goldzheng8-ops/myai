@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 from time import perf_counter
+from downloader.config.enums import DownloaderType
 from playwright.async_api import async_playwright
 
 from adapters.playwright import PlaywrightResponseAdapter
@@ -9,6 +10,8 @@ from request.context import RequestContext
 
 
 class PlaywrightDownloader(DownloaderPlugin):
+    
+    type=DownloaderType.PLAYWRIGHT
 
     def __init__(self):
         self.playwright = None

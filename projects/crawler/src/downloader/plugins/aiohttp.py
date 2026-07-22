@@ -1,5 +1,6 @@
 
 
+from downloader.config.enums import DownloaderType
 from downloader.result import DownloadResult
 
 
@@ -7,7 +8,7 @@ class AiohttpDownloaderPlugin(DownloaderPlugin):
     """
     使用 aiohttp 进行异步下载的插件。
     """
-
+    type=DownloaderType.AIOHTTP
     async def download(
         self,
         request: RequestContext,

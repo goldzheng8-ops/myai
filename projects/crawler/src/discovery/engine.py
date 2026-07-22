@@ -38,3 +38,24 @@ class DiscoveryEngine:
             result.requests.extend(discovery.requests)
 
         return result
+
+class DiscoveryEngine:
+
+    async def discover(...):
+
+        plugin = registry.get(...)
+
+        result = await plugin.discover(...)
+
+        requests = []
+
+        for item in result.items:
+
+            requests.append(
+                builder.build(
+                    parent=request,
+                    item=item,
+                )
+            )
+
+        return requests

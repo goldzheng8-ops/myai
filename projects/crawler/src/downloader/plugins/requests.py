@@ -1,5 +1,6 @@
 
 
+from downloader.config.enums import DownloaderType
 import requests
 
 from downloader.base import DownloaderPlugin
@@ -10,6 +11,7 @@ from request.context import RequestContext
 class RequestsDownloader(
     DownloaderPlugin,
 ):
+    type=DownloaderType.REQUESTS
 
     def download(
         self,

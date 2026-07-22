@@ -240,3 +240,162 @@ Playwright 适配
 很好，这也是我实际开发时采用的顺序。我们先让 XPath 跑起来，再扩展 CSS、Regex。
 
 不过，在开始写代码之前，我想先调整一下我们之前的设计，因为有一个地方如果现在不改，以后支持 Playwright、BeautifulSoup、JSON 时会比较痛苦。
+
+crawler-framework/
+│
+├── config/                    # 配置模型(Pydantic)
+│   ├── crawler.py
+│   ├── request.py
+│   ├── browser.py
+│   ├── list.py
+│   ├── detail.py
+│   ├── pipeline.py
+│   ├── workflow.py
+│   ├── output.py
+│   ├── discovery.py
+│   ├── selector.py
+│   ├── transform.py
+│   └── pagination.py
+│
+├── models/                    # 运行时对象(dataclass)
+│   ├── request_context.py
+│   ├── response_context.py
+│   ├── discovery_item.py
+│   ├── discovery_result.py
+│   ├── extract_result.py
+│   ├── pipeline_result.py
+│   └── download_result.py
+│
+├── enums/
+│   ├── request_kind.py
+│   ├── discovery_type.py
+│   ├── downloader_type.py
+│   ├── response_format.py
+│   ├── http_method.py
+│   └── spider_template.py
+│
+├── profile/
+│   └── request_profile.py
+│
+├── builder/
+│   └── request_builder.py
+│
+├── downloader/
+│   ├── base.py
+│   ├── registry.py
+│   ├── factory.py
+│   ├── requests.py
+│   ├── playwright.py
+│   ├── scrapy.py
+│   └── selenium.py
+│
+├── adapters/
+│   ├── base.py
+│   ├── requests.py
+│   ├── playwright.py
+│   ├── scrapy.py
+│   └── bs4.py
+│
+├── extractor/
+│   ├── engine.py
+│   ├── result.py
+│   │
+│   ├── selector/
+│   │   ├── engine.py
+│   │   ├── registry.py
+│   │   ├── base.py
+│   │   ├── css.py
+│   │   ├── xpath.py
+│   │   ├── regex.py
+│   │   └── jsonpath.py
+│   │
+│   └── transform/
+│       ├── engine.py
+│       ├── registry.py
+│       ├── base.py
+│       ├── regex.py
+│       ├── strip.py
+│       ├── upper.py
+│       ├── lower.py
+│       └── date.py
+│
+├── discovery/
+│   ├── engine.py
+│   ├── registry.py
+│   ├── base.py
+│   ├── detail.py
+│   ├── next_page.py
+│   ├── page_number.py
+│   ├── cursor_api.py
+│   └── infinite_scroll.py
+│
+├── scheduler/
+│   ├── engine.py
+│   ├── queue.py
+│   ├── duplicate.py
+│   └── priority.py
+│
+├── pipeline/
+│   ├── engine.py
+│   ├── registry.py
+│   ├── base.py
+│   ├── database.py
+│   ├── file.py
+│   └── webhook.py
+│
+├── runner/
+│   ├── spider_runner.py
+│   ├── workflow_runner.py
+│   └── scheduler_runner.py
+│
+├── registry/
+│   └── plugin_registry.py
+│
+└── utils/
+
+
+crawler/
+│
+├── config/
+│   ├── spider.py          # SpiderConfig
+│   ├── request.py         # RequestConfig
+│   ├── browser.py
+│   ├── list.py
+│   ├── detail.py
+│   ├── discovery.py
+│   ├── selector.py
+│   ├── transform.py
+│   ├── pipeline.py
+│   ├── workflow.py
+│   └── output.py
+│
+├── runtime/
+│   ├── spider_context.py
+│   ├── request_context.py
+│   ├── request_profile.py
+│   ├── discovery_item.py
+│   ├── discovery_result.py
+│   ├── download_result.py
+│   ├── extract_result.py
+│   └── pipeline_result.py
+│
+├── enums/
+│   ├── request_kind.py
+│   ├── discovery_type.py
+│   ├── downloader_type.py
+│   ├── response_format.py
+│   ├── http_method.py
+│   └── spider_template.py
+│
+├── request/
+│   └── builder.py
+│
+├── downloader/
+├── adapters/
+├── extractor/
+├── discovery/
+├── scheduler/
+├── pipeline/
+├── registry/
+├── runner/
+└── utils/
