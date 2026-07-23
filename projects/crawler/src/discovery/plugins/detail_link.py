@@ -1,30 +1,60 @@
 
 
+
+from adapters.base import ResponseAdapter
+from config.discovery.detail_link import DetailLinkConfig
 from discovery.base import DiscoveryPlugin
-from discovery.config.enums import DiscoveryType
-from discovery.delta import DiscoveryItem
-from discovery.result import DiscoveryResult
+from enums.discovery_type import DiscoveryType
+from request.descriptor_factory import RequestDescriptorFactory
+from runtime.discovery_result import DiscoveryResult
+from runtime.request_context import RequestContext
 
+class DetailLinkDiscovery(
+    DiscoveryPlugin[DetailLinkConfig]
+):
 
-class DetailPlugin(DiscoveryPlugin):
+    discovery_type = (
+        DiscoveryType.DETAIL_LINK
+    )
 
-    type = DiscoveryType.DETAIL_LINK
+    config_type = DetailLinkConfig
+
+    def __init__(
+        self,
+        factory: RequestDescriptorFactory,
+    ):
+        self.factory = factory
+
 
     async def discover(
         self,
+        *,
         response: ResponseAdapter,
-        request: RequestContext,
-        config: DiscoveryConfig,
+        context: RequestContext,
+        config: DetailLinkConfig,
     ) -> DiscoveryResult:
 
-        urls = ...
 
-        return DiscoveryResult(
-            items=[
-                DiscoveryItem(
-                    type=self.type,
-                    url=url,
-                )
-                for url in urls
-            ]
+        urls = await response.css(
+            config.selector
         )
+
+
+        result = DiscoveryResult()
+
+
+        for url in urls:
+
+            descriptor = (
+                self.factory.detail(
+                    url=url,
+                    profile=context.profile,
+                )
+            )
+
+            result.requests.append(
+                descriptor
+            )
+
+
+        return result

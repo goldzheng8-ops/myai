@@ -1,7 +1,8 @@
 
 
 from downloader.base import DownloaderPlugin
-from downloader.config.enums import DownloaderType
+from enums.downloader_type import DownloaderType
+
 
 
 

@@ -1,20 +1,35 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar
-from discovery.config.base import DiscoveryConfig
-from discovery.config.enums import DiscoveryType
-from discovery.result import DiscoveryResult
+from typing import  Generic, TypeVar
+
+
 from adapters.base import ResponseAdapter
-from request.context import RequestContext
+from enums.discovery_type import DiscoveryType
+from runtime.discovery_result import DiscoveryResult
+from runtime.request_context import RequestContext
+from config.discovery.base import DiscoveryConfig
 
-class DiscoveryPlugin(ABC):
+ConfigT = TypeVar(
+    "ConfigT",
+    bound=DiscoveryConfig,
+)
 
-    type:ClassVar[DiscoveryType]
+
+class DiscoveryPlugin(
+    Generic[ConfigT],
+    ABC,
+):
+
+    discovery_type: DiscoveryType
+
+    config_type: type[ConfigT]
+
 
     @abstractmethod
     async def discover(
         self,
+        *,
         response: ResponseAdapter,
-        request: RequestContext,
-        config: DiscoveryConfig,
+        context: RequestContext,
+        config: ConfigT,
     ) -> DiscoveryResult:
         ...

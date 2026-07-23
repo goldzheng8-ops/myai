@@ -1,25 +1,27 @@
 from collections.abc import Iterable
+from typing import Any
 
 from discovery.base import DiscoveryPlugin
-from discovery.config.enums import DiscoveryType
+from enums.discovery_type import DiscoveryType
+
 
 
 class DiscoveryRegistry:
 
-    def __init__(self, plugins: Iterable[DiscoveryPlugin] = ()):
+    def __init__(self, plugins: Iterable[DiscoveryPlugin[Any]] = ()):
 
-        self._plugins: dict[DiscoveryType, DiscoveryPlugin] = {}
+        self._plugins: dict[DiscoveryType, DiscoveryPlugin[Any]] = {}
 
         for plugin in plugins:
             self.register(plugin)
 
-    def register(self, plugin: DiscoveryPlugin):
+    def register(self, plugin: DiscoveryPlugin[Any]):
 
-        if plugin.type in self._plugins:
-            raise ValueError(f"{plugin.type} already registered")
+        if plugin.discovery_type in self._plugins:
+            raise ValueError(f"{plugin.discovery_type} already registered")
 
-        self._plugins[plugin.type] = plugin
+        self._plugins[plugin.discovery_type] = plugin
 
-    def get(self, type: DiscoveryType) -> DiscoveryPlugin:
+    def get(self, type: DiscoveryType) -> DiscoveryPlugin[Any]:
 
         return self._plugins[type]

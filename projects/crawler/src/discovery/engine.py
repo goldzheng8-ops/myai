@@ -1,11 +1,10 @@
 
 
-from discovery.config.base import DiscoveryConfig
-from discovery.registry import DiscoveryRegistry
-from discovery.result import DiscoveryResult, RequestContext
 from adapters.base import ResponseAdapter
-
-
+from config.discovery.base import DiscoveryConfig
+from discovery.registry import DiscoveryRegistry
+from runtime.discovery_result import DiscoveryResult
+from runtime.request_context import RequestContext
 
 
 class DiscoveryEngine:
@@ -16,46 +15,30 @@ class DiscoveryEngine:
     ):
         self._registry = registry
 
+
     async def discover(
         self,
+        *,
         response: ResponseAdapter,
-        request: RequestContext,
-        configs: list[DiscoveryConfig],
+        context: RequestContext,
+        config: DiscoveryConfig,
     ) -> DiscoveryResult:
 
-        result = DiscoveryResult()
+        plugin = self._registry.get(
+            config.type
+        )
 
-        for config in configs:
-
-            plugin = self._registry.get(config.type)
-
-            discovery = await plugin.discover(
-                response,
-                request,
-                config,
+        if not isinstance(
+            config,
+            plugin.config_type,
+        ):
+            raise TypeError(
+                f"Invalid config for {config.type}"
             )
 
-            result.requests.extend(discovery.requests)
 
-        return result
-
-class DiscoveryEngine:
-
-    async def discover(...):
-
-        plugin = registry.get(...)
-
-        result = await plugin.discover(...)
-
-        requests = []
-
-        for item in result.items:
-
-            requests.append(
-                builder.build(
-                    parent=request,
-                    item=item,
-                )
-            )
-
-        return requests
+        return await plugin.discover(
+            response=response,
+            context=context,
+            config=config,
+        )

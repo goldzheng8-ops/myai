@@ -3,9 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from downloader.config.enums import DownloaderType
-from downloader.result import DownloadResult
-from request.context import RequestContext
+from enums.downloader_type import DownloaderType
+from runtime.download_result import DownloadResult
+from runtime.request_context import RequestContext
+
 
 
 class DownloaderPlugin(ABC):

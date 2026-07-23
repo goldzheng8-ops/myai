@@ -399,3 +399,84 @@ crawler/
 ├── registry/
 ├── runner/
 └── utils/
+
+                SpiderRunner
+                      │
+                      ▼
+              RequestBuilder
+                      │
+                      ▼
+               RequestContext
+                      │
+          ┌───────────┼─────────────┐
+          ▼           ▼             ▼
+      Scheduler   DownloaderFactory ExtractorFactory
+          │           │             │
+          │           │             │
+     RequestKind DownloaderType ResponseFormat
+
+ #   SpiderContext
+│
+├── config
+├── state
+├── session
+├── cache
+└── stats
+
+# RequestDescriptor
+
+url
+
+method
+
+headers
+
+params
+
+body
+
+kind
+
+profile
+
+priority
+
+meta
+
+# RequestContext
+
+spider
+
+request
+
+kind
+
+profile
+
+meta
+
+# Builder：
+SpiderContext
+        +
+Parent RequestContext
+        +
+RequestDescriptor
+
+↓
+
+RequestContext
+
+
+request/
+
+│
+
+├── builder.py
+
+├── context.py
+
+├── descriptor.py
+
+├── profile.py
+
+└── merge.py（可选）
