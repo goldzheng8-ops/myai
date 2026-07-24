@@ -1,8 +1,6 @@
-from config.discovery.base import DiscoveryConfig
-from config.selector.base import SelectorConfig
 from enums.discovery_type import DiscoveryType
+from config.discovery.base import HtmlDiscoveryConfig
 
 
-class NextPageConfig(DiscoveryConfig):
-    type: DiscoveryType = DiscoveryType.NEXT_PAGE
-    selector: SelectorConfig
+class NextPageConfig(HtmlDiscoveryConfig):
+    type = DiscoveryType.NEXT_PAGE

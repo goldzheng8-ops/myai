@@ -1,36 +1,39 @@
 
 
-from discovery.base import DiscoveryPlugin
+
+from typing import Any
+
+from adapters.base import ResponseAdapter
+from config.discovery.cursor_api import CursorApiConfig
+
+from discovery.base import ApiDiscoveryPlugin
 from enums.discovery_type import DiscoveryType
+from runtime.request_context import RequestContext
 
 
 class CursorApiDiscovery(
-    DiscoveryPlugin
+    ApiDiscoveryPlugin[CursorApiConfig]
 ):
 
-    type = DiscoveryType.CURSOR_API
+    discovery_type = DiscoveryType.CURSOR_API
 
+    config_type = CursorApiConfig
 
-    async def discover(
-        ...
-    ):
+    async def variables(
+        self,
+        *,
+        response: ResponseAdapter,
+        context: RequestContext,
+        config: CursorApiConfig,
+    ) -> dict[str, Any] | None:
 
-        cursor = extract_cursor(
-            response
+        cursor = await response.select(
+            config.selector,
         )
 
+        if cursor is None:
+            return None
 
-        descriptor = self.factory.api(
-            url=config.url,
-            params={
-                "cursor":cursor
-            },
-            profile=config.profile,
-        )
-
-
-        return DiscoveryResult(
-            requests=[
-                descriptor
-            ]
-        )
+        return {
+            "cursor": cursor,
+        }

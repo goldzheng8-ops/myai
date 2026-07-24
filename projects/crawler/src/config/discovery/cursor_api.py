@@ -1,10 +1,12 @@
 
 
-from config.discovery.base import DiscoveryConfig
-from enums.discovery_type import DiscoveryType
+from config.discovery.base import ApiDiscoveryConfig
+from config.selector.base import SelectorConfig
 
 
-class ApiCursorConfig(DiscoveryConfig):
-    type: DiscoveryType = DiscoveryType.CURSOR_API
 
-    expression: str
+
+class CursorApiConfig(ApiDiscoveryConfig):
+
+    selector: SelectorConfig
+

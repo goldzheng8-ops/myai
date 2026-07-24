@@ -1,9 +1,12 @@
+import asyncio
+
+from config.selector.base import SelectorConfig
 from playwright.async_api import Locator, Page
 import json
 from typing import Any
 
 from adapters.base import NodeAdapter, ResponseAdapter
-from config.config import SelectorConfig
+
 
 
 from playwright.async_api import Locator
@@ -81,6 +84,22 @@ class PlaywrightResponseAdapter(ResponseAdapter):
             )
 
         return self._json_cache
+
+    async def scroll(
+        self,
+        *,
+        count: int = 1,
+        delay: float = 0.5,
+    ):
+
+        for _ in range(count):
+
+            await self._page.mouse.wheel(
+                0,
+                5000,
+            )
+
+            await asyncio.sleep(delay)
 
 
 

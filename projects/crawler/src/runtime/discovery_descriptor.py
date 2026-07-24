@@ -8,7 +8,7 @@ from runtime.request_profile import RequestProfile
 @dataclass(slots=True)
 class RequestDescriptor:
 
-    url: str
+    url: str |None = None
 
     method: HttpMethod | None = None
 
@@ -23,7 +23,5 @@ class RequestDescriptor:
     kind: RequestKind | None = None
 
     profile: RequestProfile | None = None
-
-    priority: int | None = None
 
     meta: dict[str, Any] | None = None

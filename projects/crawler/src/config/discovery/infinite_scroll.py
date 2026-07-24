@@ -1,8 +1,12 @@
-from config.discovery.base import DiscoveryConfig
-from enums.discovery_type import DiscoveryType
+from config.discovery.base import ApiDiscoveryConfig
+from config.selector.base import SelectorConfig
 
 
-class InfiniteScrollConfig(DiscoveryConfig):
-    type: DiscoveryType = DiscoveryType.INFINITE_SCROLL
-    max_scroll: int = 20
-    wait: float = 1.5
+class InfiniteScrollConfig(ApiDiscoveryConfig):
+
+    selector: SelectorConfig
+
+    scroll_count: int = 1
+
+    scroll_delay: float = 0.5
+

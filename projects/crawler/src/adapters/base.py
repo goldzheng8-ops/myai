@@ -4,9 +4,10 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
+from enums.selector_type import SelectorType
 import jmespath
+from config.selector.base import SelectorConfig
 
-from selector.config.base import SelectorConfig
 
 class NodeAdapter(ABC):
 
@@ -58,13 +59,6 @@ class ResponseAdapter(ABC):
 
         return match.group(1) if match.groups() else match.group(0)
 
-    async def jmespath(self, selector: SelectorConfig) -> Any:
-        """JMESPath 提取"""
-
-        return jmespath.search(
-            selector.selector,
-            await self.json(),
-        )
     
     async def _extract(
         self,
@@ -96,3 +90,60 @@ class ResponseAdapter(ABC):
             return None
 
         return await self._extract(nodes[0], selector)
+
+    async def select(
+        self,
+        selector: SelectorConfig,
+    ) -> Any:
+        """
+        JSON Selector 统一入口
+        """
+
+        data = await self.json()
+
+        match selector.type:
+
+            case SelectorType.JMESPATH:
+                return jmespath.search(
+                    selector.selector,
+                    data,
+                )
+
+            case SelectorType.JSONPATH:
+                from jsonpath_ng.ext import parse
+
+                expr = parse(selector.selector)
+
+                matches = expr.find(data)
+
+                if not matches:
+                    return None
+
+                return [m.value for m in matches]
+
+            case SelectorType.CSS:
+                return self.css(selector)
+
+            case SelectorType.XPATH:
+                return self.xpath(selector)
+
+            case SelectorType.REGEX:
+                return self.regex(selector)
+
+        raise ValueError(
+            f"Unsupported json selector: {selector.type}"
+        )
+
+    async def scroll(
+        self,
+        *,
+        count: int = 1,
+        delay: float = 0.5,
+    ) -> None:
+        """
+        默认什么都不做。
+
+        Requests/Scrapy 可以直接忽略。
+
+        Playwright Override。
+        """

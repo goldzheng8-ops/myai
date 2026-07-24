@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
-from enums.discovery_type import DiscoveryType
 from pydantic import  Field
 from runtime.base import BaseResult
 from runtime.discovery_descriptor import RequestDescriptor
@@ -8,9 +8,9 @@ from runtime.discovery_descriptor import RequestDescriptor
 @dataclass(slots=True)
 class DiscoveryRecord:
 
-    type: DiscoveryType
-
     descriptor: RequestDescriptor
+
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class DiscoveryResult(BaseResult):

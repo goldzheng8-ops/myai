@@ -1,27 +1,19 @@
+
+
+from config.discovery.next_page import NextPageConfig
+from discovery.base import HtmlDiscoveryPlugin
+from enums.discovery_type import DiscoveryType
+from enums.request_kind import RequestKind
+
 class NextPageDiscovery(
-    DiscoveryPlugin
+    HtmlDiscoveryPlugin[
+        NextPageConfig
+    ]
 ):
 
     type = DiscoveryType.NEXT_PAGE
 
+    config_type = NextPageConfig
 
-    async def discover(
-        self,
-        *,
-        response,
-        context,
-        config,
-    ):
-
-        next_url = await response.css(
-            config.selector
-        )
-
-        return DiscoveryResult(
-            requests=[
-                self.factory.list(
-                    url=next_url,
-                    profile=context.profile,
-                )
-            ]
-        )
+    request_kind = RequestKind.LIST
+    

@@ -22,6 +22,7 @@ dependencies = [
     "aiosqlite>=0.10",
     "beautifulsoup4>=4.15.0",
     "jmespath>=1.1.0",
+    "jsonpath-ng>=1.8.0",
 ]
 
 [dependency-groups]

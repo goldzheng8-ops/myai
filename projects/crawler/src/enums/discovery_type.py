@@ -14,6 +14,7 @@ class DiscoveryType(str,Enum):
     INFINITE_SCROLL = "infinite_scroll"
 
     GRAPHQL_CURSOR = "graphql_cursor"
+    OFFSET_API="offset_api"
 
     RSS = "rss"
 
