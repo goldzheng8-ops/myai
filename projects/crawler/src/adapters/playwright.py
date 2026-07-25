@@ -74,7 +74,7 @@ class PlaywrightResponseAdapter(ResponseAdapter):
             selector,
         )
 
-    async def html(self) -> str:
+    async def content(self) -> str:
         return await self._page.content()
     
     async def json(self) -> Any:

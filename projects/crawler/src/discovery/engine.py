@@ -24,7 +24,7 @@ class DiscoveryEngine:
         config: DiscoveryConfig,
     ) -> DiscoveryResult:
 
-        plugin = self._registry.get(
+        plugin = self._registry.create(
             config.type
         )
 

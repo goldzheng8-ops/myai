@@ -59,3 +59,17 @@ ResponseAdapter
                                              │
                                              ▼
                                       SchedulerRunner
+
+
+                       DiscoveryPlugin
+                              │
+              ┌───────────────┴────────────────┐
+              │                                │
+       UrlDiscoveryPlugin              ApiDiscoveryPlugin
+              │                                │
+      ┌───────┴─────────┐            ┌─────────┴────────────┐
+      │                 │            │         │            │
+HtmlDiscoveryPlugin FeedDiscoveryPlugin Cursor Infinite Offset
+      │                 │
+      │                 │
+Detail Next Page Sitemap RSS

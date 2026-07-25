@@ -12,7 +12,7 @@ class DiscoveryRecord:
 
     metadata: dict[str, Any] = field(default_factory=dict)
 
-
+@dataclass(slots=True)
 class DiscoveryResult(BaseResult):
 
     descriptors: list[DiscoveryRecord] = Field(default_factory=list)

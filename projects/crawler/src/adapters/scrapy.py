@@ -1,10 +1,11 @@
 
 import json
 from typing import Any
+from config.selector.base import SelectorConfig
 from scrapy.http import TextResponse
 
 from adapters.base import NodeAdapter, ResponseAdapter
-from selector.config.base import SelectorConfig
+
 
 from parsel import Selector
 
@@ -65,7 +66,7 @@ class ScrapyResponseAdapter(ResponseAdapter):
             nodes,
             selector,
         )
-    async def html(self) -> str:
+    async def content(self) -> str:
         return self._response.text
 
     async def json(self) -> Any:

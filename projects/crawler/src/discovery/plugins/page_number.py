@@ -1,6 +1,7 @@
 
 from config.discovery.page_number import PageNumberConfig
-from discovery.base import HtmlDiscoveryPlugin
+
+from discovery.url.html.base import HtmlDiscoveryPlugin
 from enums.discovery_type import DiscoveryType
 from enums.request_kind import RequestKind
 
@@ -10,7 +11,7 @@ class PageNumberDiscovery(
     ]
 ):
 
-    type = DiscoveryType.PAGE_NUMBER
+    plugin_type = DiscoveryType.PAGE_NUMBER
 
     config_type = PageNumberConfig
 

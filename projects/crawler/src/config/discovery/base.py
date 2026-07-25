@@ -25,9 +25,14 @@ class ApiDiscoveryConfig(DiscoveryConfig):
 
     patch: RequestPatch
 
+class UrlDiscoveryConfig(DiscoveryConfig):
 
-class HtmlDiscoveryConfig(DiscoveryConfig):
+    profile: RequestProfile
+
+class HtmlDiscoveryConfig(UrlDiscoveryConfig):
 
     selector: SelectorConfig
 
-    profile: RequestProfile
+
+class FeedDiscoveryConfig(UrlDiscoveryConfig):
+    ...

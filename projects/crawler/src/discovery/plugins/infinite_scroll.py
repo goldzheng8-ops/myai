@@ -4,7 +4,8 @@ from adapters.base import ResponseAdapter
 
 
 from config.discovery.infinite_scroll import InfiniteScrollConfig
-from discovery.base import ApiDiscoveryPlugin
+
+from discovery.api.base import ApiDiscoveryPlugin
 from enums.discovery_type import DiscoveryType
 from runtime.request_context import RequestContext
 
@@ -12,7 +13,7 @@ class InfiniteScrollDiscovery(
     ApiDiscoveryPlugin[InfiniteScrollConfig]
 ):
 
-    discovery_type = DiscoveryType.INFINITE_SCROLL
+    plugin_type = DiscoveryType.INFINITE_SCROLL
 
     config_type = InfiniteScrollConfig
 

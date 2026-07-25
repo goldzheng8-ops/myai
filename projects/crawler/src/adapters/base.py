@@ -37,8 +37,15 @@ class ResponseAdapter(ABC):
         """XPath 选择器"""
 
     @abstractmethod
-    async def html(self) -> str:
+    async def content(self) -> str:
+        """返回原始响应内容"""
         ...
+
+    async def html(self) -> str:
+        return await self.content()
+
+    async def xml(self) -> str:
+        return await self.content()
         
     @abstractmethod
     async def json(self) -> Any:
