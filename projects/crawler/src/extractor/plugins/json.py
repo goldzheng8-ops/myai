@@ -1,0 +1,4 @@
+
+
+class JsonExtractor:
+    pass

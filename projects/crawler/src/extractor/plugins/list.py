@@ -1,0 +1,4 @@
+
+
+class ListExtractor:
+    pass

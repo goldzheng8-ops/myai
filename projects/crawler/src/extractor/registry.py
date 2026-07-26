@@ -1,0 +1,4 @@
+
+
+class ExtractorRegistry:
+    pass
