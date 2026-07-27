@@ -1,0 +1,4 @@
+
+
+class LiquidTemplateRenderer:
+    pass

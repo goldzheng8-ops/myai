@@ -1,0 +1,4 @@
+
+
+class MakoTemplateRenderer:
+    pass

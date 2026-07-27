@@ -1,0 +1,12 @@
+'''
+len
+enumerate
+zip
+range
+dict
+list
+set
+tuple
+sorted
+reversed
+'''

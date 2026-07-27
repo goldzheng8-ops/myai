@@ -1,0 +1,9 @@
+'''
+min
+max
+sum
+any
+all
+pow
+divmod
+'''

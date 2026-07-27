@@ -1,0 +1,15 @@
+'''
+startswith
+endswith
+contains
+match
+search
+regex
+lower
+upper
+title
+digit
+alpha
+alnum
+ascii
+'''

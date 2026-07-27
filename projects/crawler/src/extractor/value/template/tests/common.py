@@ -1,0 +1,13 @@
+'''
+none
+empty
+blank
+number
+string
+mapping
+sequence
+callable
+iterable
+truthy
+falsy
+'''
