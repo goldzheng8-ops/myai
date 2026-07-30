@@ -3,8 +3,8 @@
 from adapters.base import ResponseAdapter
 from config.value.base import ValueConfig
 from extractor.value.registry import ValueRegistry
-from extractor.value.utils.object_builder import ObjectContextBuilder
-from runtime.extract_context import ExtractContext
+from scope.object.builder import ObjectContextBuilder
+from core.context.extract_context import ExtractContext
 
 
 class ValueEngine:

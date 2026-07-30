@@ -1,18 +1,42 @@
+from config.extractor.base import ExtractConfig
+
+from .executor import ExtractExecutor
+from .registry import ExtractorRegistry
+from core.context.extract_context import ExtractContext
 
 
-class ExtractorEngine:
-    pass
+class ExtractEngine(
 
-读取配置
+    ExtractExecutor,
 
-↓
+):
 
-选择 Plugin
+    def __init__(
 
-↓
+        self,
 
-Plugin.extract()
+        registry: ExtractorRegistry,
 
-↓
+    ):
 
-得到 ExtractResult
+        self._registry = registry
+
+    async def execute(
+
+        self,
+
+        config: ExtractConfig,
+
+        context: ExtractContext,
+
+    ):
+
+        extractor = self._registry.create(
+            config.type,
+        )
+
+        return await extractor.extract(
+            config,
+            context,
+            self,
+        )

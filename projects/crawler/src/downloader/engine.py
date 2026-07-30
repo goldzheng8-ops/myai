@@ -1,7 +1,7 @@
 
 from downloader.registry import DownloaderRegistry
-from runtime.download_result import DownloadResult
-from runtime.request_context import RequestContext
+from core.result.download_result import DownloadResult
+from core.context.request_context import RequestContext
 
 class DownloaderEngine:
 
@@ -11,7 +11,7 @@ class DownloaderEngine:
         # self.pipeline = pipeline
 
     def download(self, request: RequestContext) -> DownloadResult:
-        plugin = self.registry.get(request.profile.downloader)
+        plugin = self.registry.create(request.profile.downloader)
         
 
         return plugin.download(request)

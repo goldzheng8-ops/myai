@@ -8,7 +8,7 @@ from config.discovery.base import RequestPatch
 from enums.http_method import HttpMethod
 from enums.request_kind import RequestKind
 from runtime.discovery_descriptor import RequestDescriptor
-from runtime.request_context import RequestContext
+from core.context.request_context import RequestContext
 from runtime.request_profile import RequestProfile
 
 

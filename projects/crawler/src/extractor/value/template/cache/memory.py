@@ -1,35 +1,38 @@
 
 from collections.abc import MutableMapping
-from typing import TypeVar
 
+from extractor.value.template.adapter.base import RenderableTemplate
 from extractor.value.template.cache.base import TemplateCache
-T = TypeVar("T")
+
 
 class MemoryTemplateCache(
-    TemplateCache[T],
+    TemplateCache,
 ):
 
     def __init__(
         self,
-        cache: MutableMapping[str, T] | None = None,
+        cache: MutableMapping[str, RenderableTemplate] | None = None,
     ) -> None:
 
-        self._cache = cache or {}
+        self._cache: dict[
+            str,
+            RenderableTemplate,
+        ] = {}
 
     def get(
         self,
         key: str,
-    ) -> T | None:
+    ) -> RenderableTemplate | None:
 
         return self._cache.get(key)
 
     def put(
         self,
         key: str,
-        value: T,
+        template: RenderableTemplate,
     ) -> None:
 
-        self._cache[key] = value
+        self._cache[key] = template
 
     def clear(
         self,

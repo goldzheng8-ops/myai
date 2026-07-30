@@ -3,9 +3,10 @@ from adapters.base import ResponseAdapter
 from config.value.template import TemplateValueConfig
 from enums.value_type import ValueType
 from extractor.value.base import ValuePlugin
-from extractor.value.utils.renderer import TemplateRenderer
-from extractor.value.utils.object_context import ObjectContext
-from runtime.extract_context import ExtractContext
+
+from extractor.value.template.renderer.base import TemplateRenderer
+from core.context.runtime_context import ObjectContext
+from core.context.extract_context import ExtractContext
 
 class TemplateValuePlugin(
     ValuePlugin[TemplateValueConfig],

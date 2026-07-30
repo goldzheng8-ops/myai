@@ -1,16 +1,16 @@
 from typing import Any
 
-from transform.base import TransformPlugin
-from transform.config.enums import TransformType
+from enums.transform_type import TransformType
+from extractor.transform.base import TransformPlugin
+from core.registry.single import SingletonPluginRegistry
 
 
-class TransformRegistry:
 
-    def __init__(self):
-        self._plugins = dict[TransformType, TransformPlugin[Any,Any]]()
 
-    def register(self, plugin: TransformPlugin[Any,Any]):
-        self._plugins[plugin.type] = plugin
-
-    def get(self, type:TransformType) -> TransformPlugin[Any,Any]:
-        return self._plugins[type]
+class TransformRegistry(
+    SingletonPluginRegistry[
+        TransformType,
+        TransformPlugin[Any,Any],
+    ],
+):
+    pass

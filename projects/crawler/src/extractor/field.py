@@ -1,44 +1,49 @@
 from typing import Any
 
-from extractor.config import FieldConfig
-from request.context import RequestContext
-from response.adapter import ResponseAdapter
-from selector.engine import SelectorEngine
-from transform.engine import TransformEngine
+from config.extractor.field import FieldConfig
+from enums.extract_type import ExtractType
+from extractor.base import Extractor
+from extractor.exception import MissingFieldError
+from extractor.transform.engine import TransformEngine
+from extractor.value.engine import ValueEngine
+from core.context.extract_context import ExtractContext
 
 
-class FieldExtractor:
+class FieldExtractor(
+    Extractor[FieldConfig],
+):
+
+    plugin_type = ExtractType.FIELD
 
     def __init__(
-
         self,
-
-        value_engine,
-
-        transform_engine,
-
-    ):
+        value_engine: ValueEngine,
+        transform_engine: TransformEngine,
+        selection_dispatch: SelectionDispatchTable,
+        extraction_dispatch: ExtractionDispatchTable,
+    ) -> None:
 
         self._value_engine = value_engine
 
         self._transform_engine = transform_engine
 
-    async def extract(...):
+        self._selection_dispatch = selection_dispatch
 
-        value = await self._value_engine.extract(
+        self._extraction_dispatch = extraction_dispatch
 
-            response=response,
-
-            context=context,
-
-            config=config.source,
-
+    async def extract(
+        self,
+        config: FieldConfig,
+        context: ExtractContext,
+        executor: ExtractExecutor,
+    ) -> ExtractResult:
+        source = await self._value_engine.resolve(
+            config.source,
+            context.runtime,
         )
-
-        return await self._transform_engine.transform(
-
-            value=value,
-
-            configs=config.transforms,
-
-        )
+        if isinstance(
+            source,
+            SelectorConfig,
+        ):
+            vars
+            

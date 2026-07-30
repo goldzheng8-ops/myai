@@ -1,28 +1,34 @@
+from config.template.jinja import JinjaTemplateConfig
+from enums.template_backend import TemplateBackendType
+from extractor.value.template.adapter.jinja import JinjaRenderableTemplate
 from extractor.value.template.backend.registry import  FilterRegistry, GlobalRegistry, TestRegistry
-from jinja2 import Environment
+
 
 from extractor.value.template.backend.base import TemplateBackend
-
+from extractor.value.template.adapter.base import RenderableTemplate
 
 class JinjaBackend(
     TemplateBackend,
 ):
+    plugin_type = TemplateBackendType.JINJA
 
     def __init__(
         self,
-        environment: Environment,
+        config: JinjaTemplateConfig,
     ) -> None:
+        
+        self._environment = config.create_environment()
 
         self._filters = FilterRegistry(
-            environment.filters,
+            self._environment.filters,
         )
 
         self._tests = TestRegistry(
-            environment.tests,
+            self._environment.tests,
         )
 
         self._globals = GlobalRegistry(
-            environment.globals,
+            self._environment.globals,
         )
 
     @property
@@ -45,3 +51,17 @@ class JinjaBackend(
     ) -> GlobalRegistry:
 
         return self._globals
+
+    def compile(
+        self,
+        source: str,
+    ) -> RenderableTemplate:
+
+        template = self._environment.from_string(
+            source,
+        )
+
+        return JinjaRenderableTemplate(
+            source,
+            template,
+        )

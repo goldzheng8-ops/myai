@@ -1,15 +1,15 @@
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar, TypeVar
 
-from adapters.base import ResponseAdapter
+from response.base import ResponseAdapter
 
 from config.discovery.base import UrlDiscoveryConfig
 from discovery.base import DiscoveryPlugin
 from enums.request_kind import RequestKind
 from request.descriptor_factory import RequestDescriptorFactory
 from runtime.discovery_descriptor import RequestDescriptor
-from runtime.discovery_result import DiscoveryResult
-from runtime.request_context import RequestContext
+from core.result.discovery_result import DiscoveryResult
+from core.context.request_context import RequestContext
 from runtime.request_profile import RequestProfile
 
 

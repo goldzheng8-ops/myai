@@ -1,22 +1,17 @@
-
-
 from downloader.base import DownloaderPlugin
 from enums.downloader_type import DownloaderType
+from core.registry.factory import FactoryPluginRegistry
 
 
 
 
 
-class DownloaderRegistry:
-
-    def __init__(self):
-        self._plugins = dict[DownloaderType, DownloaderPlugin]()
-
-    def register(self, plugin: DownloaderPlugin):
-        self._plugins[plugin.type] = plugin
-
-    def get(self, type: DownloaderType) -> DownloaderPlugin:
-        return self._plugins[type]
-    
+class DownloaderRegistry(
+    FactoryPluginRegistry[
+        DownloaderType,
+        DownloaderPlugin,
+    ],
+):
+    pass
 
 

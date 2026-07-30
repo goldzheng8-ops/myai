@@ -1,13 +1,13 @@
 from typing import Any
 
-from adapters.base import ResponseAdapter
+from response.base import ResponseAdapter
 
 
 from config.discovery.infinite_scroll import InfiniteScrollConfig
 
 from discovery.api.base import ApiDiscoveryPlugin
 from enums.discovery_type import DiscoveryType
-from runtime.request_context import RequestContext
+from core.context.request_context import RequestContext
 
 class InfiniteScrollDiscovery(
     ApiDiscoveryPlugin[InfiniteScrollConfig]

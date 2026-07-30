@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, Generic, Iterable, TypeVar
 
 
-from adapters.base import ResponseAdapter
+from response.base import ResponseAdapter
 from enums.discovery_type import DiscoveryType
-from registry.plugin_base import Plugin
-from runtime.discovery_result import DiscoveryRecord, DiscoveryResult
-from runtime.request_context import RequestContext
+from core.plugin.base import Plugin
+from core.result.discovery_result import DiscoveryRecord, DiscoveryResult
+from core.context.request_context import RequestContext
 from runtime.discovery_descriptor import RequestDescriptor
 from config.discovery.base import DiscoveryConfig, HtmlDiscoveryConfig
 

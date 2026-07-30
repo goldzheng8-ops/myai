@@ -5,9 +5,9 @@ from config.value.expression import ExpressionValueConfig
 from enums.value_type import ValueType
 from extractor.value.base import ValuePlugin
 
-from extractor.value.utils.evaluator import ExpressionEvaluator
-from extractor.value.utils.object_context import ObjectContext
-from runtime.extract_context import ExtractContext
+from extractor.value.evaluator import ExpressionEvaluator
+from core.context.runtime_context import ObjectContext
+from core.context.extract_context import ExtractContext
 
 class ExpressionValuePlugin(
     ValuePlugin[

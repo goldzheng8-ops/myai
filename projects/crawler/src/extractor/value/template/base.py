@@ -1,4 +1,0 @@
-
-
-class TemplateRenderer:
-    pass

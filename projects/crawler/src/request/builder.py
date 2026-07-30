@@ -4,10 +4,10 @@ from copy import deepcopy
 
 from config.request import RequestConfig
 from runtime.discovery_descriptor import RequestDescriptor
-from runtime.request_context import RequestContext, RequestKind
+from core.context.request_context import RequestContext, RequestKind
 from request.merger import RequestMerger
 from runtime.request_profile import RequestProfile
-from runtime.spider_context import SpiderContext
+from core.context.spider_context import SpiderContext
 
 
 class RequestBuilder:

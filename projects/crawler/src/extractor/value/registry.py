@@ -4,15 +4,14 @@ from typing import Any
 
 from enums.value_type import ValueType
 from extractor.value.base import ValuePlugin
-from registry.plugin_registry import PluginRegistry
+from core.registry.single import SingletonPluginRegistry
+
 
 
 class ValueRegistry(
-
-    PluginRegistry[
+    SingletonPluginRegistry[
         ValueType,
         ValuePlugin[Any],
-    ]
-
+    ],
 ):
     pass

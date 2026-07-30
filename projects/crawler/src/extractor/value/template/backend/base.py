@@ -1,12 +1,17 @@
 from abc import ABC
 from abc import abstractmethod
+from typing import ClassVar
 
+from enums.template_backend import TemplateBackendType
 from extractor.value.template.backend.registry import FilterRegistry, GlobalRegistry, TestRegistry
-
+from extractor.value.template.adapter.base import RenderableTemplate
+from core.plugin.base import Plugin
 
 class TemplateBackend(
+    Plugin,
     ABC,
 ):
+    plugin_type: ClassVar[TemplateBackendType]
 
     @property
     @abstractmethod
@@ -27,4 +32,11 @@ class TemplateBackend(
     def globals(
         self,
     ) -> GlobalRegistry:
+        ...
+
+    @abstractmethod
+    def compile(
+        self,
+        source: str,
+    ) -> RenderableTemplate:
         ...

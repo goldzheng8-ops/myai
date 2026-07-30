@@ -1,26 +1,24 @@
 
-
-from typing import TypeVar
-
+from extractor.value.template.adapter.base import RenderableTemplate
 from extractor.value.template.cache.base import TemplateCache
 
-T = TypeVar("T")
+
 
 class NullTemplateCache(
-    TemplateCache[T],
+    TemplateCache,
 ):
 
     def get(
         self,
         key: str,
-    ) -> T | None:
+    ) -> RenderableTemplate | None:
 
         return None
 
     def put(
         self,
         key: str,
-        value: T,
+        template: RenderableTemplate,
     ) -> None:
 
         pass

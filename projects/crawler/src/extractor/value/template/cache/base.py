@@ -1,13 +1,10 @@
 from abc import ABC
 from abc import abstractmethod
-from typing import Generic
-from typing import TypeVar
 
-T = TypeVar("T")
+from extractor.value.template.adapter.base import RenderableTemplate
 
 
 class TemplateCache(
-    Generic[T],
     ABC,
 ):
 
@@ -15,14 +12,14 @@ class TemplateCache(
     def get(
         self,
         key: str,
-    ) -> T | None:
+    ) -> RenderableTemplate | None:
         ...
 
     @abstractmethod
     def put(
         self,
         key: str,
-        value: T,
+        template: RenderableTemplate,
     ) -> None:
         ...
 

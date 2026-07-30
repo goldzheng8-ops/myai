@@ -3,18 +3,14 @@ from typing import Any
 
 from discovery.base import DiscoveryPlugin
 from enums.discovery_type import DiscoveryType
+from core.registry.single import SingletonPluginRegistry
 
 
-
-from typing import Any
-
-from registry.plugin_registry import PluginRegistry
 
 class DiscoveryRegistry(
-    PluginRegistry[
+    SingletonPluginRegistry[
         DiscoveryType,
         DiscoveryPlugin[Any],
-    ]
+    ],
 ):
-
     pass

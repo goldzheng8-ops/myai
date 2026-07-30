@@ -7,8 +7,8 @@ from adapters.base import ResponseAdapter
 from config.value.context import ContextValueConfig
 from enums.value_type import ValueType
 from extractor.value.base import ValuePlugin
-from extractor.value.utils.object_context import ObjectContext
-from runtime.extract_context import ExtractContext
+from core.context.runtime_context import ObjectContext
+from core.context.extract_context import ExtractContext
 
 class ContextValuePlugin(
 

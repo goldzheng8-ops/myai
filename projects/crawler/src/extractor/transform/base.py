@@ -2,9 +2,11 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import ClassVar, Generic, TypeVar
 
+from config.transform.base import TransformConfig
+from enums.transform_type import TransformType
+from core.plugin.base import Plugin
 
-from transform.config.base import TransformConfig
-from transform.config.enums import TransformType
+
 
 
 InputT = TypeVar("InputT")
@@ -12,6 +14,7 @@ OutputT = TypeVar("OutputT")
 
 
 class TransformPlugin(
+    Plugin,
     Generic[InputT,OutputT],
     ABC,
 ):

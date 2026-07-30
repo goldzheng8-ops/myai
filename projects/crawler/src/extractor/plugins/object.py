@@ -1,4 +1,0 @@
-
-
-class ObjectExtractor:
-    pass

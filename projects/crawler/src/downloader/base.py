@@ -4,12 +4,13 @@ from abc import ABC, abstractmethod
 from typing import ClassVar
 
 from enums.downloader_type import DownloaderType
-from runtime.download_result import DownloadResult
-from runtime.request_context import RequestContext
+from core.plugin.base import Plugin
+from core.result.download_result import DownloadResult
+from core.context.request_context import RequestContext
 
 
 
-class DownloaderPlugin(ABC):
+class DownloaderPlugin(Plugin,ABC):
     type:ClassVar[DownloaderType]
 
     @abstractmethod

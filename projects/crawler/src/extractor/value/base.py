@@ -5,9 +5,9 @@ from config.value.base import ValueConfig
 
 from typing import Any, ClassVar, Generic, TypeVar
 from enums.value_type import ValueType
-from extractor.value.utils.object_context import ObjectContext
-from registry.plugin_base import Plugin
-from runtime.extract_context import ExtractContext
+from core.context.runtime_context import ObjectContext
+from core.plugin.base import Plugin
+from core.context.extract_context import ExtractContext
 
 
 

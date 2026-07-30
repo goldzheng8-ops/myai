@@ -3,13 +3,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar
 
-from adapters.base import ResponseAdapter
+from response.base import ResponseAdapter
 from config.discovery.base import ApiDiscoveryConfig
 from discovery.base import DiscoveryPlugin
 from discovery.api.patch_renderer import RequestPatchRenderer
 from request.descriptor_factory import RequestDescriptorFactory
-from runtime.discovery_result import DiscoveryResult
-from runtime.request_context import RequestContext
+from core.result.discovery_result import DiscoveryResult
+from core.context.request_context import RequestContext
 
 
 ApiConfigT = TypeVar(

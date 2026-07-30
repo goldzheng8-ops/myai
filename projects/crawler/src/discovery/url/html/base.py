@@ -2,10 +2,10 @@
 from abc import ABC
 from typing import TypeVar
 
-from adapters.base import ResponseAdapter
+from response.base import ResponseAdapter
 from discovery.base import HtmlDiscoveryConfig
 from discovery.url.base import UrlDiscoveryPlugin
-from runtime.request_context import RequestContext
+from core.context.request_context import RequestContext
 
 
 HtmlConfigT = TypeVar(
