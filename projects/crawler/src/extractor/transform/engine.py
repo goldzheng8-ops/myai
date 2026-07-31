@@ -1,7 +1,8 @@
 from typing import Any, Sequence, cast
 
 from config.transform.base import TransformConfig
-from extractor.value.evaluator import ValueExecutor
+from extractor.transform.evaluator import TransformExecutor
+
 
 from .registry import TransformRegistry
 
@@ -9,7 +10,7 @@ from .registry import TransformRegistry
 
 
 class TransformEngine(
-    ValueExecutor,
+    TransformExecutor,
 ):
 
     def __init__(self, registry: TransformRegistry):

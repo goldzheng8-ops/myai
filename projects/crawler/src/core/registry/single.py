@@ -1,19 +1,26 @@
-from typing import  Iterable, TypeVar
+from typing import Generic
+from collections.abc import Iterable
 
-from core.registry.base import BasePluginRegistry
-from core.plugin.base import Plugin
+from .plugin import PluginRegistry
 
 
-K = TypeVar("K")
-P = TypeVar("P", bound=Plugin)
+from .types import (
+    K,
+    P,
+)
+
 
 class SingletonPluginRegistry(
-    BasePluginRegistry[K, P],
+    PluginRegistry[K, P],
+    Generic[K, P],
 ):
+    """
+    Creates only one instance.
+    """
 
     def __init__(
         self,
-        plugins: Iterable[type[P]] = (),
+        plugins:Iterable[type[P]]=(),
     ) -> None:
 
         super().__init__(plugins)
@@ -23,16 +30,27 @@ class SingletonPluginRegistry(
     def create(
         self,
         key: K,
-        *args: object,
-        **kwargs: object,
     ) -> P:
 
-        plugin = self._instances.get(key)
+        instance = self._instances.get(key)
 
-        if plugin is None:
+        if instance is not None:
+            return instance
 
-            plugin = self.get(key)()
+        provider = self._providers.get(key)
 
-            self._instances[key] = plugin
+        if provider is not None:
+            instance = provider()
 
-        return plugin
+        else:
+            instance = self.get(key)()
+
+        self._instances[key] = instance
+
+        return instance
+
+    def clear_instances(
+        self,
+    ) -> None:
+
+        self._instances.clear()

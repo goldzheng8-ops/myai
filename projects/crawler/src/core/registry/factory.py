@@ -1,26 +1,31 @@
-from typing import  TypeVar
-
-from core.registry.base import BasePluginRegistry
-from core.plugin.base import Plugin
+from typing import Generic
+from .plugin import PluginRegistry
 
 
-K = TypeVar("K")
-P = TypeVar("P", bound=Plugin)
+from .types import (
+    K,
+    P,
+)
+
 
 class FactoryPluginRegistry(
-    BasePluginRegistry[K, P],
+    PluginRegistry[K, P],
+    Generic[K, P],
 ):
+    """
+    Creates a new instance every time.
+    """
 
     def create(
         self,
         key: K,
-        *args: object,
-        **kwargs: object,
     ) -> P:
+
+        provider = self._providers.get(key)
+
+        if provider is not None:
+            return provider()
 
         plugin_cls = self.get(key)
 
-        return plugin_cls(
-            *args,
-            **kwargs,
-        )
+        return plugin_cls()
