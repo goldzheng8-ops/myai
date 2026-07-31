@@ -1,6 +1,6 @@
 from config.value.selector import SelectorValueConfig
 from core.context.extract_context import ExtractContext
-from core.pipeline.base import Pipeline
+from core.pipeline.base import  PipelineExecutor
 from enums.value_type import ValueType
 from resolver.base import Resolver
 
@@ -14,7 +14,7 @@ class SelectorResolver(
 
     def __init__(
         self,
-        pipeline:Pipeline,
+        pipeline:PipelineExecutor,
     ):
         self._pipeline = pipeline
 
@@ -25,20 +25,29 @@ class SelectorResolver(
         context:ExtractContext,
     ):
 
-        node = context.node
+        selector = config.selector
 
-        if node is None:
-            nodes = await context.response.select_nodes(
-                config.selector,
+        if context.response.is_node_selector(selector.type):
+
+            parent = context.node
+
+            if parent is None:
+
+                nodes = await context.response.select_nodes(
+                    selector,
+                )
+
+            else:
+
+                nodes = await parent.select_nodes(
+                    selector,
+                )
+
+            return await self._pipeline.execute(
+                nodes,
+                selector,
             )
 
-        else:
-            nodes = await node.select_nodes(
-                config.selector,
-            )
-
-
-        return await self._pipeline.execute(
-            nodes,
-            config.selector,
+        return await context.response.select(
+            selector,
         )

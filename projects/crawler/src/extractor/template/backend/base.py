@@ -3,8 +3,8 @@ from abc import abstractmethod
 from typing import ClassVar
 
 from enums.template_backend import TemplateBackendType
-from extractor.value.template.backend.registry import FilterRegistry, GlobalRegistry, TestRegistry
-from extractor.value.template.adapter.base import RenderableTemplate
+from extractor.template.backend.registry import FilterRegistry, GlobalRegistry, TestRegistry
+from extractor.template.adapter.base import RenderableTemplate
 from core.plugin.base import Plugin
 
 class TemplateBackend(

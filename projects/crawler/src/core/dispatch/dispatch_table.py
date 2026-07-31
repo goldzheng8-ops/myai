@@ -2,7 +2,7 @@
 
 from typing import Generic, TypeVar
 
-from registry.base import Registry
+from core.registry.base import Registry
 
 K = TypeVar("K")
 H = TypeVar("H")

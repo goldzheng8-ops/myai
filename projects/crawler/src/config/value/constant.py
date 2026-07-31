@@ -5,6 +5,6 @@ from enums.value_type import ValueType
 
 class ConstantValueConfig(ValueConfig):
 
-    type = ValueType.CONSTANT
+    type: ValueType = ValueType.CONSTANT
 
     value: Any

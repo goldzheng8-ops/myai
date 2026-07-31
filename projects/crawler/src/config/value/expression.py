@@ -5,6 +5,6 @@ from enums.value_type import ValueType
 
 class ExpressionValueConfig(ValueConfig):
 
-    type = ValueType.EXPRESSION
+    type: ValueType = ValueType.EXPRESSION
 
     expression: str

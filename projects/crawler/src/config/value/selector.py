@@ -6,6 +6,6 @@ from enums.value_type import ValueType
 
 class SelectorValueConfig(ValueConfig):
 
-    type = ValueType.SELECTOR
+    type: ValueType = ValueType.SELECTOR
 
     selector: SelectorConfig

@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from extractor.value.template.extension.base import TemplateExtension
+from extractor.template.extension.base import TemplateExtension
 
 
 class TemplateExtensionRegistry:

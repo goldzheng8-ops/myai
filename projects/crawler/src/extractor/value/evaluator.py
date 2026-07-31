@@ -1,42 +1,16 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Protocol, Sequence
 
-from core.context.runtime_context import ObjectContext
+from config.transform.base import TransformConfig
+from config.value.base import ValueConfig
+from core.context.extract_context import ExtractContext
 
 
-class ExpressionEvaluator(ABC):
+class ValueExecutor(Protocol):
 
-    @abstractmethod
-    def evaluate(
+    async def resolve(
         self,
-        expression: str,
-        context: ObjectContext,
+        config: ValueConfig,
+        context: ExtractContext,
+        transforms: Sequence[TransformConfig] = (),
     ) -> Any:
         ...
-
-class DefaultExpressionEvaluator(
-    ExpressionEvaluator,
-):
-
-
-    '''
-这个实现只建议开发阶段使用。
-
-以后替换成：
-
-simpleeval
-asteval
-CEL
-JsonLogic
-    '''
-    def evaluate(
-        self,
-        expression: str,
-        context: ObjectContext,
-    ) -> Any:
-
-        return eval(
-            expression,
-            {},
-            context.as_mapping(),
-        )

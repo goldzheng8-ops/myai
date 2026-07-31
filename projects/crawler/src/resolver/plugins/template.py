@@ -1,7 +1,7 @@
 from config.value.template import TemplateValueConfig
 from core.context.extract_context import ExtractContext
 from enums.value_type import ValueType
-from extractor.value.template.manager.default import DefaultTemplateManager
+from extractor.template.manager.default import DefaultTemplateManager
 from resolver.base import Resolver
 
 class TemplateValueResolver(

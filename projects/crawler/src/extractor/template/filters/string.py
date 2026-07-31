@@ -29,7 +29,7 @@ regex_replace
 
 from typing import Any
 
-from extractor.value.template.extension.filter import FilterExtension
+from extractor.template.extension.filter import FilterExtension
 
 
 class UpperFilter(FilterExtension):

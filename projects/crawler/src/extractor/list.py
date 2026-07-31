@@ -4,20 +4,20 @@ from typing import Any
 from config.extractor.list import ListConfig
 from enums.extract_type import ExtractType
 from extractor.base import Extractor
-
 from extractor.executor import ExtractExecutor
 from core.context.extract_context import ExtractContext
 
 class ListExtractor(
     Extractor[ListConfig],
 ):
+
     plugin_type = ExtractType.LIST
-    config_type = ListConfig
+
 
     def __init__(
         self,
         executor: ExtractExecutor,
-    ) -> None:
+    ):
         self._executor = executor
 
     async def extract(
@@ -26,29 +26,32 @@ class ListExtractor(
         context: ExtractContext,
     ) -> list[Any]:
 
-        parent = (
-            context.current
-            if context.current is not None
-            else context.response
-        )
 
-        nodes = await parent.select(
+        nodes = await context.response.select_nodes(
             config.selector,
         )
 
-        result: list[Any] = []
+
+        result = []
+
 
         for node in nodes:
 
-            child_context = context.with_current(
+
+            child_context = context.with_node(
                 node,
             )
 
-            result.append(
-                await self._executor.extract(
-                    config.item,
-                    child_context,
-                )
+
+            value = await self._executor.extract(
+                config.item,
+                child_context,
             )
+
+
+            result.append(
+                value
+            )
+
 
         return result

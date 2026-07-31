@@ -1,54 +1,42 @@
+from typing import Any, Sequence
 
-
-from adapters.base import ResponseAdapter
+from config.transform.base import TransformConfig
 from config.value.base import ValueConfig
-from extractor.value.registry import ValueRegistry
-from scope.object.builder import ObjectContextBuilder
 from core.context.extract_context import ExtractContext
+from extractor.transform.evaluator import TransformExecutor
+from extractor.value.evaluator import ValueExecutor
+from resolver.executor import ResolverExecutor
 
 
-class ValueEngine:
+class ValueEngine(
+    ValueExecutor,
+):
 
     def __init__(
         self,
-        registry: ValueRegistry,
-        scope_builder: ObjectContextBuilder,
+        resolver: ResolverExecutor,
+        transformer: TransformExecutor,
     ) -> None:
 
-        self._registry = registry
+        self._resolver = resolver
+        self._transformer = transformer
 
-        self._scope_builder = scope_builder
-
-    async def extract(
-
+    async def resolve(
         self,
+        config: ValueConfig,
+        context: ExtractContext,
+        transforms: Sequence[TransformConfig] = (),
+    ) -> Any:
 
-        *,
-
-        response:ResponseAdapter,
-
-        context:ExtractContext,
-
-        config:ValueConfig,
-
-    ):
-
-        object_context = self._scope_builder.build(
+        value = await self._resolver.resolve(
+            config,
             context,
         )
 
-        plugin = self._registry.create(
-            config.type,
-        )
+        if transforms:
+            value = await self._transformer.transform(
+                value,
+                transforms,
+            )
 
-        return await plugin.extract(
-
-            response=response,
-
-            context=context,
-
-            object_context=object_context,
-
-            config=config,
-
-        )
+        return value

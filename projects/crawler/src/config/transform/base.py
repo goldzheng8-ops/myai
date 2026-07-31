@@ -1,5 +1,6 @@
 from core.models.base import BaseConfig
-from transform.config.enums import TransformType
+from enums.transform_type import TransformType
+
 
 class TransformConfig(BaseConfig):
 

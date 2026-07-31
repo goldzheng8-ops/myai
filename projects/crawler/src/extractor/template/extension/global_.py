@@ -2,17 +2,17 @@ from abc import abstractmethod
 from typing import Any, ClassVar
 
 
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.extension.base import TemplateExtension
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.extension.base import TemplateExtension
 
-class TestExtension(
+class GlobalExtension(
     TemplateExtension,
 ):
 
     name: ClassVar[str]
 
     @abstractmethod
-    def test(
+    def global_(
         self,
         value: Any,
     ) -> Any:
@@ -23,7 +23,7 @@ class TestExtension(
         backend: TemplateBackend,
     ) -> None:
 
-        backend.tests.register(
+        backend.globals.register(
             self.name,
-            self.test,
+            self.global_,
         )

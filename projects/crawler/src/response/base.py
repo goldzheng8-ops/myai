@@ -2,6 +2,7 @@ from abc import ABC
 from typing import Any, Sequence
 
 from config.selector.base import SelectorConfig
+from enums.selector_type import SelectorType
 from response.node import NodeAdapter
 from response.dispatch import SelectorDispatchTable, NodeDispatchTable
 
@@ -86,4 +87,9 @@ class ResponseAdapter(ABC):
 
         return None
 
+    def is_node_selector(
+        self,
+        selector_type: SelectorType,
+    ) -> bool:
+        return self._node_dispatch.contains(selector_type)
     

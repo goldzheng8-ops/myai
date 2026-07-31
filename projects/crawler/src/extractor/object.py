@@ -1,23 +1,23 @@
 from typing import Any
 
-from config.extractor.field import FieldConfig
+from config.extractor.object import ObjectConfig
 from enums.extract_type import ExtractType
 from extractor.base import Extractor
-from extractor.exception import MissingFieldError
-from extractor.transform.engine import TransformEngine
-from extractor.value.engine import ValueEngine
+
 from core.context.extract_context import ExtractContext
+from extractor.executor import ExtractExecutor
 
 class ObjectExtractor(
     Extractor[ObjectConfig],
 ):
+
     plugin_type = ExtractType.OBJECT
-    config_type = ObjectConfig
+
 
     def __init__(
         self,
         executor: ExtractExecutor,
-    ) -> None:
+    ):
         self._executor = executor
 
     async def extract(
@@ -26,15 +26,11 @@ class ObjectExtractor(
         context: ExtractContext,
     ) -> dict[str, Any]:
 
-        result: dict[str, Any] = {}
-
+        result = {}
         for child in config.children:
-
-            result[child.name] = (
-                await self._executor.extract(
-                    child,
-                    context,
-                )
+            value = await self._executor.extract(
+                child,
+                context,
             )
-
+            result[child.name] = value
         return result

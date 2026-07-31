@@ -1,8 +1,8 @@
 
 from collections.abc import MutableMapping
 
-from extractor.value.template.adapter.base import RenderableTemplate
-from extractor.value.template.cache.base import TemplateCache
+from extractor.template.adapter.base import RenderableTemplate
+from extractor.template.cache.base import TemplateCache
 
 
 class MemoryTemplateCache(

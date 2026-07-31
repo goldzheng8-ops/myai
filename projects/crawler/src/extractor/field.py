@@ -3,9 +3,7 @@ from typing import Any
 from config.extractor.field import FieldConfig
 from enums.extract_type import ExtractType
 from extractor.base import Extractor
-from extractor.exception import MissingFieldError
-from extractor.transform.engine import TransformEngine
-from extractor.value.engine import ValueEngine
+from extractor.value.evaluator import ValueExecutor
 from core.context.extract_context import ExtractContext
 
 
@@ -15,35 +13,38 @@ class FieldExtractor(
 
     plugin_type = ExtractType.FIELD
 
+
     def __init__(
         self,
-        value_engine: ValueEngine,
-        transform_engine: TransformEngine,
-        selection_dispatch: SelectionDispatchTable,
-        extraction_dispatch: ExtractionDispatchTable,
-    ) -> None:
-
-        self._value_engine = value_engine
-
-        self._transform_engine = transform_engine
-
-        self._selection_dispatch = selection_dispatch
-
-        self._extraction_dispatch = extraction_dispatch
+        executor: ValueExecutor,
+    ):
+        self._executor = executor
 
     async def extract(
         self,
         config: FieldConfig,
         context: ExtractContext,
-        executor: ExtractExecutor,
-    ) -> ExtractResult:
-        source = await self._value_engine.resolve(
+    ) -> Any:
+
+
+        value = await self._executor.resolve(
             config.source,
-            context.runtime,
+            context,
+            config.transforms,
         )
-        if isinstance(
-            source,
-            SelectorConfig,
-        ):
-            vars
-            
+
+
+        if value is None:
+
+
+            if config.required:
+
+                raise ValueError(
+                    f"Required field missing: {config.name}"
+                )
+
+
+            return config.default
+
+
+        return value

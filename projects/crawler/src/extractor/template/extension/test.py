@@ -2,17 +2,17 @@ from abc import abstractmethod
 from typing import Any, ClassVar
 
 
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.extension.base import TemplateExtension
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.extension.base import TemplateExtension
 
-class FilterExtension(
+class TestExtension(
     TemplateExtension,
 ):
 
     name: ClassVar[str]
 
     @abstractmethod
-    def filter(
+    def test(
         self,
         value: Any,
     ) -> Any:
@@ -23,7 +23,7 @@ class FilterExtension(
         backend: TemplateBackend,
     ) -> None:
 
-        backend.filters.register(
+        backend.tests.register(
             self.name,
-            self.filter,
+            self.test,
         )

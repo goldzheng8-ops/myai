@@ -2,8 +2,8 @@ from __future__ import annotations
 
 
 
-from extractor.value.template.manager.base import TemplateManager
-from extractor.value.template.renderer.base import TemplateRenderer
+from extractor.template.manager.base import TemplateManager
+from extractor.template.renderer.base import TemplateRenderer
 from core.context.runtime_context import ObjectContext
 
 

@@ -1,7 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-from extractor.value.template.adapter.base import RenderableTemplate
+from extractor.template.adapter.base import RenderableTemplate
 
 
 class TemplateCache(

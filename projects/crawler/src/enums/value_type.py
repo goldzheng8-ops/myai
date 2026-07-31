@@ -1,20 +1,20 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class ValueType(str, Enum):
-
-    SELECTOR = "selector"
-
-    CONTEXT = "context"
+class ValueType(StrEnum):
 
     CONSTANT = "constant"
 
-    TEMPLATE = "template"
+    CONTEXT = "context"
 
     EXPRESSION = "expression"
 
-    ENV="env"
-    FILE="file"
-    DATABASE="database"
-    SECRET="secret"
-    AI="ai"
+    SELECTOR = "selector"
+
+    TEMPLATE = "template"
+
+    # ENV="env"
+    # FILE="file"
+    # DATABASE="database"
+    # SECRET="secret"
+    # AI="ai"

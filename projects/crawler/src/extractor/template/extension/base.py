@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from extractor.value.template.backend.base import TemplateBackend
+from extractor.template.backend.base import TemplateBackend
 
 
 

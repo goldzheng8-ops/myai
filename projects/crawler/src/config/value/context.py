@@ -4,6 +4,6 @@ from enums.value_type import ValueType
 
 class ContextValueConfig(ValueConfig):
 
-    type = ValueType.CONTEXT
+    type: ValueType = ValueType.CONTEXT
 
     key: str

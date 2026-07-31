@@ -1,6 +1,6 @@
 
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.extension.registry import TemplateExtensionRegistry
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.extension.registry import TemplateExtensionRegistry
 
 
 

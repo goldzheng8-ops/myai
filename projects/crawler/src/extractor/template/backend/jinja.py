@@ -1,11 +1,11 @@
 from config.template.jinja import JinjaTemplateConfig
 from enums.template_backend import TemplateBackendType
-from extractor.value.template.adapter.jinja import JinjaRenderableTemplate
-from extractor.value.template.backend.registry import  FilterRegistry, GlobalRegistry, TestRegistry
+from extractor.template.adapter.jinja import JinjaRenderableTemplate
+from extractor.template.backend.registry import  FilterRegistry, GlobalRegistry, TestRegistry
 
 
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.adapter.base import RenderableTemplate
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.adapter.base import RenderableTemplate
 
 class JinjaBackend(
     TemplateBackend,

@@ -1,7 +1,7 @@
-from extractor.value.template.adapter.base import RenderableTemplate
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.cache.base import TemplateCache
-from extractor.value.template.manager.base import TemplateManager
+from extractor.template.adapter.base import RenderableTemplate
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.cache.base import TemplateCache
+from extractor.template.manager.base import TemplateManager
 
 
 class DefaultTemplateManager(

@@ -1,31 +1,35 @@
 from abc import ABC, abstractmethod
-from typing import ClassVar, Generic, TypeVar
+from typing import  Any, Generic, TypeVar
 
-from enums.extract_type import ExtractType
-from core.plugin.base import Plugin
+
+from config.extractor.base import ExtractConfig
 from core.context.extract_context import ExtractContext
+from core.plugin.base import Plugin
 
-from .executor import ExtractExecutor
 
 ConfigT=TypeVar("ConfigT")
 
 
+
+ConfigT = TypeVar(
+    "ConfigT",
+    bound=ExtractConfig,
+)
+
+
 class Extractor(
-
     Plugin,
-
-    Generic[ConfigT],
-
     ABC,
+    Generic[ConfigT],
 ):
 
-    plugin_type: ClassVar[ExtractType]
+    plugin_type: Any
+
 
     @abstractmethod
     async def extract(
         self,
         config: ConfigT,
         context: ExtractContext,
-        executor: ExtractExecutor,
-    ):
+    ) -> Any:
         ...

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from extractor.value.template.adapter.base import RenderableTemplate
+from extractor.template.adapter.base import RenderableTemplate
 
 class TemplateManager(
     ABC,

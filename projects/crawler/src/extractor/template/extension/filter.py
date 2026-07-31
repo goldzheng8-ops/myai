@@ -2,17 +2,17 @@ from abc import abstractmethod
 from typing import Any, ClassVar
 
 
-from extractor.value.template.backend.base import TemplateBackend
-from extractor.value.template.extension.base import TemplateExtension
+from extractor.template.backend.base import TemplateBackend
+from extractor.template.extension.base import TemplateExtension
 
-class GlobalExtension(
+class FilterExtension(
     TemplateExtension,
 ):
 
     name: ClassVar[str]
 
     @abstractmethod
-    def global_(
+    def filter(
         self,
         value: Any,
     ) -> Any:
@@ -23,7 +23,7 @@ class GlobalExtension(
         backend: TemplateBackend,
     ) -> None:
 
-        backend.globals.register(
+        backend.filters.register(
             self.name,
-            self.global_,
+            self.filter,
         )
