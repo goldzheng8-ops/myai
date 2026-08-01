@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
-from config.extractor.base import ExtractConfig
-from core.context.extract_context import ExtractContext
+from models.config.extractor.base import ExtractConfig
+from models.runtime.extract.context import ExtractContext
 
 
 class ExtractExecutor(

@@ -1,10 +1,10 @@
 from typing import Any
 
-from config.extractor.base import ExtractConfig
+from models.config.extractor.base import ExtractConfig
 
 from .executor import ExtractExecutor
 from .registry import ExtractorRegistry
-from core.context.extract_context import ExtractContext
+from models.runtime.extract.context import ExtractContext
 
 
 class ExtractEngine(

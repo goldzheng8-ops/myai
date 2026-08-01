@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar, TypeVar
 
-from response.base import ResponseAdapter
+from models.runtime.response.base import ResponseAdapter
 
-from config.discovery.base import UrlDiscoveryConfig
+from models.config.discovery.base import UrlDiscoveryConfig
 from discovery.base import DiscoveryPlugin
-from enums.request_kind import RequestKind
-from request.descriptor_factory import RequestDescriptorFactory
-from runtime.discovery_descriptor import RequestDescriptor
-from core.result.discovery_result import DiscoveryResult
-from core.context.request_context import RequestContext
-from runtime.request_profile import RequestProfile
+from models.enums.request_kind import RequestKind
+from models.runtime.request.factory import RequestDescriptorFactory
+from models.runtime.discovery_descriptor import RequestDescriptor
+from models.runtime.discovery_result import DiscoveryResult
+from models.runtime.request_context import RequestContext
+from models.runtime.request_profile import RequestProfile
 
 
 UrlConfigT = TypeVar(

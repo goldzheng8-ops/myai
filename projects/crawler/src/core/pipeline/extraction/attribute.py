@@ -1,8 +1,8 @@
 from typing import Any
 
 from core.pipeline.extraction.base import ExtractionStrategy
-from config.selector.base import SelectorConfig
-from response.node import NodeAdapter
+from models.config.selector.base import SelectorConfig
+from models.runtime.response.node import NodeAdapter
 
 class AttributeExtractionStrategy(
     ExtractionStrategy,

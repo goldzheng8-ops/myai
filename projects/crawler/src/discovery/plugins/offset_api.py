@@ -1,15 +1,15 @@
 from typing import Any
 
-from response.base import ResponseAdapter
+from models.runtime.response.base import ResponseAdapter
 
 
 
 
 
-from config.discovery.offset_api import OffsetApiConfig
+from models.config.discovery.offset_api import OffsetApiConfig
 from discovery.api.base import ApiDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from core.context.request_context import RequestContext
+from models.enums.discovery_type import DiscoveryType
+from models.runtime.request_context import RequestContext
 
 class OffsetApiDiscovery(
     ApiDiscoveryPlugin[OffsetApiConfig]

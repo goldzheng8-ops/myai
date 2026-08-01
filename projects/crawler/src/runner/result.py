@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from config.config import Any
+from models.config.config import Any
 from downloader.result import DownloadResult
 from request.context import RequestContext
 

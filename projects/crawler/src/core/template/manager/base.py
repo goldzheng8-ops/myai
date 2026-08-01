@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from core.context.runtime_context import RuntimeContext
+from models.runtime.extract.runtime import RuntimeContext
 from core.template.adapter.base import RenderableTemplate
 
 class TemplateManager(

@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from .plugin import PluginRegistry
 
 
-from .types import (
+from .typing import (
     K,
     P,
 )

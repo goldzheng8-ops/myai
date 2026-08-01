@@ -1,9 +1,9 @@
 
-from config.discovery.page_number import PageNumberConfig
+from models.config.discovery.page_number import PageNumberConfig
 
 from discovery.url.html.base import HtmlDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from enums.request_kind import RequestKind
+from models.enums.discovery_type import DiscoveryType
+from models.enums.request_kind import RequestKind
 
 class PageNumberDiscovery(
     HtmlDiscoveryPlugin[

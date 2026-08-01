@@ -1,10 +1,10 @@
 
 
-from config.discovery.next_page import NextPageConfig
+from models.config.discovery.next_page import NextPageConfig
 
 from discovery.url.html.base import HtmlDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from enums.request_kind import RequestKind
+from models.enums.discovery_type import DiscoveryType
+from models.enums.request_kind import RequestKind
 
 class NextPageDiscovery(
     HtmlDiscoveryPlugin[

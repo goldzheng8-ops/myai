@@ -1,10 +1,10 @@
 
 
-from response.base import ResponseAdapter
-from config.discovery.base import DiscoveryConfig
+from models.runtime.response.base import ResponseAdapter
+from models.config.discovery.base import DiscoveryConfig
 from discovery.registry import DiscoveryRegistry
-from core.result.discovery_result import DiscoveryResult
-from core.context.request_context import RequestContext
+from models.runtime.discovery_result import DiscoveryResult
+from models.runtime.request_context import RequestContext
 
 
 class DiscoveryEngine:

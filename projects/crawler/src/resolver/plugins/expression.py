@@ -1,9 +1,9 @@
 
-from config.value.expression import ExpressionValueConfig
-from core.context.extract_context import ExtractContext
+from models.config.value.expression import ExpressionValueConfig
+from models.runtime.extract.context import ExtractContext
 
 from core.expression.default import DefaultExpressionEvaluator
-from enums.value_type import ValueType
+from models.enums.value_type import ValueType
 from resolver.base import Resolver
 
 

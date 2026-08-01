@@ -2,7 +2,7 @@ from abc import ABC
 from abc import abstractmethod
 from typing import ClassVar
 
-from enums.template_backend import TemplateBackendType
+from models.enums.template_backend import TemplateBackendType
 from core.template.backend.registry import FilterRegistry, GlobalRegistry, TestRegistry
 from core.template.adapter.base import RenderableTemplate
 from core.plugin.base import Plugin

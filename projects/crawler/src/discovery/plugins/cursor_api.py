@@ -3,13 +3,13 @@
 
 from typing import Any
 
-from response.base import ResponseAdapter
-from config.discovery.cursor_api import CursorApiConfig
+from models.runtime.response.base import ResponseAdapter
+from models.config.discovery.cursor_api import CursorApiConfig
 
 
 from discovery.api.base import ApiDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from core.context.request_context import RequestContext
+from models.enums.discovery_type import DiscoveryType
+from models.runtime.request_context import RequestContext
 
 
 class CursorApiDiscovery(

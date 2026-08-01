@@ -3,9 +3,9 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from config.selector.base import SelectorConfig
+from models.config.selector.base import SelectorConfig
 from core.plugin.base import Plugin
-from response.node import NodeAdapter
+from models.runtime.response.node import NodeAdapter
 
 
 class ExtractionStrategy(

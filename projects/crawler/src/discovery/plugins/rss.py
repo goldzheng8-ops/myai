@@ -1,11 +1,11 @@
 
 
 
-from config.discovery.rss import RssConfig
+from models.config.discovery.rss import RssConfig
 from discovery.parser.rss import RssParser
 from discovery.url.feed.base import FeedDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from enums.request_kind import RequestKind
+from models.enums.discovery_type import DiscoveryType
+from models.enums.request_kind import RequestKind
 
 
 class RssDiscovery(

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import  Any, Generic, TypeVar
 
 
-from config.extractor.base import ExtractConfig
-from core.context.extract_context import ExtractContext
+from models.config.extractor.base import ExtractConfig
+from models.runtime.extract.context import ExtractContext
 from core.plugin.base import Plugin
 
 

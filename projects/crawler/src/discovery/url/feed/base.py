@@ -3,12 +3,12 @@ from abc import ABC
 from functools import cached_property
 from typing import ClassVar, TypeVar
 
-from response.base import ResponseAdapter
-from config.discovery.base import FeedDiscoveryConfig
+from models.runtime.response.base import ResponseAdapter
+from models.config.discovery.base import FeedDiscoveryConfig
 from discovery.parser.base import FeedParser
 from discovery.url.base import UrlDiscoveryPlugin
 
-from core.context.request_context import RequestContext
+from models.runtime.request_context import RequestContext
 
 
 FeedConfigT = TypeVar(

@@ -3,10 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from enums.downloader_type import DownloaderType
+from models.enums.downloader_type import DownloaderType
 from core.plugin.base import Plugin
-from core.result.download_result import DownloadResult
-from core.context.request_context import RequestContext
+from models.runtime.download_result import DownloadResult
+from models.runtime.request_context import RequestContext
 
 
 

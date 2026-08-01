@@ -7,7 +7,7 @@ from typing import Generic
 
 from .registry import Registry
 
-from .types import (
+from .typing import (
     K,
     P,
     Provider,

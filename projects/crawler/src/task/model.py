@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from config.config import RequestConfig
+from models.config.config import RequestConfig
 
 
 @dataclass(slots=True)

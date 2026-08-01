@@ -1,10 +1,10 @@
 
 
-from config.discovery.sitemap import SitemapConfig
+from models.config.discovery.sitemap import SitemapConfig
 from discovery.parser.sitemap import SitemapParser
 from discovery.url.feed.base import FeedDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from enums.request_kind import RequestKind
+from models.enums.discovery_type import DiscoveryType
+from models.enums.request_kind import RequestKind
 
 
 class SitemapDiscovery(

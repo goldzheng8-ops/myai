@@ -1,9 +1,9 @@
 
-from config.discovery.detail_link import DetailLinkConfig
+from models.config.discovery.detail_link import DetailLinkConfig
 
 from discovery.url.html.base import HtmlDiscoveryPlugin
-from enums.discovery_type import DiscoveryType
-from enums.request_kind import RequestKind
+from models.enums.discovery_type import DiscoveryType
+from models.enums.request_kind import RequestKind
 
 
 class DetailLinkDiscovery(

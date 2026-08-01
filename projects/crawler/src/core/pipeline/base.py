@@ -1,9 +1,9 @@
 from typing import Any, Sequence
 
-from config.selector.base import SelectorConfig
+from models.config.selector.base import SelectorConfig
 from core.pipeline.extraction.registry import ExtractionRegistry
 from core.pipeline.selection.registry import SelectionRegistry
-from response.node import NodeAdapter
+from models.runtime.response.node import NodeAdapter
 
 from .executor import PipelineExecutor
 

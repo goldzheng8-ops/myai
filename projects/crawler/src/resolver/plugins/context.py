@@ -1,8 +1,8 @@
 from typing import Any
 
-from config.value.context import ContextValueConfig
-from core.context.extract_context import ExtractContext
-from enums.value_type import ValueType
+from models.config.value.context import ContextValueConfig
+from models.runtime.extract.context import ExtractContext
+from models.enums.value_type import ValueType
 from resolver.base import Resolver
 
 

@@ -2,7 +2,7 @@
 
 from jinja2 import Template
 
-from core.context.runtime_context import RuntimeContext
+from models.runtime.extract.runtime import RuntimeContext
 
 from .base import RenderableTemplate
 

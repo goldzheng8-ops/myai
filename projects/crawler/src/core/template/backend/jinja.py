@@ -1,5 +1,5 @@
-from config.template.jinja import JinjaTemplateConfig
-from enums.template_backend import TemplateBackendType
+from models.config.template.jinja import JinjaTemplateConfig
+from models.enums.template_backend import TemplateBackendType
 from core.template.adapter.jinja import JinjaRenderableTemplate
 from core.template.backend.registry import  FilterRegistry, GlobalRegistry, TestRegistry
 

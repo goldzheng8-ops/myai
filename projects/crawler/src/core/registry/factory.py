@@ -2,7 +2,7 @@ from typing import Generic
 from .plugin import PluginRegistry
 
 
-from .types import (
+from .typing import (
     K,
     P,
 )

@@ -1,7 +1,7 @@
 
 from downloader.registry import DownloaderRegistry
-from core.result.download_result import DownloadResult
-from core.context.request_context import RequestContext
+from models.runtime.download_result import DownloadResult
+from models.runtime.request_context import RequestContext
 
 class DownloaderEngine:
 

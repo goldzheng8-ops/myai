@@ -3,8 +3,8 @@ from abc import abstractmethod
 from typing import Sequence
 from typing import Any
 
-from config.selector.base import SelectorConfig
-from response.node import NodeAdapter
+from models.config.selector.base import SelectorConfig
+from models.runtime.response.node import NodeAdapter
 
 from core.plugin.base import Plugin
 
