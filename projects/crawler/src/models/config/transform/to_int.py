@@ -1,8 +1,5 @@
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
-
-from models.config.base import BaseConfig
-from transform.config.enums import TransformType
-
-
-class ToIntTransformConfig(BaseConfig):
+class ToIntTransformConfig(TransformConfig):
     type:TransformType =TransformType.TO_INT

@@ -1,7 +1,7 @@
 
 
-from core.pipeline.selection.base import SelectionStrategy
-from core.pipeline.selection.mode import SelectionMode
+from selector.selection.base import SelectionStrategy
+from selector.selection.mode import SelectionMode
 from core.registry.single import SingletonPluginRegistry
 
 

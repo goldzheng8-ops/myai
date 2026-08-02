@@ -1,8 +1,5 @@
-
-
-
-from transform.config.enums import TransformType
-from transform.config.base import TransformConfig
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
 
 class RegexTransformConfig(TransformConfig):

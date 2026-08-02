@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from models.enums.http_method import HttpMethod
@@ -6,25 +6,23 @@ from models.enums.request_kind import RequestKind
 from models.runtime.request.meta import RequestMeta
 from models.runtime.request.profile import RequestProfile
 
-@dataclass(slots=True,frozen=True)
+@dataclass(slots=True, frozen=True)
 class RequestDescriptor:
 
-    url: str 
+    url: str
 
-    method: HttpMethod | None = None
+    kind: RequestKind
 
-    kind: RequestKind | None = None
+    profile: RequestProfile
 
-    profile: RequestProfile | None = None
+    method: HttpMethod
 
-    headers: dict[str, str] | None = None
+    headers: dict[str, str]
 
-    cookies: dict[str, str] | None = None
+    cookies: dict[str, str]
 
-    params: dict[str, str] | None = None
+    params: dict[str, Any]
 
-    body: Any = None
+    body: Any
 
-    meta: RequestMeta = field(
-        default_factory=RequestMeta,
-    )
+    meta: RequestMeta

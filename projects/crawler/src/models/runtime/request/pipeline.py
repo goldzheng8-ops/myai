@@ -1,0 +1,24 @@
+from dataclasses import dataclass
+
+from core.pipeline.context import PipelineContext
+from models.runtime.download_result import DownloadResult
+
+
+from .context import RequestContext
+
+
+@dataclass(slots=True)
+class RequestPipelineContext(PipelineContext):
+    """
+    HTTP 请求 Pipeline 的上下文。
+
+    整个 Request Pipeline 在生命周期内共享此对象。
+    """
+
+    request: RequestContext
+
+    response: DownloadResult | None = None
+
+    exception: Exception | None = None
+
+    aborted: bool = False

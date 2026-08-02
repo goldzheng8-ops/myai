@@ -1,8 +1,8 @@
 from typing import Any, Sequence
 
 from models.config.selector.base import SelectorConfig
-from core.pipeline.extraction.registry import ExtractionRegistry
-from core.pipeline.selection.registry import SelectionRegistry
+from selector.extraction.registry import ExtractionRegistry
+from selector.selection.registry import SelectionRegistry
 from models.runtime.response.node import NodeAdapter
 
 from .executor import PipelineExecutor

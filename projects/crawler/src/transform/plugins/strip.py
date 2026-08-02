@@ -1,14 +1,12 @@
-
-from transform.config.enums import TransformType
+from models.config.transform.base import TransformConfig
+from models.config.transform.strip import StripTransformConfig
 from transform.base import TransformPlugin
-from transform.config.strip import StripTransformConfig
 
 
-class StripTransformPlugin(TransformPlugin[StripTransformConfig]):
+class StripTransform(TransformPlugin[str, str, StripTransformConfig]):
+    type = StripTransformConfig.type
 
-    @property
-    def type(self):
-        return TransformType.STRIP
-
-    def transform_one(self, value:str, config:StripTransformConfig):
-        return value.strip()
+    def transform_one(self, value: str, config: TransformConfig) -> str:
+        if not isinstance(config, StripTransformConfig):
+            raise TypeError(f"StripTransform expects StripTransformConfig, got {type(config).__name__}")
+        return value.strip(config.chars)

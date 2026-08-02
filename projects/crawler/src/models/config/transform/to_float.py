@@ -1,8 +1,6 @@
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
 
-from models.config.base import BaseConfig
-from transform.config.enums import TransformType
-
-
-class ToFloatConfig(BaseConfig):
+class ToFloatConfig(TransformConfig):
     type: TransformType = TransformType.TO_FLOAT

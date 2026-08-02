@@ -1,20 +1,18 @@
 
 
-    
+from datetime import datetime
+
+from models.config.transform.base import TransformConfig
+from models.config.transform.datetime import DatetimeTransformConfig
 from transform.base import TransformPlugin
-from transform.config.datetime import DatetimeTransformConfig
-from transform.config.upper import UpperTransformConfig
 
 
-class DateTimeTransform(TransformPlugin[str,str,DatetimeTransformConfig]):
+class DateTimeTransform(TransformPlugin[str, str, DatetimeTransformConfig]):
+    type = DatetimeTransformConfig.type
 
-
-
-    type=UpperTransformConfig.type
-
-    def transform_one(self, value:str, config:DatetimeTransformConfig):
-        # if not isinstance(value, str):
-        #     raise TypeError(
-        #         f"UpperTransform expects str, got {type(value).__name__}"
-        #     )
-        return value.upper()
+    def transform_one(self, value: str, config: TransformConfig) -> str:
+        if not isinstance(config, DatetimeTransformConfig):
+            raise TypeError(f"DateTimeTransform expects DatetimeTransformConfig, got {type(config).__name__}")
+        if isinstance(value, datetime):
+            return value.strftime(config.format)
+        return datetime.strptime(value, config.format).isoformat()

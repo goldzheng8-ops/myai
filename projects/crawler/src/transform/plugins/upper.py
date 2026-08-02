@@ -1,15 +1,12 @@
+from models.config.transform.base import TransformConfig
+from models.config.transform.upper import UpperTransformConfig
 from transform.base import TransformPlugin
-from transform.config.upper import UpperTransformConfig
 
 
-class UpperTransform(TransformPlugin[str,str,UpperTransformConfig]):
+class UpperTransform(TransformPlugin[str, str]):
+    type = UpperTransformConfig.type
 
-
-    type=UpperTransformConfig.type
-
-    def transform_one(self, value:str, config:UpperTransformConfig):
-        # if not isinstance(value, str):
-        #     raise TypeError(
-        #         f"UpperTransform expects str, got {type(value).__name__}"
-        #     )
+    def transform_one(self, value: str, config: TransformConfig) -> str:
+        if not isinstance(config, UpperTransformConfig):
+            raise TypeError(f"UpperTransform expects UpperTransformConfig, got {type(config).__name__}")
         return value.upper()

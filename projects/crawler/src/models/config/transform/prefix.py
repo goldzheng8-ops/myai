@@ -1,10 +1,7 @@
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
-
-from models.config.base import BaseConfig
-from transform.config.base import TransformType
-
-
-class PrefixTransformConfig(BaseConfig):
+class PrefixTransformConfig(TransformConfig):
     type: TransformType = TransformType.PREFIX
 
     prefix: str

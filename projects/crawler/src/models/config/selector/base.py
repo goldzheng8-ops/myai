@@ -1,6 +1,6 @@
 from models.config.base import BaseConfig
-from core.pipeline.selection.mode import SelectionMode
-from core.pipeline.extraction.mode import ExtractMode
+from selector.selection.mode import SelectionMode
+from selector.extraction.mode import ExtractMode
 from models.enums.selector_type import SelectorType
 
 

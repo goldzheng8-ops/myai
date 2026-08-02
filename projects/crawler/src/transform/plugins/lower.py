@@ -1,15 +1,12 @@
-from transform.config.enums import TransformType
+from models.config.transform.base import TransformConfig
+from models.config.transform.lower import LowerTransformConfig
 from transform.base import TransformPlugin
-from transform.config.lower import LowerTransformConfig
 
 
+class LowerTransform(TransformPlugin[str, str, LowerTransformConfig]):
+    type = LowerTransformConfig.type
 
-class LowerTransform(TransformPlugin[LowerTransformConfig]):
-
-
-    @property
-    def type(self):
-        return TransformType.UPPER
-
-    def transform_one(self, value:str, config:LowerTransformConfig):
+    def transform_one(self, value: str, config: TransformConfig) -> str:
+        if not isinstance(config, LowerTransformConfig):
+            raise TypeError(f"LowerTransform expects LowerTransformConfig, got {type(config).__name__}")
         return value.lower()

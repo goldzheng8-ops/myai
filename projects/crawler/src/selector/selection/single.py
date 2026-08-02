@@ -1,8 +1,8 @@
 from typing import Any, Sequence
 
 from models.config.selector.base import SelectorConfig
-from core.pipeline.selection.mode import SelectionMode
-from core.pipeline.selection.base import SelectionStrategy
+from selector.selection.mode import SelectionMode
+from selector.selection.base import SelectionStrategy
 from models.runtime.response.node import NodeAdapter
 from ..extraction.base import ExtractionStrategy
 

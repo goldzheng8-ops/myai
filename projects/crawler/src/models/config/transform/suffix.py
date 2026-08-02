@@ -1,10 +1,7 @@
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
-
-from models.config.base import BaseConfig
-from transform.config.enums import TransformType
-
-
-class SuffixTransformConfig(BaseConfig):
+class SuffixTransformConfig(TransformConfig):
     type: TransformType = TransformType.SUFFIX
 
     suffix: str

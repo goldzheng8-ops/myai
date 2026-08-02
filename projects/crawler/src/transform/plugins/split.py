@@ -1,17 +1,18 @@
-from transform.config.enums import TransformType
+from models.config.transform.base import TransformConfig
+from models.config.transform.split import SplitTransformConfig
 from transform.base import TransformPlugin
-from transform.config.strip import StripTransformConfig
 
 
-class StripTransform(TransformPlugin[StripTransformConfig]):
-    
-    @property
-    def type(self)->TransformType:
-        return TransformType.DATETIME
+class SplitTransform(TransformPlugin[str, list[str], SplitTransformConfig]):
+    type = SplitTransformConfig.type
 
     def transform_one(
         self,
         value: str,
-        config:StripTransformConfig ,
-    ):
-        ...
+        config: TransformConfig,
+    ) -> list[str]:
+        if not isinstance(config, SplitTransformConfig):
+            raise TypeError(f"SplitTransform expects SplitTransformConfig, got {type(config).__name__}")
+        if config.separator:
+            return value.split(config.separator)
+        return value.split()

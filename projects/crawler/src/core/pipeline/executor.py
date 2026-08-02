@@ -1,13 +1,14 @@
-from typing import Any, Protocol, Sequence
+from typing import Protocol
 
-from models.config.selector.base import SelectorConfig
-from models.runtime.response.node import NodeAdapter
+from .typing import ContextT
 
-class PipelineExecutor(Protocol):
+
+class PipelineExecutor(
+    Protocol[ContextT],
+):
 
     async def execute(
         self,
-        nodes: Sequence[NodeAdapter],
-        selector: SelectorConfig,
-    ) -> Any:
+        context: ContextT,
+    ) -> ContextT:
         ...

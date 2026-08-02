@@ -1,7 +1,5 @@
-
-
-from transform.config.base import TransformConfig
-from transform.config.enums import TransformType
+from models.enums.transform_type import TransformType
+from models.config.transform.base import TransformConfig
 
 
 class JoinTransformConfig(TransformConfig):

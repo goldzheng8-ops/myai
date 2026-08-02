@@ -1,8 +1,9 @@
 from models.config.value.selector import SelectorValueConfig
 from models.runtime.extract.context import ExtractContext
-from core.pipeline.base import  PipelineExecutor
+
 from models.enums.value_type import ValueType
 from resolver.base import Resolver
+from selector.base import PipelineExecutor
 
 
 class SelectorResolver(

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class RequestMeta:
 
     priority: int = 0

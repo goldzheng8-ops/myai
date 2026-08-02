@@ -11,11 +11,11 @@ from core.plugin.base import Plugin
 
 InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
-
+ConfigT=TypeVar("ConfigT", bound=TransformConfig)
 
 class TransformPlugin(
     Plugin,
-    Generic[InputT,OutputT],
+    Generic[InputT,OutputT,ConfigT],
     ABC,
 ):
 
@@ -25,14 +25,14 @@ class TransformPlugin(
     def transform_one(
         self,
         value: InputT,
-        config: TransformConfig,
+        config: ConfigT,
     ) -> OutputT:
         ...
 
     def transform_many(
         self,
         values: Iterable[InputT],
-        config: TransformConfig,
+        config: ConfigT,
     ) -> list[OutputT]:
         return [
             self.transform_one(v, config)

@@ -1,20 +1,18 @@
-
-from transform.config.enums import TransformType
+from models.config.transform.base import TransformConfig
+from models.config.transform.replace import ReplaceTransformConfig
 from transform.base import TransformPlugin
-from transform.config.replace import ReplaceTransformConfig
 
 
-class ReplaceTransformPlugin(TransformPlugin[ReplaceTransformConfig]):
-
-    @property
-    def type(self)->TransformType:
-        return TransformType.REPLACE
+class ReplaceTransform(TransformPlugin[str, str, ReplaceTransformConfig]):
+    type = ReplaceTransformConfig.type
 
     def transform_one(
         self,
         value: str,
-        config: ReplaceTransformConfig,
-    ):
+        config: TransformConfig,
+    ) -> str:
+        if not isinstance(config, ReplaceTransformConfig):
+            raise TypeError(f"ReplaceTransform expects ReplaceTransformConfig, got {type(config).__name__}")
         return value.replace(
             config.pattern,
             config.replacement,
