@@ -1,8 +1,12 @@
-from typing import Any
+from __future__ import annotations
 
-from .base import BaseProvider
+from typing import TYPE_CHECKING, Any
+
 from .registry import ProviderRegistry
 from .typing import T
+
+if TYPE_CHECKING:
+    from .protocol import BaseProvider
 
 
 class ProviderManager:
@@ -46,4 +50,4 @@ class ProviderManager:
         self,
     ) -> tuple[type[Any], ...]:
 
-        return self._registry.services()
+        return tuple(self._registry.keys())

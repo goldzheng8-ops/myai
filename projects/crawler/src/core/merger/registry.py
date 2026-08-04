@@ -1,10 +1,10 @@
 from typing import Any
 
 from core.merger.base import BaseMerger
-from core.registry.single import SingletonPluginRegistry
+from core.registry.registry import Registry
 
 class MergerRegistry(
-    SingletonPluginRegistry[
+    Registry[
         type[Any],
         BaseMerger[Any],
     ],

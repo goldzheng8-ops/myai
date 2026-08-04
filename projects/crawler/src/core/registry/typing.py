@@ -1,15 +1,11 @@
-from collections.abc import Callable
-from typing import TypeAlias, TypeVar
+from __future__ import annotations
 
-from core.plugin.base import Plugin
+from typing import TypeVar
 
 K = TypeVar("K")
-
 V = TypeVar("V")
-
-P = TypeVar(
-    "P",
-    bound=Plugin,
+H = TypeVar("H")
+V_co = TypeVar(
+    "V_co",
+    covariant=True,
 )
-
-Provider: TypeAlias = Callable[[], P]

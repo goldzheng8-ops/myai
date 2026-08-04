@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 from abc import ABC
-from typing import Any
-from .manager import ProviderManager
-from .registry import ProviderRegistry
+from typing import TYPE_CHECKING, Any
+
 from .typing import T
+
+if TYPE_CHECKING:
+    from .manager import ProviderManager
+    from .registry import ProviderRegistry
+
 
 class BaseProvider(
     ABC,

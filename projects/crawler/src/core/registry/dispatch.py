@@ -1,10 +1,7 @@
-from typing import Generic, TypeVar
+from typing import Generic
 
 from .registry import Registry
-
-K = TypeVar("K")
-H = TypeVar("H")
-
+from .typing import K, H
 
 class DispatchTable(
     Registry[K, H],

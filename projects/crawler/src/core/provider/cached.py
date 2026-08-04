@@ -1,59 +1,34 @@
-from __future__ import annotations
-
 from typing import Any
 
+from core.cache.protocol import Cache
 from core.provider.factory import FactoryProvider
+from core.provider.manager import ProviderManager
+from core.provider.registry import ProviderRegistry
+
 
 class CachedProvider(
     FactoryProvider,
 ):
 
     def __init__(
-
         self,
-
-        registry,
-
-        manager,
-
-        cache,
-
-    ):
-
+        registry: ProviderRegistry,
+        manager: ProviderManager,
+        cache: Cache[type[Any], Any],
+    ) -> None:
+        super().__init__(registry, manager)
         self._cache = cache
-    """
-    Provider with cache management APIs.
 
-    The default implementation behaves exactly like
-    SingletonProvider.
-
-    Future subclasses may implement:
-
-    - TTL cache
-    - LRU cache
-    - Weak reference cache
-    - Redis-backed cache
-    """
     def get(self, service: type[Any]) -> Any:
-        """
-        Get a cached service instance.
-        """
-        return self._cache.get(service)
+        if self._cache.contains(service):
+            return self._cache.get(service)
+
+        instance = self._create(service)
+        self._cache.put(service, instance)
+        return instance
 
     def clear(self) -> None:
-        """
-        Clear all cached instances.
-        """
-        self._instances.clear()
+        self._cache.clear()
 
-    def invalidate(
-        self,
-        service: type[Any],
-    ) -> None:
-        """
-        Remove a cached service instance.
-
-        Does nothing if the service is not cached.
-        """
-        self._instances.pop(service, None)
-
+    def invalidate(self, service: type[Any]) -> None:
+        self._cache.remove(service)

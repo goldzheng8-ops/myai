@@ -1,7 +1,13 @@
-from .base import BaseProvider
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from .protocol import BaseProvider
 from .typing import T
-from .manager import ProviderManager
-from .registry import ProviderRegistry
+
+if TYPE_CHECKING:
+    from .manager import ProviderManager
+    from .registry import ProviderRegistry
 
 
 class FactoryProvider(
@@ -31,13 +37,8 @@ class FactoryProvider(
         service: type[T],
     ) -> T:
 
-        factory = self._registry.factory(
-            service,
-        )
-
-        return factory(
-            self._manager,
-        )
+        factory = self._registry.get(service)
+        return factory(self._manager)
 
     def get(
         self,

@@ -3,7 +3,7 @@ from typing import Self
 
 from .factory import FactoryProvider
 from .manager import ProviderManager
-from .base import BaseProvider
+from .protocol import BaseProvider
 from .registry import ProviderRegistry
 from .typing import T
 
