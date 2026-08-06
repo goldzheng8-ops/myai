@@ -1,10 +1,10 @@
 from typing import Generic, Self
 
-from core.pipeline.pipeline import DefaultPipeline
-from core.pipeline.executor import PipelineExecutor
-from core.pipeline.middleware import PipelineMiddleware
-from core.pipeline.registry import MiddlewareRegistry
-from core.pipeline.typing import ContextT
+from core.request_pipeline.pipeline import DefaultPipeline
+from core.request_pipeline.executor import PipelineExecutor
+from core.request_pipeline.middleware import PipelineMiddleware
+from core.request_pipeline.registry import MiddlewareRegistry
+from core.request_pipeline.typing import ContextT
 
 
 

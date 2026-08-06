@@ -1,38 +1,33 @@
-from __future__ import annotations
+from typing import  Generic, Protocol, Sequence
 
-from abc import ABC
-from typing import TYPE_CHECKING, Any
+from core.typing.vars import T,K_contra,T_co
 
-from .typing import T
-
-if TYPE_CHECKING:
-    from .manager import ProviderManager
-    from .registry import ProviderRegistry
-
-
-class BaseProvider(
-    ABC,
-):
-
-    def __init__(
-        self,
-        registry: ProviderRegistry,
-        manager: ProviderManager,
-    ) -> None:
-
-        self._registry = registry
-        self._manager = manager
+class Resolver_(Protocol):
 
     def get(
         self,
         service: type[T],
     ) -> T:
+        ...
 
-        raise NotImplementedError()
-
-    def contains(
+class Resolver(
+    Protocol,
+    Generic[K_contra, T_co],
+):
+    def resolve(
         self,
-        service: type[Any],
-    ) -> bool:
+        key: K_contra,
+    ) -> T_co:
+        ...
 
-        return self._registry.contains(service)
+class MultiResolver(
+    Protocol,
+    Generic[K_contra, T_co],
+):
+
+    def resolve(
+        self,
+        key: K_contra,
+    ) -> Sequence[T_co]:
+        ...
+

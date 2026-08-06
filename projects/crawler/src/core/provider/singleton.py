@@ -1,8 +1,9 @@
 from typing import Any, Mapping
 
+from core.provider.protocol import Resolver
+
 from .factory import FactoryProvider
 from .typing import T
-from .manager import ProviderManager
 from .registry import ProviderRegistry
 
 class SingletonProvider(
@@ -12,12 +13,12 @@ class SingletonProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        manager: ProviderManager,
+        resolver: Resolver[Any,Any],
     ) -> None:
 
         super().__init__(
             registry,
-            manager,
+            resolver,
         )
 
         self._instances: dict[

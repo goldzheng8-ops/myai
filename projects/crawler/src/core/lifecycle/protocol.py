@@ -13,3 +13,11 @@ class Lifecycle(ABC):
     @abstractmethod
     async def stop(self) -> None:
         ...
+
+class LifecycleResolver(
+    MultiResolver[
+        type[Event],
+        EventHandler,
+    ],
+):
+    pass

@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.registry.registry import Registry
+from core.registry.base import Registry
 
 from .typing import ProviderFactory
 

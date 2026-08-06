@@ -1,6 +1,6 @@
 from typing import Generic
 
-from core.registry.registry import Registry
+from core.registry.base import Registry
 from core.provider.protocol import BaseProvider
 from core.plugin.typing import K, P
 class PluginManager(

@@ -2,25 +2,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from .protocol import Resolver
 from .registry import ProviderRegistry
 from .typing import T
 
 if TYPE_CHECKING:
-    from .protocol import BaseProvider
+    from .base import BaseProvider
 
 
-class ProviderManager:
+class ProviderManager(
+    Resolver[Any,Any]
+):
 
     def __init__(
         self,
         *,
         registry: ProviderRegistry,
-        provider_cls: type[BaseProvider],
+        strategy_cls: type[BaseProvider],
     ) -> None:
 
         self._registry = registry
 
-        self._provider = provider_cls(
+        self._strategy = strategy_cls(
             registry,
             self,
         )
@@ -32,12 +35,12 @@ class ProviderManager:
 
         return self._registry
 
-    def get(
+    def resolve(
         self,
-        service: type[T],
+        key: type[T],
     ) -> T:
 
-        return self._provider.get(service)
+        return self._strategy.get(key)
 
     def contains(
         self,

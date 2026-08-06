@@ -1,8 +1,8 @@
 from typing import Generic, Sequence
 
-from core.pipeline.executor import PipelineExecutor
-from core.pipeline.typing import ContextT
-from core.pipeline.middleware import PipelineMiddleware
+from core.request_pipeline.executor import PipelineExecutor
+from core.request_pipeline.typing import ContextT
+from core.request_pipeline.middleware import PipelineMiddleware
 
 class MiddlewareChain(
     Generic[

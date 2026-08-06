@@ -1,4 +1,4 @@
-from core.pipeline.pipeline import DefaultPipeline
+from core.request_pipeline.pipeline import DefaultPipeline
 from models.runtime.extract.context import RequestContext
 from models.runtime.request.pipeline import RequestPipelineContext
 

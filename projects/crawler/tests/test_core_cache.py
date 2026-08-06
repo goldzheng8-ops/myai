@@ -63,7 +63,30 @@ def test_cache_builder_and_manager() -> None:
     manager.put("x", 42)
     assert manager.get("x") == 42
     assert manager.size() == 1
+    assert manager.is_empty() is False
 
     assert isinstance(builder.build("lru"), LRUCache)
     assert isinstance(builder.build("ttl"), TTLCache)
     assert isinstance(builder.build("weak"), WeakCache)
+
+
+def test_cache_protocol_methods() -> None:
+    cache = MemoryCache[str, int]()
+
+    assert cache.is_empty() is True
+    assert cache.put_if_absent("a", 1) is True
+    assert cache.put_if_absent("a", 2) is False
+    assert cache.get("a") == 1
+
+    cache.update({"b": 2, "c": 3})
+    assert cache.size() == 3
+    assert cache.contains("b") is True
+
+    assert cache.get_or_raise("b") == 2
+
+    removed = cache.remove("b")
+    assert removed is True
+    assert cache.remove("b") is False
+
+    cache.clear()
+    assert cache.is_empty() is True

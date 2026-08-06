@@ -2,7 +2,7 @@ from typing import Any
 
 from core.cache.protocol import Cache
 from core.provider.factory import FactoryProvider
-from core.provider.manager import ProviderManager
+from core.provider.protocol import Resolver
 from core.provider.registry import ProviderRegistry
 
 
@@ -13,10 +13,10 @@ class CachedProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        manager: ProviderManager,
+        resolver: Resolver[Any,Any],
         cache: Cache[type[Any], Any],
     ) -> None:
-        super().__init__(registry, manager)
+        super().__init__(registry, resolver)
         self._cache = cache
 
     def get(self, service: type[Any]) -> Any:

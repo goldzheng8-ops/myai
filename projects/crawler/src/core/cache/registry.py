@@ -1,6 +1,6 @@
 from typing import Any
 from core.cache.plugin import CachePlugin
-from core.registry.registry import Registry
+from core.registry.base import Registry
 class CacheRegistry(
     Registry[
         str,

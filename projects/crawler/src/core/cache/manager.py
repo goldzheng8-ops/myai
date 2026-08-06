@@ -16,8 +16,8 @@ class CacheManager(
     def cache(self) -> CachePlugin[K, V]:
         return self._cache
 
-    def get(self, key: K) -> V | None:
-        return self._cache.get(key)
+    def get(self, key: K, default: V | None = None) -> V | None:
+        return self._cache.get(key,default)
 
     def put(self, key: K, value: V) -> None:
         self._cache.put(key, value)
@@ -25,8 +25,17 @@ class CacheManager(
     def contains(self, key: K) -> bool:
         return self._cache.contains(key)
 
-    def remove(self, key: K) -> None:
-        self._cache.remove(key)
+    def get_or_raise(self, key: K) -> V:
+        return self._cache.get_or_raise(key)
+
+    def put_if_absent(self, key: K, value: V) -> bool:
+        return self._cache.put_if_absent(key, value)
+
+    def update(self, values: dict[K, V]) -> None:
+        self._cache.update(values)
+
+    def remove(self, key: K) -> bool:
+        return self._cache.remove(key)
 
     def clear(self) -> None:
         self._cache.clear()
@@ -36,3 +45,6 @@ class CacheManager(
 
     def size(self) -> int:
         return self._cache.size()
+
+    def is_empty(self) -> bool:
+        return self._cache.is_empty()

@@ -1,6 +1,6 @@
 from typing import Generic
 
-from .registry import Registry
+from .base import Registry
 from .typing import K, H
 
 class DispatchTable(

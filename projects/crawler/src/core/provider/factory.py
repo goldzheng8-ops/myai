@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from .protocol import BaseProvider
+from .protocol import  Resolver
+from .base import BaseProvider
 from .typing import T
 
 if TYPE_CHECKING:
-    from .manager import ProviderManager
     from .registry import ProviderRegistry
 
 
@@ -17,11 +17,10 @@ class FactoryProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        manager: ProviderManager,
+        resolver: Resolver[Any,Any],
     ) -> None:
 
-        self._registry = registry
-        self._manager = manager
+        super().__init__(registry,resolver)
 
     def contains(
         self,
@@ -38,7 +37,7 @@ class FactoryProvider(
     ) -> T:
 
         factory = self._registry.get(service)
-        return factory(self._manager)
+        return factory(self._resolver)
 
     def get(
         self,

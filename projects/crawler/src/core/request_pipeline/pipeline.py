@@ -1,7 +1,7 @@
-from core.pipeline.chain import MiddlewareChain
-from core.pipeline.executor import PipelineExecutor
-from core.pipeline.registry import MiddlewareRegistry
-from core.pipeline.typing import ContextT
+from core.request_pipeline.chain import MiddlewareChain
+from core.request_pipeline.executor import PipelineExecutor
+from core.request_pipeline.registry import MiddlewareRegistry
+from core.request_pipeline.typing import ContextT
 
 
 class DefaultPipeline(
