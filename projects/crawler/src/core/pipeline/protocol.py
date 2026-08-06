@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from typing import Protocol, runtime_checkable
+from abc import ABC, abstractmethod
+from typing import Generic, Protocol, runtime_checkable
 
 from .typing import ContextT
-
+from .pipeline import Pipeline
 
 @runtime_checkable
 class PipelineExecutor(Protocol[ContextT]):
@@ -21,3 +22,16 @@ class PipelineProcessor(Protocol[ContextT]):
     ) -> ContextT:
         ...
 
+
+class PipelineExecutorProtocol(
+    Generic[ContextT],
+    ABC,
+):
+
+    @abstractmethod
+    async def execute(
+        self,
+        pipeline: Pipeline[ContextT],
+        context: ContextT,
+    ) -> ContextT:
+        ...

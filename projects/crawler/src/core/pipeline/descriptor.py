@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -10,7 +10,7 @@ class PipelineDescriptor:
 
     name: str
     description: str = ""
-    metadata: dict[str, Any] = field(default_factory=dict)
+    enabled:bool =True
 
     def __post_init__(self) -> None:
         if not self.name:
@@ -20,5 +20,5 @@ class PipelineDescriptor:
         return {
             "name": self.name,
             "description": self.description,
-            "metadata": dict(self.metadata),
+            "enabled": self.enabled,
         }

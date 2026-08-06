@@ -27,3 +27,15 @@ class StageNotFoundError(PipelineError):
 
 class StepNotFoundError(PipelineError):
     pass
+
+class PipelineCancelledError(PipelineError):
+    """
+    Pipeline execution has been cancelled.
+    """
+
+
+class PipelineConfigurationError(PipelineError):
+    """
+    Invalid pipeline definition.
+    """
+
