@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.config.discovery.base import ApiDiscoveryConfig
 from discovery.base import DiscoveryPlugin
 from discovery.api.patch_renderer import RequestPatchRenderer

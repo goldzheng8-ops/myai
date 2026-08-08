@@ -1,7 +1,7 @@
 from selector.extraction.mode import ExtractMode
 from selector.extraction.base import ExtractionStrategy
 from models.config.selector.base import SelectorConfig
-from models.runtime.response.node import NodeAdapter
+from core.response.node import NodeAdapter
 
 
 class HtmlExtractionStrategy(

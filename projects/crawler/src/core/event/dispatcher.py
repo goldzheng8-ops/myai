@@ -1,63 +1,87 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Sequence
 from typing import Any
 
 from .event import Event
 from .handler import EventHandler
-from .mode import DispatchMode
-from .provider import EventHandlerProvider
 from .registry import EventRegistry
 
 
 class EventDispatcher:
+    """
+    Dispatch events to registered handlers.
+
+    EventDispatcher is intentionally lightweight:
+    it is responsible only for notification delivery,
+    not for request/workflow execution orchestration.
+    """
+
     def __init__(
         self,
         registry: EventRegistry,
-        provider: EventHandlerProvider | None,
-        dispatch_mode: DispatchMode = DispatchMode.SEQUENTIAL,
     ) -> None:
+
         self._registry = registry
-        self._provider = provider
-        self._dispatch_mode = dispatch_mode
 
-    def _resolve_handlers(
+    @property
+    def registry(
         self,
-        event_type: type[Event],
-    ) -> Sequence[EventHandler[Any]]:
-        resolved: list[EventHandler[Any]] = []
+    ) -> EventRegistry:
 
-        for candidate in event_type.__mro__:
-            if candidate is object:
-                continue
+        return self._registry
 
-            if self._provider is not None and self._provider.contains(candidate):
-                resolved.extend(self._provider.get(candidate))
-                continue
-
-            if self._registry.contains(candidate):
-                handlers = self._registry.get(candidate)
-                for handler_cls in handlers:
-                    resolved.append(handler_cls())
-
-        return tuple(dict.fromkeys(resolved))
-
-    async def dispatch(
+    async def emit(
         self,
         event: Event,
     ) -> None:
-        handlers = self._resolve_handlers(event.__class__)
+        """
+        Emit an event sequentially.
+
+        Handlers are invoked in registry order.
+        """
+
+        handlers = self._get_handlers(
+            event,
+        )
+
+        for handler in handlers:
+
+            await handler.handle(
+                event,
+            )
+
+    async def emit_parallel(
+        self,
+        event: Event,
+    ) -> None:
+        """
+        Emit an event to all handlers concurrently.
+
+        All handlers are scheduled at the same time.
+        Exceptions are propagated according to
+        asyncio.gather() semantics.
+        """
+
+        handlers = self._get_handlers(
+            event,
+        )
+
         if not handlers:
             return
 
-        if self._dispatch_mode is DispatchMode.PARALLEL:
-            await asyncio.gather(*(handler.handle(event) for handler in handlers))
-            return
+        await asyncio.gather(
+            *(
+                handler.handle(event)
+                for handler in handlers
+            ),
+        )
 
-        for handler in handlers:
-            await handler.handle(event)
+    def _get_handlers(
+        self,
+        event: Event,
+    ) -> tuple[EventHandler[Any], ...]:
 
-    async def emit(self, event: Event) -> None:
-        await self.dispatch(event)
-
+        return self._registry.get(
+            type(event),
+        )

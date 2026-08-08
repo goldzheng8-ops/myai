@@ -3,7 +3,7 @@
 
 from typing import Any
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.config.discovery.cursor_api import CursorApiConfig
 
 

@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field, replace
 
-from models.runtime.response.base import ResponseAdapter
-from models.runtime.response.node import NodeAdapter
-from models.runtime.request.context import RequestContext
+from core.response.base import ResponseAdapter
+from core.response.node import NodeAdapter
+from core.request.context import RequestContext
 from models.runtime.extract.runtime import RuntimeContext
 
 

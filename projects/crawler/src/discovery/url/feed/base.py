@@ -3,7 +3,7 @@ from abc import ABC
 from functools import cached_property
 from typing import ClassVar, TypeVar
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.config.discovery.base import FeedDiscoveryConfig
 from discovery.parser.base import FeedParser
 from discovery.url.base import UrlDiscoveryPlugin

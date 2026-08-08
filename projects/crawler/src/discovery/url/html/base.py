@@ -2,7 +2,7 @@
 from abc import ABC
 from typing import TypeVar
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from discovery.base import HtmlDiscoveryConfig
 from discovery.url.base import UrlDiscoveryPlugin
 from models.runtime.request_context import RequestContext

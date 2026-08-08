@@ -4,7 +4,7 @@ from core.request_pipeline.context import PipelineContext
 from models.runtime.download_result import DownloadResult
 
 
-from .context import RequestContext
+from ....core.request.context import RequestContext
 
 
 @dataclass(slots=True)

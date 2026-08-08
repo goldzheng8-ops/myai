@@ -1,20 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
-from core.event.context import EventContext
+from .typing import EventMetadata
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True,kw_only=True)
 class Event:
-    context: EventContext
-    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
+    """
+    Base class for application events.
 
-    def __post_init__(self) -> None:
-        if self.context is None:
-            self.context = EventContext({})
+    An event represents something that has already happened.
 
-    @property
-    def data(self) -> dict[str, object]:
-        return dict(self.context.data)
+    Events are immutable notifications and must not participate
+    in the main execution flow.
+    """
+
+    metadata: EventMetadata = field(
+        default_factory=dict,
+    )
+
+    timestamp: datetime = field(
+        default_factory=lambda: datetime.now(
+            timezone.utc,
+        ),
+    )

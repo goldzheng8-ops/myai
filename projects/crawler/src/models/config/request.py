@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from models.enums.http_method import HttpMethod
+from core.request.typing import HttpMethod
 
 
 class RequestConfig(BaseModel):

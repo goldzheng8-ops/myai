@@ -1,6 +1,6 @@
 
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.config.discovery.base import DiscoveryConfig
 from discovery.registry import DiscoveryRegistry
 from models.runtime.discovery_result import DiscoveryResult

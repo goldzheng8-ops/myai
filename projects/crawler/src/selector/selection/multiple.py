@@ -3,7 +3,7 @@ from typing import Any, Sequence
 from models.config.selector.base import SelectorConfig
 from selector.selection.mode import SelectionMode
 from selector.selection.base import SelectionStrategy
-from models.runtime.response.node import NodeAdapter
+from core.response.node import NodeAdapter
 from ..extraction.base import ExtractionStrategy
 
 

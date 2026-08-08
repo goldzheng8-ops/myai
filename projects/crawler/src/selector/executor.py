@@ -1,7 +1,7 @@
 from typing import Any, Protocol, Sequence
 
 from models.config.selector.base import SelectorConfig
-from models.runtime.response.node import NodeAdapter
+from core.response.node import NodeAdapter
 
 class PipelineExecutor(Protocol):
 

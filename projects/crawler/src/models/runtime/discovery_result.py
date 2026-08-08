@@ -3,7 +3,7 @@ from typing import Any
 
 from pydantic import  Field
 from models.runtime.base import BaseResult
-from models.runtime.request.descriptor import RequestDescriptor
+from core.request.descriptor import RequestDescriptor
 
 @dataclass(slots=True)
 class DiscoveryRecord:

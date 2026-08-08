@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, Generic, Iterable, TypeVar
 
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.enums.discovery_type import DiscoveryType
 from core.plugin.base import Plugin
 from models.runtime.discovery_result import DiscoveryRecord, DiscoveryResult

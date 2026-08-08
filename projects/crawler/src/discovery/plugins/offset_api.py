@@ -1,6 +1,6 @@
 from typing import Any
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 
 
 

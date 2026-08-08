@@ -28,3 +28,26 @@
                                                │
                                                ▼
                                         RuntimeContext
+
+                    core.workflow
+                         │
+          ┌──────────────┴──────────────┐
+          │                             │
+      Definition                    Execution
+          │                             │
+     WorkflowBuilder                    │
+          │                             │
+          ▼                             ▼
+      Workflow ───────────────► WorkflowGraph
+          │                         │
+          │                         ▼
+          │                  WorkflowRuntime
+          │                         │
+          │                         ▼
+          │                  WorkflowRunner
+          │                         │
+          │                         ▼
+          │                    NodeRunner
+          │                         │
+          │                         ▼
+          └────────────────► PipelineExecutor

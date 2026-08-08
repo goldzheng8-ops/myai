@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 from models.runtime.base import BaseResult
 
 

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar, TypeVar
 
-from models.runtime.response.base import ResponseAdapter
+from core.response.base import ResponseAdapter
 
 from models.config.discovery.base import UrlDiscoveryConfig
 from discovery.base import DiscoveryPlugin

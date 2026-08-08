@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from models.config.request import RequestConfig
 from request.defaults import RequestMergeConfig
 from models.enums.merge_policy import MergePolicy
-from models.runtime.request.descriptor import RequestDescriptor
+from core.request.descriptor import RequestDescriptor
 
 
 from copy import deepcopy

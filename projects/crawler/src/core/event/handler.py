@@ -1,21 +1,46 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import Protocol
 
-E = TypeVar("E")
+from .event import Event
+from .typing import EventT
 
 
 class EventHandler(
-    ABC,
-    Generic[E],
+    Protocol[EventT],
 ):
-    event: type[E] | None = None
-    priority: int = 0
 
-    @abstractmethod
     async def handle(
         self,
-        event: E,
+        event: EventT,
     ) -> None:
+        """
+        Handle an event notification.
+
+        Handlers must not control the main execution flow.
+        """
         ...
+
+
+
+@dataclass(frozen=True, slots=True)
+class RequestCompleted(Event):
+
+    request_id: str
+    status_code: int
+
+
+class MetricsHandler(
+    EventHandler[RequestCompleted],
+):
+
+    async def handle(
+        self,
+        event: RequestCompleted,
+    ) -> None:
+
+        print(
+            event.request_id,
+            event.status_code,
+        )
