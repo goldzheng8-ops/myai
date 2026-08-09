@@ -1,5 +1,5 @@
 from models.enums.selector_type import SelectorType
-from core.dispatch.dispatch_table import DispatchTable
+from core.registry.dispatch import DispatchTable
 from core.response.types import SelectorHandler
 
 

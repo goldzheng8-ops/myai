@@ -16,8 +16,6 @@ class RequestMeta:
 
     dont_filter: bool = False
 
-    fingerprint: str | None = None
-
     tags: set[str] = field(
         default_factory=set,
     )

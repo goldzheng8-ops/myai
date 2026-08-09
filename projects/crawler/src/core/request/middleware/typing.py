@@ -1,0 +1,14 @@
+
+from typing import  TypeAlias,TYPE_CHECKING
+from collections.abc import Awaitable, Callable
+
+
+
+if TYPE_CHECKING :
+    from core.request.context import RequestContext
+
+
+RequestMiddlewareNext: TypeAlias = Callable[
+    [RequestContext],
+    Awaitable[RequestContext],
+]

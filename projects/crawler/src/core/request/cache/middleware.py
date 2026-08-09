@@ -1,5 +1,5 @@
 from core.request.context import RequestContext
-from core.request.middleware.protocol import (
+from core.request.middleware.base import (
     RequestMiddleware,
     RequestMiddlewareNext,
 )

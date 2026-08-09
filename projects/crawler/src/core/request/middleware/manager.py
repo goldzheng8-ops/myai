@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from .chain import MiddlewareChain
-from .protocol import RequestMiddleware
+from .base import RequestMiddleware
 
 
 class MiddlewareManager:

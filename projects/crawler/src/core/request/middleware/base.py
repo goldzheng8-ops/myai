@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Awaitable, Callable
-from typing import TypeAlias
 
+from .typing import RequestMiddlewareNext
 from ..context import RequestContext
 
 
-RequestMiddlewareNext: TypeAlias = Callable[
-    [RequestContext],
-    Awaitable[RequestContext],
-]
+
 
 
 class RequestMiddleware(ABC):

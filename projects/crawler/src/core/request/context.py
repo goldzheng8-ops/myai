@@ -8,7 +8,6 @@ from core.runtime import RuntimeContext
 from .descriptor import RequestDescriptor
 from .state import RequestState
 
-
 @dataclass(slots=True)
 class RequestContext:
     """
@@ -19,7 +18,12 @@ class RequestContext:
 
     runtime: RuntimeContext
 
+    fingerprint: str | None = None
+
+    session_id: str | None = None
+
     state: RequestState = field(
         default_factory=RequestState,
     )
+
     result: RequestResult | None = None

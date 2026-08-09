@@ -5,16 +5,27 @@ from typing import Final, Iterator
 
 from ..context import RequestContext
 
-from .protocol import (
-    RequestMiddleware,
-    RequestMiddlewareNext,
-)
+from .base import RequestMiddleware
+from .typing import RequestMiddlewareNext
 
 
 RequestTerminal = Callable[
     [RequestContext],
     Awaitable[RequestContext],
 ]
+
+
+def _wrap_handler(
+    middleware: RequestMiddleware,
+    next_handler: RequestMiddlewareNext,
+) -> RequestMiddlewareNext:
+    async def handler(current: RequestContext) -> RequestContext:
+        return await middleware.process(
+            current,
+            next_handler,
+        )
+
+    return handler
 
 
 class MiddlewareChain:
@@ -58,23 +69,14 @@ class MiddlewareChain:
         terminal: RequestTerminal,
     ) -> RequestContext:
 
-        handler = terminal
+        handler: RequestMiddlewareNext = terminal
 
         for middleware in reversed(
             self._middlewares
         ):
-
-            next_handler = handler
-
-            async def handler(
-                current: RequestContext,
-                middleware: RequestMiddleware = middleware,
-                next_handler: RequestMiddlewareNext = next_handler,
-            ) -> RequestContext:
-
-                return await middleware.process(
-                    current,
-                    next_handler,
-                )
+            handler = _wrap_handler(
+                middleware,
+                handler,
+            )
 
         return await handler(context)

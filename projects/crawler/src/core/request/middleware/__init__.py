@@ -1,6 +1,6 @@
 from .chain import MiddlewareChain
 from .manager import MiddlewareManager
-from .protocol import (
+from .base import (
     RequestMiddleware,
     RequestMiddlewareNext,
 )
