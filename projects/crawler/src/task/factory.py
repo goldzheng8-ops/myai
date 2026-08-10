@@ -1,7 +1,7 @@
 
 from models.config.manager import ConfigManager 
 from models.config.config import RequestConfig
-from downloader.base import RequestContext
+from core.request.downloader.base import RequestContext
 from task.model import Task
 
 

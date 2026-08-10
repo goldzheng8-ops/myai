@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import  Field
-from models.runtime.base import BaseResult
+from core.typing.result import BaseResult
 from core.request.descriptor import RequestDescriptor
 
 @dataclass(slots=True)

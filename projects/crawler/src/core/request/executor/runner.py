@@ -1,6 +1,8 @@
 from __future__ import annotations
+import logging
 
 from core.event import Event, EventDispatcher
+from core.request.result import RequestResult
 
 from ..context import RequestContext
 from ..events import (
@@ -10,8 +12,9 @@ from ..events import (
 )
 from ..middleware import MiddlewareChain
 
-from .executor import RequestExecutor
+from .base import RequestExecutor
 
+logger = logging.getLogger(__name__)
 
 class RequestRunner:
     """
@@ -55,7 +58,9 @@ class RequestRunner:
         context: RequestContext,
     ) -> RequestContext:
 
-        await self._emit(
+        context.state.start()
+
+        await self._notify(
             RequestStarted(
                 request=context.descriptor,
             ),
@@ -68,11 +73,17 @@ class RequestRunner:
                 self._executor.execute,
             )
 
+            result = self._require_result(
+                context,
+            )
+
         except Exception as exc:
 
-            context.state.error = exc
+            context.state.fail(
+                exc,
+            )
 
-            await self._emit(
+            await self._notify(
                 RequestFailed(
                     request=context.descriptor,
                     error=exc,
@@ -82,16 +93,18 @@ class RequestRunner:
 
             raise
 
-        await self._emit(
+        context.state.complete()
+
+        await self._notify(
             RequestCompleted(
                 request=context.descriptor,
-                result=context.result,
+                result=result,
             ),
         )
 
         return context
 
-    async def _emit(
+    async def _notify(
         self,
         event: Event,
     ) -> None:
@@ -99,6 +112,29 @@ class RequestRunner:
         if self._dispatcher is None:
             return
 
-        await self._dispatcher.emit(
-            event,
-        )
+        try:
+
+            await self._dispatcher.emit(
+                event,
+            )
+
+        except Exception:
+            logger.exception(
+                "Request event handler failed: %s",
+                type(event).__name__,
+            )
+
+    def _require_result(
+        self,
+        context: RequestContext,
+    ) -> RequestResult:
+
+        result = context.result
+
+        if result is None:
+            raise RuntimeError(
+                "Request executor completed without producing "
+                "a RequestResult.",
+            )
+
+        return result

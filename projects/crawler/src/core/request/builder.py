@@ -1,150 +1,381 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from dataclasses import replace
+from typing import Any, Mapping
+
+from models.config.request import RequestConfig
+from core.request.meta import RequestMeta
+
+from .descriptor import RequestDescriptor
+from .patch import RequestPatch
 from .typing import (
     RequestKind,
     HttpMethod,
 )
-
-from .descriptor import RequestDescriptor
-from .meta import RequestMeta
 from .profile import RequestProfile
-from .typing import (
-    RequestBody,
-    RequestCookies,
-    RequestHeaders,
-    RequestParams,
-)
 
 
 class RequestBuilder:
     """
-    Builder for RequestDescriptor.
+    Factory/Builder for immutable RequestDescriptor.
+
+    All shortcut methods delegate to `create()`.
     """
 
-    def __init__(
-        self,
-        url: str,
+    @classmethod
+    def create(
+        cls,
         *,
+        url: str,
         kind: RequestKind,
         profile: RequestProfile,
-    ) -> None:
-
-        self._url = url
-
-        self._kind = kind
-
-        self._profile = profile
-
-        self._method = HttpMethod.GET
-
-        self._headers: RequestHeaders = {}
-
-        self._cookies: RequestCookies = {}
-
-        self._params: RequestParams = {}
-
-        self._body: RequestBody = None
-
-        self._meta = RequestMeta()
-
-    def method(
-        self,
-        method: HttpMethod,
-    ) -> RequestBuilder:
-
-        self._method = method
-
-        return self
-
-    def headers(
-        self,
-        headers: RequestHeaders,
-    ) -> RequestBuilder:
-
-        self._headers.update(headers)
-
-        return self
-
-    def cookies(
-        self,
-        cookies: RequestCookies,
-    ) -> RequestBuilder:
-
-        self._cookies.update(cookies)
-
-        return self
-
-    def params(
-        self,
-        params: RequestParams,
-    ) -> RequestBuilder:
-
-        self._params.update(params)
-
-        return self
-
-    def body(
-        self,
-        body: RequestBody,
-    ) -> RequestBuilder:
-
-        self._body = body
-
-        return self
-
-    def meta(
-        self,
-        meta: RequestMeta,
-    ) -> RequestBuilder:
-
-        self._meta = meta
-
-        return self
-
-    def build(
-        self,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
         return RequestDescriptor(
-            url=self._url,
-            kind=self._kind,
-            profile=self._profile,
-            method=self._method,
-            headers=dict(self._headers),
-            cookies=dict(self._cookies),
-            params=dict(self._params),
-            body=self._body,
-            meta=self._meta,
+            url=url,
+            kind=kind,
+            profile=profile,
+            method=method,
+            headers=dict[str, str](headers or {}),
+            cookies=dict[str, str](cookies or {}),
+            params=dict[str, Any](params or {}),
+            body=deepcopy(body),
+            meta=deepcopy(meta)
+            if meta is not None
+            else RequestMeta(),
+        )
+
+    # ---------------------------------------------------------
+    # shortcut builders
+    # ---------------------------------------------------------
+
+    @classmethod
+    def detail(
+        cls,
+        *,
+        url: str,
+        profile: RequestProfile,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=url,
+            kind=RequestKind.DETAIL,
+            profile=profile,
+            method=method,
+            headers=headers,
+            cookies=cookies,
+            params=params,
+            body=body,
+            meta=meta,
         )
 
     @classmethod
-    def from_descriptor(
+    def list(
         cls,
-        descriptor: RequestDescriptor,
-    ) -> RequestBuilder:
+        *,
+        url: str,
+        profile: RequestProfile,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
 
-        builder = cls(
-            descriptor.url,
+        return cls.create(
+            url=url,
+            kind=RequestKind.LIST,
+            profile=profile,
+            method=method,
+            headers=headers,
+            cookies=cookies,
+            params=params,
+            body=body,
+            meta=meta,
+        )
+
+    @classmethod
+    def api(
+        cls,
+        *,
+        url: str,
+        profile: RequestProfile,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=url,
+            kind=RequestKind.API,
+            profile=profile,
+            method=method,
+            headers=headers,
+            cookies=cookies,
+            params=params,
+            body=body,
+            meta=meta,
+        )
+
+    @classmethod
+    def login(
+        cls,
+        *,
+        url: str,
+        profile: RequestProfile,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=url,
+            kind=RequestKind.LOGIN,
+            profile=profile,
+            method=method,
+            headers=headers,
+            cookies=cookies,
+            params=params,
+            body=body,
+            meta=meta,
+        )
+
+    @classmethod
+    def download(
+        cls,
+        *,
+        url: str,
+        profile: RequestProfile,
+        method: HttpMethod = HttpMethod.GET,
+        headers: Mapping[str, str] | None = None,
+        cookies: Mapping[str, str] | None = None,
+        params: Mapping[str, Any] | None = None,
+        body: Any = None,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=url,
+            kind=RequestKind.DOWNLOAD,
+            profile=profile,
+            method=method,
+            headers=headers,
+            cookies=cookies,
+            params=params,
+            body=body,
+            meta=meta,
+        )
+
+
+
+
+    # ---------------------------------------------------------
+    # derived builders
+    # ---------------------------------------------------------
+
+    @classmethod
+    def from_request(
+        cls,
+        request: RequestConfig,
+        *,
+        kind: RequestKind,
+        profile: RequestProfile,
+        meta: RequestMeta | None = None,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=request.url,
+            kind=kind,
+            profile=profile,
+            method=request.method,
+            headers=request.headers,
+            cookies=request.cookies,
+            params=request.params,
+            body=request.body,
+            meta=meta,
+        )
+
+    @classmethod
+    def from_patch(
+        cls,
+        *,
+        descriptor: RequestDescriptor,
+        patch: RequestPatch,
+    ) -> RequestDescriptor:
+
+        return cls.create(
+            url=(
+                patch.url
+                if patch.url is not None
+                else descriptor.url
+            ),
             kind=descriptor.kind,
             profile=descriptor.profile,
+            method=descriptor.method,
+            headers=(
+                dict(patch.headers)
+                if patch.headers is not None
+                else descriptor.headers
+            ),
+            cookies=(
+                dict(patch.cookies)
+                if patch.cookies is not None
+                else descriptor.cookies
+            ),
+            params=(
+                dict(patch.params)
+                if patch.params is not None
+                else descriptor.params
+            ),
+            body=(
+                deepcopy(patch.body)
+                if patch.has_body()
+                else descriptor.body
+            ),
+            meta=deepcopy(
+                descriptor.meta,
+            ),
         )
 
-        builder._method = descriptor.method
+    # ---------------------------------------------------------
+    # utilities
+    # ---------------------------------------------------------
 
-        builder._headers = dict(
-            descriptor.headers,
+    @classmethod
+    def clone(
+        cls,
+        descriptor: RequestDescriptor,
+    ) -> RequestDescriptor:
+        return replace(
+            descriptor,
+            headers=dict(descriptor.headers),
+            cookies=dict(descriptor.cookies),
+            params=dict(descriptor.params),
+            body=deepcopy(descriptor.body),
+            meta=replace(
+                descriptor.meta,
+                tags=frozenset(descriptor.meta.tags),
+                extras=deepcopy(descriptor.meta.extras),
+            ),
         )
 
-        builder._cookies = dict(
-            descriptor.cookies,
+    @classmethod
+    def replace(
+        cls,
+        descriptor: RequestDescriptor,
+        **changes: Any,
+    ) -> RequestDescriptor:
+
+        return replace(
+            descriptor,
+            **changes,
         )
 
-        builder._params = dict(
-            descriptor.params,
+    @classmethod
+    def replace_meta(
+        cls,
+        descriptor: RequestDescriptor,
+        **changes: Any,
+    ) -> RequestDescriptor:
+
+        return replace(
+            descriptor,
+            meta=replace(
+                descriptor.meta,
+                **changes,
+            ),
         )
 
-        builder._body = descriptor.body
+    @classmethod
+    def with_tag(
+        cls,
+        descriptor: RequestDescriptor,
+        tag: str,
+    ) -> RequestDescriptor:
 
-        builder._meta = descriptor.meta
+        tags = set(descriptor.meta.tags)
 
-        return builder
+        tags.add(tag)
+
+        return cls.replace_meta(
+            descriptor,
+            tags=tags,
+        )
+
+    @classmethod
+    def with_extra(
+        cls,
+        descriptor: RequestDescriptor,
+        key: str,
+        value: Any,
+    ) -> RequestDescriptor:
+
+        extras = dict(
+            descriptor.meta.extras,
+        )
+
+        extras[key] = value
+
+        return cls.replace_meta(
+            descriptor,
+            extras=extras,
+        )
+
+    @classmethod
+    def without_tag(
+        cls,
+        descriptor: RequestDescriptor,
+        tag: str,
+    ) -> RequestDescriptor:
+
+        tags = set(
+            descriptor.meta.tags,
+        )
+
+        tags.discard(tag)
+
+        return cls.replace_meta(
+            descriptor,
+            tags=tags,
+        )
+
+    @classmethod
+    def remove_extra(
+        cls,
+        descriptor: RequestDescriptor,
+        key: str,
+    ) -> RequestDescriptor:
+
+        extras = dict(
+            descriptor.meta.extras,
+        )
+
+        extras.pop(
+            key,
+            None,
+        )
+
+        return cls.replace_meta(
+            descriptor,
+            extras=extras,
+        )

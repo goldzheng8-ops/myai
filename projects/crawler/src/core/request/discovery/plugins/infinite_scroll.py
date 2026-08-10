@@ -1,0 +1,42 @@
+from typing import Any
+
+from core.request.response.base import ResponseAdapter
+
+
+from models.config.discovery.infinite_scroll import InfiniteScrollConfig
+
+from core.request.discovery.api.base import ApiDiscoveryPlugin
+from models.enums.discovery_type import DiscoveryType
+from core.request.context import RequestContext
+
+class InfiniteScrollDiscovery(
+    ApiDiscoveryPlugin[InfiniteScrollConfig]
+):
+
+    plugin_type = DiscoveryType.INFINITE_SCROLL
+
+    config_type = InfiniteScrollConfig
+
+    async def variables(
+        self,
+        *,
+        response: ResponseAdapter,
+        context: RequestContext,
+        config: InfiniteScrollConfig,
+    ) -> dict[str, Any] | None:
+
+        await response.scroll(
+            count=config.scroll_count,
+            delay=config.scroll_delay,
+        )
+
+        cursor = await response.select(
+            config.selector,
+        )
+
+        if cursor is None:
+            return None
+
+        return {
+            "cursor": cursor,
+        }

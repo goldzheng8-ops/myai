@@ -31,3 +31,47 @@ class RequestState:
     completed_at: datetime | None = None
 
     error: Exception | None = None
+
+    def start(
+        self,
+        *,
+        now: datetime | None = None,
+    ) -> None:
+
+        self.status = RequestStatus.RUNNING
+        self.started_at = (
+            now
+            if now is not None
+            else datetime.now()
+        )
+
+    def complete(
+        self,
+        *,
+        now: datetime | None = None,
+    ) -> None:
+
+        self.status = RequestStatus.COMPLETED
+        self.completed_at = (
+            now
+            if now is not None
+            else datetime.now()
+        )
+
+        self.error = None
+
+    def fail(
+        self,
+        error: Exception,
+        *,
+        now: datetime | None = None,
+    ) -> None:
+
+        self.status = RequestStatus.FAILED
+        self.completed_at = (
+            now
+            if now is not None
+            else datetime.now()
+        )
+
+        self.error = error

@@ -26,7 +26,7 @@ class DownloaderType(str, Enum):
 
     SCRAPY = "scrapy"
     PLAYWRIGHT = "playwright"
-
+    
 
 class ResponseFormat(str, Enum):
 
@@ -39,7 +39,7 @@ RequestHeaders: TypeAlias = dict[str, str]
 
 RequestCookies: TypeAlias = dict[str, str]
 
-RequestParams: TypeAlias = dict[str, str]
+RequestParams: TypeAlias = dict[str, Any]
 
 RequestBody: TypeAlias = Any
 

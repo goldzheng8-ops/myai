@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any
 
-from models.runtime.base import BaseResult
+from core.typing.result import BaseResult
 
 
 @dataclass(slots=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.request_pipeline.context import PipelineContext
-from models.runtime.download_result import DownloadResult
+from core.request.downloader.result import DownloadResult
 
 
 from ....core.request.context import RequestContext

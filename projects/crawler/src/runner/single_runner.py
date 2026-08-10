@@ -1,4 +1,4 @@
-from downloader.base import DownloaderPlugin
+from core.request.downloader.base import DownloaderPlugin
 from extractor.extractor import ExtractorEngine
 from runner.base import BaseRunner
 

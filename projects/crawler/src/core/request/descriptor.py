@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from core.request.middleware.proxy.model import ProxyConfig
+
 from .meta import RequestMeta
 from .profile import RequestProfile
 from .typing import (
@@ -38,6 +40,8 @@ class RequestDescriptor:
     )
 
     body: RequestBody = None
+
+    proxy: ProxyConfig | None = None
 
     meta: RequestMeta = field(
         default_factory=RequestMeta,

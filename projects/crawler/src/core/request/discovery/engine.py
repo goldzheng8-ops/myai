@@ -1,0 +1,44 @@
+
+
+from core.request.response.base import ResponseAdapter
+from models.config.discovery.base import DiscoveryConfig
+from core.request.discovery.registry import DiscoveryRegistry
+from models.runtime.discovery_result import DiscoveryResult
+from core.request.context import RequestContext
+
+
+class DiscoveryEngine:
+
+    def __init__(
+        self,
+        registry: DiscoveryRegistry,
+    ):
+        self._registry = registry
+
+
+    async def discover(
+        self,
+        *,
+        response: ResponseAdapter,
+        context: RequestContext,
+        config: DiscoveryConfig,
+    ) -> DiscoveryResult:
+
+        plugin = self._registry.get(
+            config.type
+        )
+
+        if not isinstance(
+            config,
+            plugin.config_type,
+        ):
+            raise TypeError(
+                f"Invalid config for {config.type}"
+            )
+
+
+        return await plugin.discover(
+            response=response,
+            context=context,
+            config=config,
+        )

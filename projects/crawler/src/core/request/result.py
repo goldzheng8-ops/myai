@@ -1,23 +1,17 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any
 
-from core.response.base import ResponseAdapter
+from core.typing import BaseResult
+
+from .response import RequestResponse
 
 
 @dataclass(slots=True)
-class RequestResult:
+class RequestResult(BaseResult):
     """
     Result produced by request execution.
     """
 
-    response: ResponseAdapter | None = None
+    response: RequestResponse | None = None
 
     value: Any = None
-
-    error: Exception | None = None
-
-    elapsed: float | None = None
-
-    success: bool = False
