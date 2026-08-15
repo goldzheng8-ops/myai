@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 
-from models.config.transform.base import TransformConfig
-from models.config.transform.join import JoinTransformConfig
+from core.extraction.transform.config import TransformConfig,JoinTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

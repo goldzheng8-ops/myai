@@ -1,5 +1,4 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.to_int import ToIntTransformConfig
+from core.extraction.transform.config import TransformConfig, ToIntTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

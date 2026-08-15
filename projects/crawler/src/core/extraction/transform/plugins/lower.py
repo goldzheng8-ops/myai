@@ -1,5 +1,4 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.lower import LowerTransformConfig
+from core.extraction.transform.config import TransformConfig,LowerTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

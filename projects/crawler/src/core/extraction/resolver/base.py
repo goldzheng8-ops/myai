@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 from models.config.value.base import ValueConfig
 from core.plugin.base import Plugin
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 ConfigT = TypeVar(
     "ConfigT",

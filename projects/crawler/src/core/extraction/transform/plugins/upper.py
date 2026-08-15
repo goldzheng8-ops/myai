@@ -1,9 +1,8 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.upper import UpperTransformConfig
+from core.extraction.transform.config import TransformConfig, UpperTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 
-class UpperTransform(TransformPlugin[str, str]):
+class UpperTransform(TransformPlugin[str, str,TransformConfig]):
     type = UpperTransformConfig.type
 
     def transform_one(self, value: str, config: TransformConfig) -> str:

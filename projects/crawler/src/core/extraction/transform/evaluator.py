@@ -1,6 +1,6 @@
 from typing import Any, Protocol, Sequence
 
-from models.config.transform.base import TransformConfig
+from core.extraction.transform.config import TransformConfig
 
 
 

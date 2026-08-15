@@ -16,7 +16,9 @@ class RequestContext:
 
     descriptor: RequestDescriptor
 
-    runtime: RuntimeContext
+    runtime: RuntimeContext = field(
+        default_factory=RuntimeContext,
+    )
 
     fingerprint: str | None = None
 

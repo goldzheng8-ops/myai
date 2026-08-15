@@ -1,5 +1,4 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.split import SplitTransformConfig
+from core.extraction.transform.config import TransformConfig, SplitTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

@@ -1,9 +1,9 @@
 
 
-from models.config.discovery.sitemap import SitemapConfig
+from core.request.discovery.config import SitemapConfig
 from core.request.discovery.parser.sitemap import SitemapParser
 from core.request.discovery.url.feed.base import FeedDiscoveryPlugin
-from models.enums.discovery_type import DiscoveryType
+from core.request.discovery.typing import DiscoveryType
 from core.request.typing import RequestKind
 
 
@@ -13,7 +13,7 @@ class SitemapDiscovery(
     ]
 ):
 
-    plugin_type = DiscoveryType.SITEMAP
+    type = DiscoveryType.SITEMAP
 
     config_type = SitemapConfig
 

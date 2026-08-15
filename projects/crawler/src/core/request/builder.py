@@ -4,7 +4,8 @@ from copy import deepcopy
 from dataclasses import replace
 from typing import Any, Mapping
 
-from models.config.request import RequestConfig
+
+from core.request.config import RequestConfig
 from core.request.meta import RequestMeta
 
 from .descriptor import RequestDescriptor

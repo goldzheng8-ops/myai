@@ -1,21 +1,21 @@
 from typing import Any
 
-from core.request.response.base import ResponseAdapter
+from core.extraction.response.base import ResponseAdapter
 
 
 
 
 
-from models.config.discovery.offset_api import OffsetApiConfig
+from core.request.discovery.config import OffsetApiConfig
 from core.request.discovery.api.base import ApiDiscoveryPlugin
-from models.enums.discovery_type import DiscoveryType
+from core.request.discovery.typing import DiscoveryType
 from core.request.context import RequestContext
 
 class OffsetApiDiscovery(
     ApiDiscoveryPlugin[OffsetApiConfig]
 ):
 
-    plugin_type = DiscoveryType.OFFSET_API
+    type = DiscoveryType.OFFSET_API
 
     config_type = OffsetApiConfig
 

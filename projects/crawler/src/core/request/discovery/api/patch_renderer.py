@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Any
 
-from models.config.discovery.base import RequestPatch
+from core.request.patch import RequestPatch
 
 
 class RequestPatchRenderer:

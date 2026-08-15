@@ -1,7 +1,9 @@
-from .adapter import ResponseAdapter
+from .browser import BrowserResponse
+from .typing import ResponseSource
 from .model import RequestResponse
 
 __all__ = [
     "RequestResponse",
-    "ResponseAdapter",
+    "BrowserResponse",
+    "ResponseSource",
 ]

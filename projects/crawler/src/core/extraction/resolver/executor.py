@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
 from models.config.value.base import ValueConfig
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 
 class ResolverExecutor(

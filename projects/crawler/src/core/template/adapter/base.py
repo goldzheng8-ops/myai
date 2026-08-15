@@ -3,7 +3,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-from models.runtime.extract.runtime import RuntimeContext
+from core.runtime import RuntimeContext
 
 
 class RenderableTemplate(

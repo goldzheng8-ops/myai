@@ -1,25 +1,23 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import ClassVar, Generic, Iterable, TypeVar
+from collections.abc import Iterable
+from typing import ClassVar, Generic, TypeVar
 
-
-from core.request.response.base import ResponseAdapter
-from models.enums.discovery_type import DiscoveryType
-from core.plugin.base import Plugin
-from models.runtime.discovery_result import DiscoveryRecord, DiscoveryResult
+from core.plugin import Plugin
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
-from models.config.discovery.base import DiscoveryConfig, HtmlDiscoveryConfig
+
+from core.extraction.response import ResponseAdapter
+
+from .config import DiscoveryConfig
+from .result import DiscoveryRecord, DiscoveryResult
+from .typing import DiscoveryType
 
 
 ConfigT = TypeVar(
     "ConfigT",
     bound=DiscoveryConfig,
-)
-
-
-HtmlConfigT = TypeVar(
-    "HtmlConfigT",
-    bound=HtmlDiscoveryConfig,
 )
 
 
@@ -29,7 +27,7 @@ class DiscoveryPlugin(
     ABC,
 ):
 
-    plugin_type: ClassVar[DiscoveryType]
+    type: ClassVar[DiscoveryType]
 
     config_type: ClassVar[type[DiscoveryConfig]]
 
@@ -41,7 +39,7 @@ class DiscoveryPlugin(
         context: RequestContext,
         config: ConfigT,
     ) -> DiscoveryResult:
-        ...
+        raise NotImplementedError
 
     def build_record(
         self,
@@ -58,7 +56,7 @@ class DiscoveryPlugin(
     ) -> DiscoveryResult:
 
         return DiscoveryResult(
-            descriptors=[
+            records=[
                 self.build_record(
                     descriptor
                 )

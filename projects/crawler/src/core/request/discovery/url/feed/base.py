@@ -3,8 +3,8 @@ from abc import ABC
 from functools import cached_property
 from typing import ClassVar, TypeVar
 
-from core.request.response.base import ResponseAdapter
-from models.config.discovery.base import FeedDiscoveryConfig
+from core.extraction.response.base import ResponseAdapter
+from core.request.discovery.config import FeedDiscoveryConfig
 from core.request.discovery.parser.base import FeedParser
 from core.request.discovery.url.base import UrlDiscoveryPlugin
 

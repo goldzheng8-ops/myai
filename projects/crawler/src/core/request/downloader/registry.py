@@ -1,9 +1,9 @@
-from core.request.downloader.base import DownloaderPlugin
+from __future__ import annotations
+
+from core.registry import Registry
 from core.request.typing import DownloaderType
-from core.registry.base import Registry
 
-
-
+from .plugin import DownloaderPlugin
 
 
 class DownloaderRegistry(
@@ -12,6 +12,8 @@ class DownloaderRegistry(
         DownloaderPlugin,
     ],
 ):
+    """
+    Registry of downloader implementations.
+    """
+
     pass
-
-

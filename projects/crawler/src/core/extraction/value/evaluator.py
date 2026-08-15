@@ -1,8 +1,8 @@
 from typing import Any, Protocol, Sequence
 
-from models.config.transform.base import TransformConfig
-from models.config.value.base import ValueConfig
-from models.runtime.extract.context import ExtractContext
+from core.extraction.transform.config import TransformConfig
+from core.extraction.value.config import ValueConfig
+from core.extraction.extractor.context import ExtractContext
 
 
 class ValueExecutor(Protocol):

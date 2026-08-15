@@ -1,4 +1,4 @@
-from models.config.transform.number import NumberTransformConfig
+from core.extraction.transform.config import NumberTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

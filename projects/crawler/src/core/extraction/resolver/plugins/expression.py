@@ -1,6 +1,6 @@
 
 from models.config.value.expression import ExpressionValueConfig
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 from core.expression.default import DefaultExpressionEvaluator
 from models.enums.value_type import ValueType

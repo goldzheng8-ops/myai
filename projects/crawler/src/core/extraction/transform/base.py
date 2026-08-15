@@ -1,17 +1,14 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import ClassVar, Generic, TypeVar
+from typing import ClassVar, Generic
 
-from models.config.transform.base import TransformConfig
-from models.enums.transform_type import TransformType
+from core.extraction.transform.typing import TransformType
 from core.plugin.base import Plugin
+from core.extraction.transform.typing import InputT,OutputT,ConfigT
 
 
 
 
-InputT = TypeVar("InputT")
-OutputT = TypeVar("OutputT")
-ConfigT=TypeVar("ConfigT", bound=TransformConfig)
 
 class TransformPlugin(
     Plugin,

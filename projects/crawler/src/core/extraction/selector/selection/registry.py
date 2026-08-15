@@ -2,12 +2,12 @@
 
 from core.extraction.selector.selection.base import SelectionStrategy
 from core.extraction.selector.selection.mode import SelectionMode
-from core.registry.single import SingletonPluginRegistry
+from core.registry.base import Registry
 
 
 class SelectionRegistry(
 
-    SingletonPluginRegistry[
+    Registry[
         SelectionMode,
         SelectionStrategy,
     ],

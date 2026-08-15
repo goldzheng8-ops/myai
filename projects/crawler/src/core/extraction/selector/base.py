@@ -1,11 +1,11 @@
 from typing import Any, Sequence
 
-from models.config.selector.base import SelectorConfig
+from core.extraction.selector.config import SelectorConfig
 from core.extraction.selector.extraction.registry import ExtractionRegistry
 from core.extraction.selector.selection.registry import SelectionRegistry
-from core.request.response.node import NodeAdapter
+from core.extraction.response.node import NodeAdapter
 
-from .executor import PipelineExecutor
+from core.extraction.selector.executor import PipelineExecutor
 
 
 class Pipeline(PipelineExecutor):
@@ -16,8 +16,8 @@ class Pipeline(PipelineExecutor):
         extractions: ExtractionRegistry,
     ) -> None:
 
-        self._get_selection = selections.create
-        self._get_extraction = extractions.create
+        self._get_selection = selections.get
+        self._get_extraction = extractions.get
 
     async def execute(
         self,

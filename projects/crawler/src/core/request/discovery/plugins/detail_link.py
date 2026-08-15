@@ -1,8 +1,8 @@
 
-from models.config.discovery.detail_link import DetailLinkConfig
+from core.request.discovery.config import DetailLinkConfig
 
 from core.request.discovery.url.html.base import HtmlDiscoveryPlugin
-from models.enums.discovery_type import DiscoveryType
+from core.request.discovery.typing import DiscoveryType
 from core.request.typing import RequestKind
 
 
@@ -12,7 +12,7 @@ class DetailLinkDiscovery(
     ]
 ):
 
-    plugin_type = DiscoveryType.DETAIL_LINK
+    type = DiscoveryType.DETAIL_LINK
 
     config_type = DetailLinkConfig
 

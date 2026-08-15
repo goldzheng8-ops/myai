@@ -1,5 +1,4 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.to_float import ToFloatConfig
+from core.extraction.transform.config import TransformConfig, ToFloatConfig
 from core.extraction.transform.base import TransformPlugin
 
 

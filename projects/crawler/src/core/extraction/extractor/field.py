@@ -1,10 +1,11 @@
 from typing import Any
 
-from models.config.extractor.field import FieldConfig
-from models.enums.extract_type import ExtractType
+
 from core.extraction.extractor.base import Extractor
+from core.extraction.extractor.config import FieldConfig
+from core.extraction.extractor.typing import ExtractType
 from core.extraction.value.evaluator import ValueExecutor
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 
 class FieldExtractor(

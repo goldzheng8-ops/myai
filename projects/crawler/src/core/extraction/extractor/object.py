@@ -1,11 +1,12 @@
 from typing import Any
 
-from models.config.extractor.object import ObjectConfig
-from models.enums.extract_type import ExtractType
+
 from core.extraction.extractor.base import Extractor
 
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.config import ObjectConfig
+from core.extraction.extractor.context import ExtractContext
 from core.extraction.extractor.executor import ExtractExecutor
+from core.extraction.extractor.typing import ExtractType
 
 class ObjectExtractor(
     Extractor[ObjectConfig],

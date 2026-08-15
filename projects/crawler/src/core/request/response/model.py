@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping
 
+from core.request.response.typing import ResponseSource
+
 
 @dataclass(frozen=True, slots=True)
 class RequestResponse:
@@ -30,3 +32,5 @@ class RequestResponse:
     encoding: str | None = None
 
     reason: str | None = None
+
+    source: ResponseSource = ResponseSource.HTTP

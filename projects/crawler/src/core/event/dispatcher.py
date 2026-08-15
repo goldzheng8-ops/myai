@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 from .event import Event
 from .handler import EventHandler
 from .registry import EventRegistry
 
+logger = logging.getLogger(__name__)
 
 class EventDispatcher:
     """
@@ -46,10 +48,18 @@ class EventDispatcher:
         )
 
         for handler in handlers:
+            try:
+                await handler.handle(
+                    event,
+                )
 
-            await handler.handle(
-                event,
-            )
+            except Exception as exc:
+
+                await self._handle_error(
+                    event,
+                    handler,
+                    exc,
+                )
 
     async def emit_parallel(
         self,
@@ -84,4 +94,15 @@ class EventDispatcher:
 
         return self._registry.get(
             type(event),
+        )
+
+    async def _handle_error(
+        self,
+        event: Event,
+        handler: EventHandler[Any],
+        error: Exception,
+    ) -> None:
+        logger.exception(
+            "Request event handler failed: %s",
+            type(event).__name__,
         )

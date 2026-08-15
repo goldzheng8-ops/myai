@@ -2,8 +2,8 @@
 from abc import ABC
 from typing import TypeVar
 
-from core.request.response.base import ResponseAdapter
-from core.request.discovery.base import HtmlDiscoveryConfig
+from core.extraction.response.base import ResponseAdapter
+from core.request.discovery.config import HtmlDiscoveryConfig
 from core.request.discovery.url.base import UrlDiscoveryPlugin
 from core.request.context import RequestContext
 

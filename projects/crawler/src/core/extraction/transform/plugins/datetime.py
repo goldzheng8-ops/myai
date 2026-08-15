@@ -2,8 +2,7 @@
 
 from datetime import datetime
 
-from models.config.transform.base import TransformConfig
-from models.config.transform.datetime import DatetimeTransformConfig
+from core.extraction.transform.config import TransformConfig,DatetimeTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

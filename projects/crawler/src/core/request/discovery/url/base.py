@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar, TypeVar
 
-from core.request.response.base import ResponseAdapter
+from core.extraction.response.base import ResponseAdapter
 
-from models.config.discovery.base import UrlDiscoveryConfig
+from core.request.discovery.config import UrlDiscoveryConfig
 from core.request.discovery.base import DiscoveryPlugin
 from core.request.typing import RequestKind
-from models.runtime.request.factory import RequestDescriptorFactory
+from core.request.builder import RequestBuilder
 from core.request.descriptor import RequestDescriptor
-from models.runtime.discovery_result import DiscoveryResult
+from core.request.discovery.result import DiscoveryResult
 from core.request.context import RequestContext
-from models.runtime.request_profile import RequestProfile
+from core.request.profile import RequestProfile
 
 
 UrlConfigT = TypeVar(
@@ -82,7 +82,7 @@ class UrlDiscoveryPlugin(
         profile: RequestProfile,
     ) -> RequestDescriptor:
 
-        return RequestDescriptorFactory.create(
+        return RequestBuilder.create(
             url=url,
             kind=self.request_kind,
             profile=profile,

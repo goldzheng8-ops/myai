@@ -1,5 +1,5 @@
 from models.config.value.selector import SelectorValueConfig
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 from models.enums.value_type import ValueType
 from core.extraction.resolver.base import Resolver

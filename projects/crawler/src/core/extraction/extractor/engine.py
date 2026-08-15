@@ -4,7 +4,7 @@ from models.config.extractor.base import ExtractConfig
 
 from .executor import ExtractExecutor
 from .registry import ExtractorRegistry
-from models.runtime.extract.context import ExtractContext
+from core.extraction.extractor.context import ExtractContext
 
 
 class ExtractEngine(
@@ -27,7 +27,7 @@ class ExtractEngine(
     ) -> Any:
 
 
-        extractor = self._registry.create(
+        extractor = self._registry.get(
             config.type,
         )
 

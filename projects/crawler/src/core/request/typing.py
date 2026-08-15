@@ -26,6 +26,7 @@ class DownloaderType(str, Enum):
 
     SCRAPY = "scrapy"
     PLAYWRIGHT = "playwright"
+    HTTPX="httpx"
     
 
 class ResponseFormat(str, Enum):
@@ -33,6 +34,9 @@ class ResponseFormat(str, Enum):
     HTML = "html"
     JSON = "json"
     TEXT = "text"
+    # XML = "xml"
+    # RSS = "rss"
+    # BINARY = "binary"
 
 
 RequestHeaders: TypeAlias = dict[str, str]

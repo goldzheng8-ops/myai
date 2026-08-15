@@ -1,6 +1,6 @@
 from typing import Any, Sequence, cast
 
-from models.config.transform.base import TransformConfig
+from core.extraction.transform.config import TransformConfig
 from core.extraction.transform.evaluator import TransformExecutor
 
 
@@ -25,7 +25,7 @@ class TransformEngine(
         result = value
 
         for config in configs:
-            plugin = self.registry.create(config.type)
+            plugin = self.registry.get(config.type)
 
             if isinstance(result, list):
                 result = plugin.transform_many(

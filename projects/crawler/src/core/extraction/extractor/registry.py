@@ -1,11 +1,11 @@
 from typing import Any
 
-from core.request.discovery.registry import SingletonPluginRegistry
+from core.registry.base import Registry
 from core.extraction.extractor.base import Extractor
 from models.enums.extract_type import ExtractType
 
 class ExtractorRegistry(
-    SingletonPluginRegistry[
+    Registry[
         ExtractType,
         Extractor[Any],
     ],

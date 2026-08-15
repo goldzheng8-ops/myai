@@ -1,5 +1,4 @@
-from models.config.transform.base import TransformConfig
-from models.config.transform.strip import StripTransformConfig
+from core.extraction.transform.config import TransformConfig, StripTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

@@ -1,6 +1,5 @@
 import re
-
-from models.config.transform.regex import RegexTransformConfig
+from core.extraction.transform.config import RegexTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 

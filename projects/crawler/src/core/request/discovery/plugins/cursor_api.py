@@ -3,12 +3,12 @@
 
 from typing import Any
 
-from core.request.response.base import ResponseAdapter
-from models.config.discovery.cursor_api import CursorApiConfig
+from core.extraction.response.base import ResponseAdapter
+from core.request.discovery.config import CursorApiConfig
 
 
 from core.request.discovery.api.base import ApiDiscoveryPlugin
-from models.enums.discovery_type import DiscoveryType
+from core.request.discovery.typing import DiscoveryType
 from core.request.context import RequestContext
 
 
@@ -16,7 +16,7 @@ class CursorApiDiscovery(
     ApiDiscoveryPlugin[CursorApiConfig]
 ):
 
-    plugin_type = DiscoveryType.CURSOR_API
+    type = DiscoveryType.CURSOR_API
 
     config_type = CursorApiConfig
 
