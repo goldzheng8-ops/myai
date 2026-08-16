@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Sequence
-from models.config.selector.base import SelectorConfig
+
 from core.extraction.response.node import NodeAdapter
 from core.extraction.response.dispatch import NodeDispatchTable
+from core.extraction.selector.config import SelectorConfig
 
 class NodeAdapter(ABC):
 

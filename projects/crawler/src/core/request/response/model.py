@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Mapping
+from typing import Any, Mapping
 
-from core.request.response.typing import ResponseSource
+import httpx
+from scrapy import http
 
 
-@dataclass(frozen=True, slots=True)
+
+
+@dataclass(frozen=True, slots=True,kw_only= True)
 class RequestResponse:
     """
     Raw response produced by request execution.
 
-    This model belongs to the request layer and contains only
-    transport-level response data.
+    This model belongs to the request layer and contains
+    only transport-level response data.
     """
 
     url: str
@@ -33,4 +36,27 @@ class RequestResponse:
 
     reason: str | None = None
 
-    source: ResponseSource = ResponseSource.HTTP
+
+@dataclass(frozen=True, slots=True)
+class BrowserResponse(RequestResponse):
+    """
+    Browser-specific response produced by a browser downloader.
+    """
+
+    page: Any = None
+
+@dataclass(frozen=True, slots=True)
+class HttpxResponse(RequestResponse):
+    """
+    HTTPX-specific response produced by HTTPX downloader.
+    """
+
+    raw: httpx.Response
+
+@dataclass(frozen=True, slots=True)
+class ScrapyResponse(RequestResponse):
+    """
+    Scrapy-specific response produced by Scrapy downloader.
+    """
+
+    raw: http.Response

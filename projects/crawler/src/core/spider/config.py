@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Annotated, Any
+from dataclasses import dataclass
+from typing import Annotated, Any, Literal
 
 
 from core.request.config import RequestConfig
@@ -68,10 +69,9 @@ class BrowserSpiderConfig(SpiderConfig):
 
     extraction: ExtractConfig
 
-    discovery: tuple[
-        DiscoveryConfig,
-        ...,
-    ] = ()
+    discovery: tuple[DiscoveryConfig, ...] = ()
+
+    browser: BrowserConfig
 
 SpiderConfigUnion = Annotated[
     (
@@ -84,3 +84,39 @@ SpiderConfigUnion = Annotated[
         discriminator="template",
     ),
 ]
+
+BrowserType = Literal[
+    "chromium",
+    "firefox",
+    "webkit",
+]
+
+WaitUntil = Literal[
+    "commit",
+    "domcontentloaded",
+    "load",
+    "networkidle",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class BrowserConfig:
+    """
+    Browser execution configuration for a browser spider.
+    """
+
+    browser: BrowserType = "chromium"
+
+    headless: bool = True
+
+    wait_until: WaitUntil = "load"
+
+    timeout: float | None = 30.0
+
+    viewport_width: int = 1280
+
+    viewport_height: int = 720
+
+    user_agent: str | None = None
+
+    javascript: bool = True

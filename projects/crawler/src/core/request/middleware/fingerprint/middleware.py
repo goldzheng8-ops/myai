@@ -9,8 +9,8 @@ class FingerprintMiddleware(
     """
     Calculate and attach the fingerprint of a request.
 
-    The middleware itself does not implement the fingerprint
-    algorithm. The algorithm is delegated to FingerprintProvider.
+    The middleware delegates fingerprint calculation to a
+    FingerprintProvider.
     """
 
     def __init__(
@@ -18,10 +18,11 @@ class FingerprintMiddleware(
         provider: FingerprintProvider | None = None,
     ) -> None:
 
-        if provider is None:
-            provider = DefaultFingerprintProvider()
-
-        self._provider = provider
+        self._provider = (
+            provider
+            if provider is not None
+            else DefaultFingerprintProvider()
+        )
 
     @property
     def provider(
@@ -36,9 +37,13 @@ class FingerprintMiddleware(
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
 
-        context.fingerprint = self._provider.fingerprint(
-            context.descriptor,
-        )
+        if context.fingerprint is None:
+
+            context.fingerprint = (
+                self._provider.fingerprint(
+                    context.descriptor,
+                )
+            )
 
         return await next_(
             context,

@@ -1,6 +1,6 @@
 from core.extraction.selector.typing import SelectorType
 from core.registry.dispatch import DispatchTable
-from core.extraction.response.types import SelectorHandler
+from core.extraction.response.typing import SelectorHandler
 
 
 

@@ -1,21 +1,40 @@
+from __future__ import annotations
+
 from collections import deque
+from dataclasses import dataclass
 from typing import Generic
 
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
-from core.spider.typing import ConfigT
 
 
 from .context import SpiderContext
 from .result import SpiderResult
 from .services import SpiderServices
 from .template.base import TemplateSpider
+from .typing import ConfigT
+
+
+@dataclass(frozen=True, slots=True)
+class SpiderRequest:
+    """
+    Scheduled spider request.
+
+    Keeps the descriptor and its already-computed fingerprint
+    together so that fingerprint calculation is not repeated
+    during request execution.
+    """
+
+    descriptor: RequestDescriptor
+
+    fingerprint: str
 
 
 class SpiderExecutor(Generic[ConfigT]):
     """
-    Executes the request/discovery lifecycle of a spider.
+    Executes the request/discovery/extraction lifecycle
+    of a spider.
     """
 
     def __init__(
@@ -26,7 +45,10 @@ class SpiderExecutor(Generic[ConfigT]):
         self._services = services
 
     @property
-    def services(self) -> SpiderServices:
+    def services(
+        self,
+    ) -> SpiderServices:
+
         return self._services
 
     async def execute(
@@ -37,7 +59,9 @@ class SpiderExecutor(Generic[ConfigT]):
 
         result = SpiderResult()
 
-        queue: deque[RequestDescriptor] = deque()
+        queue: deque[SpiderRequest] = deque()
+
+        seen: set[str] = set()
 
         for request in context.config.start_requests:
 
@@ -47,29 +71,26 @@ class SpiderExecutor(Generic[ConfigT]):
                 profile=context.config.profile,
             )
 
-            queue.append(
+            self._enqueue(
                 descriptor,
+                queue,
+                seen,
             )
-
-        seen: set[str] = set()
 
         while queue:
 
-            descriptor = queue.popleft()
+            item = queue.popleft()
 
             request_context = RequestContext(
-                descriptor=descriptor,
+                descriptor=item.descriptor,
+                runtime=context.runtime,
+                fingerprint=item.fingerprint,
             )
 
             request_context = (
                 await self._services.request_runner.run(
                     request_context,
                 )
-            )
-
-            self._check_duplicate(
-                request_context,
-                seen,
             )
 
             step = await spider.process(
@@ -86,8 +107,11 @@ class SpiderExecutor(Generic[ConfigT]):
             )
 
             for descriptor in step.requests:
-                queue.append(
+
+                self._enqueue(
                     descriptor,
+                    queue,
+                    seen,
                 )
 
             if not step.continue_:
@@ -96,3 +120,34 @@ class SpiderExecutor(Generic[ConfigT]):
         context.result = result
 
         return result
+
+    def _enqueue(
+        self,
+        descriptor: RequestDescriptor,
+        queue: deque[SpiderRequest],
+        seen: set[str],
+    ) -> bool:
+
+        fingerprint = (
+            self._services.fingerprint_provider.fingerprint(
+                descriptor,
+            )
+        )
+
+        if not descriptor.meta.dont_filter:
+
+            if fingerprint in seen:
+                return False
+
+            seen.add(
+                fingerprint,
+            )
+
+        queue.append(
+            SpiderRequest(
+                descriptor=descriptor,
+                fingerprint=fingerprint,
+            ),
+        )
+
+        return True

@@ -1,80 +1,44 @@
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from core.extraction.response.httpx import HttpxResponseAdapter
+from core.extraction.response.playwright import PlaywrightResponseAdapter
+from core.extraction.response.scrapy import ScrapyResponseAdapter
 
-
+from core.request.response.model import BrowserResponse, HttpxResponse, RequestResponse, ScrapyResponse
 
 from .base import ResponseAdapter
-from core.request.response import (
-    BrowserResponse,
-    RequestResponse,
-)
-
-from .adapter import (
-    BrowserResponseAdapter,
-    StaticResponseAdapter,
-)
 
 
-SourceT = TypeVar("SourceT")
-AdapterT = TypeVar("AdapterT")
-
-
-class AdapterFactory(
-    Generic[SourceT, AdapterT],
-    ABC,
-):
-    """
-    Factory for converting a source object
-    into a normalized adapter.
-    """
-
-    @abstractmethod
-    def create(
-        self,
-        source: SourceT,
-    ) -> AdapterT:
-        raise NotImplementedError
-
-
-
-class ResponseAdapterFactory(
-    AdapterFactory[
-        RequestResponse,
-        ResponseAdapter,
-    ],
-):
-    """
-    Factory for converting transport responses
-    into extraction-layer response adapters.
-    """
-
-    @abstractmethod
-    def create(
-        self,
-        source: RequestResponse,
-    ) -> ResponseAdapter:
-        raise NotImplementedError
-
-class DefaultResponseAdapterFactory(
-    ResponseAdapterFactory,
-):
-    """
-    Default response adapter factory.
-
-    Selects an adapter according to the
-    transport response source.
-    """
+class ResponseAdapterFactory:
 
     def create(
         self,
-        source: RequestResponse,
+        response: RequestResponse,
     ) -> ResponseAdapter:
 
-        if isinstance(source, BrowserResponse):
-            return BrowserResponseAdapter(
-                source,
+        if isinstance(response, HttpxResponse):
+
+            return HttpxResponseAdapter(
+                response.raw,
             )
 
-        return StaticResponseAdapter(
-            source,
+        if isinstance(response, ScrapyResponse):
+
+            return ScrapyResponseAdapter(
+                response.raw,
+            )
+
+        if isinstance(response, BrowserResponse):
+
+            if response.page is None:
+                raise RuntimeError(
+                    "BrowserResponse does not contain "
+                    "a browser page.",
+                )
+
+            return PlaywrightResponseAdapter(
+                response.page,
+            )
+
+        raise TypeError(
+            f"Unsupported response type: "
+            f"{type(response)!r}",
         )

@@ -1,11 +1,12 @@
 
 import asyncio
 import re
-from models.enums.selector_type import SelectorType
+from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.typing import SelectorType
 import jmespath
 from jsonpath_ng.ext import parse
 
-from models.config.selector.base import SelectorConfig
+
 from playwright.async_api import Locator, Page
 import json
 from typing import Any, Sequence

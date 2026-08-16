@@ -53,8 +53,8 @@ class DefaultFingerprintProvider:
         descriptor: RequestDescriptor,
     ) -> str:
 
-        payload = {
-            "method": str(descriptor.method),
+        payload: dict[str, Any] = {
+            "method": descriptor.method.value,
             "url": self._normalize_url(
                 descriptor.url,
             ),
@@ -90,30 +90,45 @@ class DefaultFingerprintProvider:
 
         if isinstance(value, Mapping):
 
-            mapping_value = cast(Mapping[Any, Any], value)
+            mapping_value = cast(
+                Mapping[Any, Any],
+                value,
+            )
 
             return {
-                str(key): self._normalize_value(item)
+                str(key): self._normalize_value(
+                    item,
+                )
                 for key, item in sorted(
                     mapping_value.items(),
                     key=lambda item: str(item[0]),
                 )
             }
 
-        if isinstance(value, Sequence) and not isinstance(
+        if isinstance(
+            value,
+            Sequence,
+        ) and not isinstance(
             value,
             (str, bytes, bytearray),
         ):
 
-            sequence_value = cast(Sequence[Any], value)
+            sequence_value = cast(
+                Sequence[Any],
+                value,
+            )
 
             return [
-                self._normalize_value(item)
+                self._normalize_value(
+                    item,
+                )
                 for item in sequence_value
             ]
 
         if isinstance(value, bytes):
-
             return value.hex()
+
+        if isinstance(value, bytearray):
+            return bytes(value).hex()
 
         return value
