@@ -17,13 +17,13 @@ class ResponseAdapterFactory:
         if isinstance(response, HttpxResponse):
 
             return HttpxResponseAdapter(
-                response.raw,
+                response,
             )
 
         if isinstance(response, ScrapyResponse):
 
             return ScrapyResponseAdapter(
-                response.raw,
+                response,
             )
 
         if isinstance(response, BrowserResponse):
@@ -35,7 +35,7 @@ class ResponseAdapterFactory:
                 )
 
             return PlaywrightResponseAdapter(
-                response.page,
+                response,
             )
 
         raise TypeError(

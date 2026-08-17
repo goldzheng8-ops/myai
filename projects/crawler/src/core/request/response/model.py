@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Mapping
 
 import httpx
+from playwright.async_api import BrowserContext, Page
 from scrapy import http
 
 
@@ -43,7 +44,9 @@ class BrowserResponse(RequestResponse):
     Browser-specific response produced by a browser downloader.
     """
 
-    page: Any = None
+    page: Page | None = None
+
+    browser_context: BrowserContext | None = None
 
 @dataclass(frozen=True, slots=True)
 class HttpxResponse(RequestResponse):

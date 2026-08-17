@@ -14,20 +14,6 @@ class NodeAdapter(ABC):
             NodeDispatchTable()
         )
 
-    @abstractmethod
-    async def css_nodes(
-        self,
-        selector: SelectorConfig,
-    ) -> Sequence[NodeAdapter]:
-        ...
-
-    @abstractmethod
-    async def xpath_nodes(
-        self,
-        selector: SelectorConfig,
-    ) -> Sequence[NodeAdapter]:
-        ...
-
     async def select_nodes(
         self,
         selector: SelectorConfig,
@@ -41,15 +27,15 @@ class NodeAdapter(ABC):
 
     @abstractmethod
     async def text(self) -> str | None:
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def html(self) -> str:
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     async def attribute(
         self,
         name: str,
     ) -> str | None:
-        ...
+        raise NotImplementedError

@@ -1,24 +1,31 @@
-
 import asyncio
-import re
-from core.extraction.selector.config import SelectorConfig
-from core.extraction.selector.typing import SelectorType
-import jmespath
-from jsonpath_ng.ext import parse
-
-
-from playwright.async_api import Locator, Page
+from core.extraction.response.browser import BrowserResponseAdapter
+from core.request.response.model import BrowserResponse
+from playwright.async_api import BrowserContext, Locator, Page
 import json
 from typing import Any, Sequence
 
-from core.extraction.response.base import ResponseAdapter
+from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter
 
 
 class PlaywrightNodeAdapter(NodeAdapter):
 
     def __init__(self, locator: Locator):
+
+        super().__init__()
+
         self._locator = locator
+
+        self._node_dispatch.register(
+            SelectorType.CSS,
+            self._css_nodes,
+        )
+        self._node_dispatch.register(
+            SelectorType.XPATH,
+            self._xpath_nodes,
+        )
 
     async def attribute(
         self,
@@ -31,11 +38,15 @@ class PlaywrightNodeAdapter(NodeAdapter):
 
         return await self._locator.text_content()
 
-    async def html(self) -> str:
+    async def html(
+        self,
+    ) -> str:
 
-        return await self._locator.inner_html()
+        return await self._locator.evaluate(
+            "(element) => element.outerHTML",
+        )
 
-    async def css_nodes(
+    async def _css_nodes(
         self,
         selector: SelectorConfig,
     ) -> Sequence[NodeAdapter]:
@@ -48,12 +59,12 @@ class PlaywrightNodeAdapter(NodeAdapter):
 
         return [
             PlaywrightNodeAdapter(
-                locator.nth(i),
+                locator.nth(index),
             )
-            for i in range(count)
+            for index in range(count)
         ]
 
-    async def xpath_nodes(
+    async def _xpath_nodes(
         self,
         selector: SelectorConfig,
     ) -> Sequence[NodeAdapter]:
@@ -66,37 +77,41 @@ class PlaywrightNodeAdapter(NodeAdapter):
 
         return [
             PlaywrightNodeAdapter(
-                locator.nth(i),
+                locator.nth(index),
             )
-            for i in range(count)
+            for index in range(count)
         ]
 
 class PlaywrightResponseAdapter(
-    ResponseAdapter,
+    BrowserResponseAdapter,
 ):
 
     def __init__(
         self,
-        page: Page,
+        response: BrowserResponse,
     ) -> None:
+        super().__init__()
 
-        self._page = page
+        if response.page is None:
+            raise ValueError(
+                "BrowserResponse.page is required.",
+            )
+
+        if response.browser_context is None:
+            raise ValueError(
+                "BrowserResponse.browser_context "
+                "is required.",
+            )
+
+        self._response = response
+        self._page = response.page
+        self._browser_context = (
+            response.browser_context
+        )
 
         self._json_cache: Any | None = None
 
 
-        self._selector_dispatch.register(
-            SelectorType.REGEX,
-            self._select_regex,
-        )
-        self._selector_dispatch.register(
-            SelectorType.JMESPATH,
-            self._select_jmespath,
-        )
-        self._selector_dispatch.register(
-            SelectorType.JSONPATH,
-            self._select_jsonpath,
-        )
         self._node_dispatch.register(
             SelectorType.CSS,
             self._css_nodes,
@@ -106,13 +121,18 @@ class PlaywrightResponseAdapter(
             self._xpath_nodes,
         )
 
-    async def root(
+    @property
+    def page(
         self,
-    ) -> NodeAdapter:
+    ) -> Page:
 
-        return PlaywrightNodeAdapter(
-            self._page.locator("html"),
-        )
+        return self._page
+
+    @property
+    def browser_context(
+        self,
+    ) -> BrowserContext:
+        return self._browser_context
 
     async def content(
         self,
@@ -133,6 +153,14 @@ class PlaywrightResponseAdapter(
             )
 
         return self._json_cache
+    
+    async def root(
+        self,
+    ) -> NodeAdapter:
+
+        return PlaywrightNodeAdapter(
+            self._page.locator("html"),
+        )
 
     async def scroll(
         self,
@@ -150,6 +178,12 @@ class PlaywrightResponseAdapter(
 
             await asyncio.sleep(delay)
 
+
+    async def close(
+        self,
+    ) -> None:
+        await self._browser_context.close()
+
     async def _css_nodes(
         self,
         selector: SelectorConfig,
@@ -164,9 +198,9 @@ class PlaywrightResponseAdapter(
 
         return [
             PlaywrightNodeAdapter(
-                locator.nth(i),
+                locator.nth(index),
             )
-            for i in range(count)
+            for index in range(count)
         ]
 
 
@@ -185,79 +219,8 @@ class PlaywrightResponseAdapter(
 
         return [
             PlaywrightNodeAdapter(
-                locator.nth(i),
+                locator.nth(index),
             )
-            for i in range(count)
+            for index in range(count)
         ]
 
-    async def _select_regex(
-        self,
-        selector: SelectorConfig,
-    ):
-
-        html = await self.html()
-
-
-        if selector.selection == "multiple":
-
-            return re.findall(
-                selector.selector,
-                html,
-            )
-
-
-        match = re.search(
-            selector.selector,
-            html,
-        )
-
-
-        if match is None:
-            return None
-
-
-        return (
-            match.group(1)
-            if match.groups()
-            else match.group(0)
-        )
-
-
-    async def _select_jmespath(
-        self,
-        selector: SelectorConfig,
-    ):
-
-        data = await self.json()
-
-        return jmespath.search(
-            selector.selector,
-            data,
-        )
-
-
-
-    async def _select_jsonpath(
-        self,
-        selector: SelectorConfig,
-    ):
-
-        data = await self.json()
-
-        expr = parse(
-            selector.selector,
-        )
-
-        matches = expr.find(
-            data,
-        )
-
-
-        if not matches:
-            return None
-
-
-        return [
-            item.value
-            for item in matches
-        ]

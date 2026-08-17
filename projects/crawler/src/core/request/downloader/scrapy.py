@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Protocol
 from collections.abc import Mapping
 
+from core.request.response.model import ScrapyResponse
 from scrapy import Request
 from scrapy.http import Response
 
 from core.request.context import RequestContext
-from core.request.response import RequestResponse
 from core.request.typing import DownloaderType
 
 from .base import BaseDownloader
@@ -125,7 +125,7 @@ class ScrapyDownloader(
         response: Response,
     ) -> DownloadResult:
 
-        normalized = RequestResponse(
+        normalized = ScrapyResponse(
             url=response.url,
             status_code=response.status,
             headers=self._build_response_headers(
@@ -135,6 +135,7 @@ class ScrapyDownloader(
             cookies={},
             encoding=None,
             reason=None,
+            raw=response
         )
 
         return DownloadResult(

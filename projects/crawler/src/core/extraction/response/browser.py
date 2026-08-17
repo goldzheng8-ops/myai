@@ -1,15 +1,21 @@
-from abc import abstractmethod
+from __future__ import annotations
 
-from core.extraction.response.base import ResponseAdapter
+from abc import ABC, abstractmethod
+
+from core.extraction.response.static import (
+    StaticResponseAdapter,
+)
+
 
 class BrowserResponseAdapter(
-    ResponseAdapter,
+    StaticResponseAdapter,
+    ABC,
 ):
     """
-    Abstract adapter for browser-backed responses.
+    Response adapter for browser-based responses.
 
-    This class defines browser-specific extraction capabilities
-    without depending on any concrete browser automation library.
+    Adds browser-specific capabilities while preserving
+    the static response extraction API.
     """
 
     @abstractmethod
@@ -19,7 +25,10 @@ class BrowserResponseAdapter(
         count: int = 1,
         delay: float = 0.5,
     ) -> None:
-        """
-        Scroll the current browser page.
-        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def close(
+        self,
+    ) -> None:
         raise NotImplementedError

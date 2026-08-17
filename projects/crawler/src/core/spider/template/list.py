@@ -23,11 +23,8 @@ class TemplateListSpider(
         self,
         context: SpiderContext[ListSpiderConfig],
         request: RequestContext,
+        extract_context: ExtractContext,
     ) -> SpiderStep:
-
-        extract_context = self._build_extract_context(
-            request,
-        )
 
         item = await self.services.extract_engine.extract(
             context.config.extraction,

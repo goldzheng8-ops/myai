@@ -2,8 +2,10 @@ from __future__ import annotations
 
 
 from core.request.context import RequestContext
+from core.request.response.model import BrowserResponse
 from playwright.async_api import (
     Browser,
+    BrowserContext,
     BrowserType,
     Page,
     Playwright,
@@ -93,6 +95,8 @@ class PlaywrightDownloader(
 
             normalized = await self._build_response(
                 response,
+                page,
+                browser_context,
             )
 
             return DownloadResult(
@@ -102,14 +106,12 @@ class PlaywrightDownloader(
 
         except Exception as exc:
 
+            await browser_context.close()
+
             return DownloadResult(
                 success=False,
                 error=exc,
             )
-
-        finally:
-
-            await browser_context.close()
 
     def _get_browser_type(
         self,
@@ -150,17 +152,21 @@ class PlaywrightDownloader(
     async def _build_response(
         self,
         response: Response,
+        page: Page,
+        browser_context: BrowserContext
     ) -> RequestResponse:
 
         body = await response.body()
 
-        return RequestResponse(
+        return BrowserResponse(
             url=response.url,
             status_code=response.status,
             headers=await response.all_headers(),
             body=body,
             encoding=None,
             reason=None,
+            page=page,
+            browser_context=browser_context
         )
 
     async def close(

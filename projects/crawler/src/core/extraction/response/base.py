@@ -51,7 +51,7 @@ class ResponseAdapter(ABC):
     async def content(
         self,
     ) -> str:
-        ...
+        raise NotImplementedError
 
 
     async def html(
@@ -71,25 +71,21 @@ class ResponseAdapter(ABC):
     async def json(
         self,
     ) -> Any:
-        ...
+        raise NotImplementedError
 
     async def root(
         self,
     ) -> NodeAdapter:
-        ...
+        raise NotImplementedError
         
-    async def scroll(
-        self,
-        *,
-        count:int = 1,
-        delay:float = 0.5,
-    ) -> None:
-
-        return None
-
     def is_node_selector(
         self,
         selector_type: SelectorType,
     ) -> bool:
         return self._node_dispatch.contains(selector_type)
+
+    async def close(
+        self,
+    ) -> None:
+        return None
     

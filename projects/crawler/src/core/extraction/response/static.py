@@ -1,151 +1,63 @@
-import json
-import re
-from typing import Any, Sequence
-
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from jsonpath_ng.ext import parse
 import jmespath
+import re
+from typing import Any
 
 from core.extraction.response.base import ResponseAdapter
 from core.extraction.response.node import NodeAdapter
 from core.extraction.selector.config import SelectorConfig
 from core.extraction.selector.typing import SelectorType
-from core.request.response import RequestResponse
+
 
 class StaticResponseAdapter(
     ResponseAdapter,
+    ABC,
 ):
     """
-    Adapter for static HTTP responses.
+    Base adapter for static responses.
 
-    This adapter contains no browser-specific behavior.
+    Provides selector capabilities that do not depend
+    on a browser runtime.
     """
 
-    def __init__(
-        self,
-        response: RequestResponse,
-    ) -> None:
+    def __init__(self) -> None:
 
-        self._response = response
+        super().__init__()
 
-        self._text_cache: str | None = None
-        self._json_cache: Any | None = None
+        self._selector_dispatch.register(
+            SelectorType.REGEX,
+            self._select_regex,
+        )
 
-    @property
-    def response(
-        self,
-    ) -> RequestResponse:
+        self._selector_dispatch.register(
+            SelectorType.JMESPATH,
+            self._select_jmespath,
+        )
 
-        return self._response
+        self._selector_dispatch.register(
+            SelectorType.JSONPATH,
+            self._select_jsonpath,
+        )
 
+    @abstractmethod
     async def content(
         self,
     ) -> str:
+        raise NotImplementedError
 
-        if self._text_cache is None:
-
-            encoding = (
-                self._response.encoding
-                or "utf-8"
-            )
-
-            self._text_cache = (
-                self._response.body.decode(
-                    encoding,
-                    errors="replace",
-                )
-            )
-
-        return self._text_cache
-
-    async def html(
-        self,
-    ) -> str:
-
-        return await self.content()
-
-    async def xml(
-        self,
-    ) -> str:
-
-        return await self.content()
-
+    @abstractmethod
     async def json(
         self,
     ) -> Any:
+        raise NotImplementedError
 
-        if self._json_cache is None:
-
-            self._json_cache = json.loads(
-                await self.content(),
-            )
-
-        return self._json_cache
-
-    async def select(
-        self,
-        selector: SelectorConfig,
-    ) -> Any:
-
-        selector_type = selector.type
-
-        if selector_type == SelectorType.REGEX:
-
-            return await self._select_regex(
-                selector,
-            )
-
-        if selector_type == SelectorType.JMESPATH:
-
-            return await self._select_jmespath(
-                selector,
-            )
-
-        if selector_type == SelectorType.JSONPATH:
-
-            return await self._select_jsonpath(
-                selector,
-            )
-
-        if self.is_node_selector(
-            selector_type,
-        ):
-
-            return await self.select_nodes(
-                selector,
-            )
-
-        raise TypeError(
-            f"Unsupported selector type: "
-            f"{selector_type}",
-        )
-
-    async def select_nodes(
-        self,
-        selector: SelectorConfig,
-    ) -> Sequence[NodeAdapter]:
-
-        raise NotImplementedError(
-            "StaticResponseAdapter does not "
-            "provide node selection yet.",
-        )
-
+    @abstractmethod
     async def root(
         self,
     ) -> NodeAdapter:
-
-        raise NotImplementedError(
-            "StaticResponseAdapter does not "
-            "provide a root node yet.",
-        )
-
-    def is_node_selector(
-        self,
-        selector_type: SelectorType,
-    ) -> bool:
-
-        return selector_type in {
-            SelectorType.CSS,
-            SelectorType.XPATH,
-        }
+        raise NotImplementedError
 
     async def _select_regex(
         self,
@@ -192,8 +104,25 @@ class StaticResponseAdapter(
         selector: SelectorConfig,
     ) -> Any:
 
-        raise NotImplementedError(
-            "JSONPath support has not been "
-            "implemented for StaticResponseAdapter.",
+        data = await self.json()
+
+        expression = parse(
+            selector.selector,
         )
- 
+
+        matches = expression.find(
+            data,
+        )
+
+        if not matches:
+            return None
+
+        return [
+            match.value
+            for match in matches
+        ]
+
+    async def close(
+        self,
+    ) -> None:
+        return None

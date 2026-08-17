@@ -2,31 +2,118 @@ from __future__ import annotations
 
 import json
 from typing import Any, Sequence
-
+from core.request.response.model import ScrapyResponse
 from scrapy.http import Response
+from parsel.selector import Selector
 
 from core.extraction.response.static import StaticResponseAdapter
 from core.extraction.response.node import NodeAdapter
-from core.extraction.response.node.scrapy import (
-    ScrapyNodeAdapter,
-)
 from core.extraction.selector.config import SelectorConfig
 from core.extraction.selector.typing import SelectorType
 
+class ScrapyNodeAdapter(
+    NodeAdapter,
+):
+
+    def __init__(
+        self,
+        selector: Selector,
+    ) -> None:
+
+        super().__init__()
+
+        self._selector = selector
+
+        self._node_dispatch.register(
+            SelectorType.CSS,
+            self._css_nodes,
+        )
+
+        self._node_dispatch.register(
+            SelectorType.XPATH,
+            self._xpath_nodes,
+        )
+
+    async def text(
+        self,
+    ) -> str | None:
+
+        values = self._selector.xpath(
+            "string(.)",
+        ).get()
+
+        if values is None:
+            return None
+
+        return values
+
+    async def html(
+        self,
+    ) -> str:
+
+        value = self._selector.get()
+
+        return value
+
+    async def attribute(
+        self,
+        name: str,
+    ) -> str | None:
+
+        return self._selector.attrib.get(
+            name,
+        )
+
+    async def _css_nodes(
+        self,
+        selector: SelectorConfig,
+    ) -> Sequence[NodeAdapter]:
+
+        nodes = self._selector.css(
+            selector.selector,
+        )
+
+        return [
+            ScrapyNodeAdapter(
+                node,
+            )
+            for node in nodes
+        ]
+
+    async def _xpath_nodes(
+        self,
+        selector: SelectorConfig,
+    ) -> Sequence[NodeAdapter]:
+
+        nodes = self._selector.xpath(
+            selector.selector,
+        )
+
+        return [
+            ScrapyNodeAdapter(
+                node,
+            )
+            for node in nodes
+        ]
 
 class ScrapyResponseAdapter(
     StaticResponseAdapter,
 ):
     """
-    Extraction adapter for Scrapy responses.
+    Extraction adapter for a Scrapy response.
+
+    This adapter bridges Scrapy's native Response
+    into the generic extraction API.
     """
 
     def __init__(
         self,
-        response: Response,
+        response: ScrapyResponse,
     ) -> None:
 
-        self._response = response
+        super().__init__()
+
+        self._response = response.raw
 
         self._json_cache: Any | None = None
 
@@ -41,13 +128,8 @@ class ScrapyResponseAdapter(
         self,
     ) -> str:
 
-        encoding = (
-            self._response.encoding
-            or "utf-8"
-        )
-
         return self._response.body.decode(
-            encoding,
+            "utf-8",
             errors="replace",
         )
 
@@ -63,6 +145,14 @@ class ScrapyResponseAdapter(
 
         return self._json_cache
 
+    async def root(
+        self,
+    ) -> NodeAdapter:
+
+        return ScrapyNodeAdapter(
+            self._selector(),
+        )
+
     async def select_nodes(
         self,
         selector: SelectorConfig,
@@ -75,7 +165,9 @@ class ScrapyResponseAdapter(
             )
 
             return [
-                ScrapyNodeAdapter(node)
+                ScrapyNodeAdapter(
+                    node,
+                )
                 for node in nodes
             ]
 
@@ -86,19 +178,18 @@ class ScrapyResponseAdapter(
             )
 
             return [
-                ScrapyNodeAdapter(node)
+                ScrapyNodeAdapter(
+                    node,
+                )
                 for node in nodes
             ]
 
         raise TypeError(
-            f"Unsupported node selector: "
-            f"{selector.type}",
+            "Unsupported node selector: "
+            f"{selector.type!r}",
         )
 
-    async def root(
-        self,
-    ) -> NodeAdapter:
-
-        return ScrapyNodeAdapter(
-            self._response,
+    def _selector(self) -> Selector:
+        return Selector(
+            text=self._response.text,
         )

@@ -36,7 +36,7 @@ class PlaywrightDownloaderConfig(
 
 
 @dataclass(frozen=True, slots=True)
-class HTTPXDownloaderConfig(
+class HttpxDownloaderConfig(
     DownloaderConfig,
 ):
     """

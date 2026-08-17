@@ -1,28 +1,29 @@
 from core.request.context import RequestContext
+from core.request.response.model import HttpxResponse
 import httpx
 
-from core.request.response import RequestResponse
+
 from core.request.typing import DownloaderType
 
 from .base import BaseDownloader
-from .config import HTTPXDownloaderConfig
+from .config import HttpxDownloaderConfig
 from .result import DownloadResult
 
 
-class HTTPXDownloader(
-    BaseDownloader[HTTPXDownloaderConfig],
+class HttpxDownloader(
+    BaseDownloader[HttpxDownloaderConfig],
 ):
     type = DownloaderType.HTTPX
 
     def __init__(
         self,
-        config: HTTPXDownloaderConfig | None = None,
+        config: HttpxDownloaderConfig | None = None,
     ) -> None:
 
         super().__init__(
             config
             if config is not None
-            else HTTPXDownloaderConfig(),
+            else HttpxDownloaderConfig(),
         )
 
         self._client: httpx.AsyncClient | None = None
@@ -67,7 +68,7 @@ class HTTPXDownloader(
                 content=request.body,
             )
 
-            normalized = RequestResponse(
+            normalized = HttpxResponse(
                 url=str(response.url),
                 status_code=response.status_code,
                 headers=dict(response.headers),
@@ -75,6 +76,7 @@ class HTTPXDownloader(
                 cookies=dict(response.cookies),
                 encoding=response.encoding,
                 reason=response.reason_phrase,
+                raw=response
             )
 
             return DownloadResult(

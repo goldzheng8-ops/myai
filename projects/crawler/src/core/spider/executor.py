@@ -4,6 +4,7 @@ from collections import deque
 from dataclasses import dataclass
 from typing import Generic
 
+from core.extraction.extractor.context import ExtractContext
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
@@ -29,7 +30,6 @@ class SpiderRequest:
     descriptor: RequestDescriptor
 
     fingerprint: str
-
 
 class SpiderExecutor(Generic[ConfigT]):
     """
@@ -93,10 +93,23 @@ class SpiderExecutor(Generic[ConfigT]):
                 )
             )
 
-            step = await spider.process(
-                context,
-                request_context,
+            extract_context = (
+                self._build_extract_context(
+                    request_context,
+                )
             )
+
+            try:
+
+                step = await spider.process(
+                    context,
+                    request_context,
+                    extract_context,
+                )
+
+            finally:
+
+                await extract_context.response.close()
 
             result.items.extend(
                 step.items,
@@ -151,3 +164,34 @@ class SpiderExecutor(Generic[ConfigT]):
         )
 
         return True
+
+    def _build_extract_context(
+        self,
+        request_context: RequestContext,
+    ) -> ExtractContext:
+
+        result = request_context.result
+
+        if result is None:
+            raise RuntimeError(
+                "Request execution produced no result.",
+            )
+
+        response = result.response
+
+        if response is None:
+            raise RuntimeError(
+                "Request execution produced no response.",
+            )
+
+        adapter = (
+            self._services
+            .response_adapter_factory
+            .create(response)
+        )
+
+        return ExtractContext(
+            request=request_context,
+            response=adapter,
+            runtime=request_context.runtime,
+        )

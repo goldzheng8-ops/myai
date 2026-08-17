@@ -1,6 +1,7 @@
 
 
 
+from core.extraction.extractor.context import ExtractContext
 from core.request.context import RequestContext
 
 
@@ -22,13 +23,8 @@ class TemplateDetailSpider(
         self,
         context: SpiderContext[DetailSpiderConfig],
         request: RequestContext,
+        extract_context: ExtractContext,
     ) -> SpiderStep:
-
-        extract_context = (
-            self._build_extract_context(
-                request,
-            )
-        )
 
         item = (
             await self.services.extract_engine.extract(
