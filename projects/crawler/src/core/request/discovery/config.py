@@ -1,6 +1,7 @@
-from models.config.selector.base import SelectorConfig
 
 
+
+from core.extraction.selector.config import SelectorConfig
 from core.typing.config import BaseConfig
 from core.request.discovery.typing import DiscoveryType
 from core.request.profile import RequestProfile

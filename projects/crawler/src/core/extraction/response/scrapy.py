@@ -128,8 +128,10 @@ class ScrapyResponseAdapter(
         self,
     ) -> str:
 
+        encoding = self._response.encoding or "utf-8"
+
         return self._response.body.decode(
-            "utf-8",
+            encoding,
             errors="replace",
         )
 

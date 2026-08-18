@@ -5,7 +5,7 @@ from typing import Mapping
 
 import httpx
 from playwright.async_api import BrowserContext, Page
-from scrapy import http
+from scrapy.http import Response
 
 
 
@@ -62,4 +62,4 @@ class ScrapyResponse(RequestResponse):
     Scrapy-specific response produced by Scrapy downloader.
     """
 
-    raw: http.Response
+    raw: Response

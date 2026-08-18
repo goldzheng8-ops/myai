@@ -22,6 +22,20 @@ class CrawlerRunner:
         self._registry = registry
         self._executor = executor
 
+    @property
+    def registry(
+        self,
+    ) -> SpiderRegistry:
+
+        return self._registry
+
+    @property
+    def executor(
+        self,
+    ) -> SpiderExecutor[Any]:
+
+        return self._executor
+
     async def run(
         self,
         config: SpiderConfigUnion,
