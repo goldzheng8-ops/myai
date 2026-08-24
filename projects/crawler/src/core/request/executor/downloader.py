@@ -1,9 +1,6 @@
 from core.request.context import RequestContext
+from core.request.downloader.manager import DownloaderManager
 from core.request.result import RequestResult
-
-from core.request.downloader import (
-    DownloaderRegistry,
-)
 
 from .base import RequestExecutor
 
@@ -17,17 +14,15 @@ class DownloaderRequestExecutor(
 
     def __init__(
         self,
-        registry: DownloaderRegistry,
+        manager: DownloaderManager,
     ) -> None:
-
-        self._registry = registry
+        self._manager = manager
 
     @property
-    def registry(
+    def manager(
         self,
-    ) -> DownloaderRegistry:
-
-        return self._registry
+    ) -> DownloaderManager:
+        return self._manager
 
     async def execute(
         self,
@@ -38,7 +33,7 @@ class DownloaderRequestExecutor(
             context.descriptor.profile.downloader
         )
 
-        downloader = self._registry.get(
+        downloader = await self._manager.get(
             downloader_type,
         )
 

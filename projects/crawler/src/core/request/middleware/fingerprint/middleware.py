@@ -1,5 +1,6 @@
 from core.request.context import RequestContext
-from core.request.middleware.fingerprint.provider import FingerprintProvider,DefaultFingerprintProvider
+from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.middleware import RequestMiddleware, RequestMiddlewareNext
 
 
@@ -15,14 +16,15 @@ class FingerprintMiddleware(
 
     def __init__(
         self,
-        provider: FingerprintProvider | None = None,
+        provider: FingerprintProvider,
+        config: MiddlewareConfig | None = None,
     ) -> None:
-
-        self._provider = (
-            provider
-            if provider is not None
-            else DefaultFingerprintProvider()
+        super().__init__(
+            config
+            if config is not None
+            else MiddlewareConfig(),
         )
+        self._provider =provider
 
     @property
     def provider(

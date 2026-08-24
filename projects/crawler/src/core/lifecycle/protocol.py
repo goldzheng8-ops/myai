@@ -1,23 +1,9 @@
-from abc import ABC, abstractmethod
+from typing import Protocol
 
 
-class Lifecycle(ABC):
-    """
-    所有需要管理生命周期的组件统一继承。
-    """
-
-    @abstractmethod
+class LifecycleParticipant(Protocol):
     async def start(self) -> None:
         ...
 
-    @abstractmethod
-    async def stop(self) -> None:
+    async def close(self) -> None:
         ...
-
-class LifecycleResolver(
-    MultiResolver[
-        type[Event],
-        EventHandler,
-    ],
-):
-    pass

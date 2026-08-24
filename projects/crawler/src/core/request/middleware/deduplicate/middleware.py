@@ -5,7 +5,8 @@ from dataclasses import dataclass
 
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.result import RequestResult
 
 from .policy import DeduplicatePolicy
@@ -52,17 +53,19 @@ class DeduplicateOutcome:
 class DeduplicateMiddleware(
     RequestMiddleware,
 ):
-
+    type = MiddlewareType.DEDUPLICATE
     def __init__(
         self,
-        policy: DeduplicatePolicy | None = None,
+        policy: DeduplicatePolicy,
+        config: MiddlewareConfig | None = None,
     ) -> None:
 
-        self._policy = (
-            policy
-            if policy is not None
-            else DeduplicatePolicy()
+        super().__init__(
+            config
+            if config is not None
+            else MiddlewareConfig(),
         )
+        self._policy = policy
 
         self._in_flight: dict[
             str,

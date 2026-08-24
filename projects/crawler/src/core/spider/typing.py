@@ -22,4 +22,5 @@ class SpiderStatus(str, Enum):
 ConfigT = TypeVar(
     "ConfigT",
     bound=SpiderConfig,
+    covariant=True,
 )

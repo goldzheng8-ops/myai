@@ -1,15 +1,18 @@
 from __future__ import annotations
-
-from abc import ABC, abstractmethod
-
-from .typing import RequestMiddlewareNext
-from ..context import RequestContext
+from abc import ABC
 
 
 
+from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.plugin import MiddlewarePlugin
 
 
-class RequestMiddleware(ABC):
+
+
+
+
+
+class RequestMiddleware(MiddlewarePlugin,ABC):
     """
     Base class for request middleware.
 
@@ -17,23 +20,17 @@ class RequestMiddleware(ABC):
     the next middleware in the chain.
     """
 
-    name: str
 
-    priority: int = 0
-
-    enabled: bool = True
-
-    @abstractmethod
-    async def process(
+    def __init__(
         self,
-        context: RequestContext,
-        next_: RequestMiddlewareNext,
-    ) -> RequestContext:
-        """
-        Process a request context.
+        config: MiddlewareConfig,
+    ) -> None:
 
-        Implementations may perform work before calling
-        next_, after calling next_, or both.
-        """
+        self._config = config
 
-        raise NotImplementedError
+    @property
+    def config(
+        self,
+    ) -> MiddlewareConfig:
+
+        return self._config

@@ -1,0 +1,64 @@
+application:
+  name: ai-space
+  environment: development
+
+runtime:
+  concurrency: 8
+  timeout: 30
+
+spiders:
+
+  - template: browser
+    class_path: ai_space.spiders.news.NewsSpider
+
+  - template: list
+    class_path: ai_space.spiders.example.ExampleSpider
+
+  - name: example-list
+    template: list
+    kind: list
+
+    profile:
+      downloader: httpx
+      response_format: html
+
+    start_requests:
+      - url: https://example.com
+        method: GET
+
+    extraction:
+      fields:
+        - name: title
+          selector:
+            type: css
+            selector: "h1"
+
+    discovery: []
+
+  - name: example-browser
+    template: browser
+    kind: list
+
+    profile:
+      downloader: playwright
+      response_format: html
+
+    start_requests:
+      - url: https://example.com
+
+    extraction:
+      fields:
+        - name: title
+          selector:
+            type: css
+            selector: "h1"
+
+    discovery: []
+
+    browser:
+      headless: true
+      wait_until: domcontentloaded
+      scroll:
+        enabled: true
+        count: 3
+        delay: 0.5

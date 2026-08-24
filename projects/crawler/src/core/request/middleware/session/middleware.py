@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
+from core.request.middleware.config import MiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 
 from .model import Session
@@ -17,16 +18,17 @@ class SessionMiddleware(RequestMiddleware):
     def __init__(
         self,
         store: SessionStore,
-        policy: SessionPolicy | None = None,
+        policy: SessionPolicy,
+        config: MiddlewareConfig | None = None,
     ) -> None:
-
+        super().__init__(
+            config
+            if config is not None
+            else MiddlewareConfig(),
+        )
         self._store = store
 
-        self._policy = (
-            policy
-            if policy is not None
-            else SessionPolicy()
-        )
+        self._policy =policy
 
     @property
     def store(self) -> SessionStore:

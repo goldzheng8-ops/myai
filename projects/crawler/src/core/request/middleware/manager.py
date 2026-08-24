@@ -1,134 +1,78 @@
 from __future__ import annotations
+from typing import List, Sequence
 
-from collections.abc import Sequence
+from core.request.middleware.registry import MiddlewareRegistry
+from core.lifecycle.manager import LifecycleManager
+from core.request.middleware.typing import MiddlewareType
+from core.request.middleware.config import MiddlewareConfig, MiddlewareSpec
 
 from .chain import MiddlewareChain
 from .base import RequestMiddleware
 
 
 class MiddlewareManager:
-    """
-    Manage request middleware definitions.
-
-    Middleware are ordered by priority.
-    Lower priority values execute first.
-    """
 
     __slots__ = (
-        "_middlewares",
+        "_registry",
+        "_lifecycle",
+        "_instances",
     )
 
     def __init__(
         self,
-        middlewares: Sequence[
-            RequestMiddleware
-        ] = (),
+        registry: MiddlewareRegistry,
+        lifecycle: LifecycleManager,
     ) -> None:
 
-        self._middlewares: dict[
-            str,
+        self._registry = registry
+        self._lifecycle = lifecycle
+        self._instances: dict[
+            MiddlewareType,
             RequestMiddleware,
         ] = {}
 
-        for middleware in middlewares:
-            self.register(middleware)
-
-    # ---------------------------------------------------------
-    # registration
-    # ---------------------------------------------------------
-
-    def register(
+    async def get(
         self,
-        middleware: RequestMiddleware,
-    ) -> None:
-
-        if middleware.name in self._middlewares:
-
-            raise ValueError(
-                f"Middleware "
-                f"{middleware.name!r} "
-                f"already registered."
-            )
-
-        self._middlewares[
-            middleware.name
-        ] = middleware
-
-    def unregister(
-        self,
-        name: str,
-    ) -> None:
-
-        try:
-            del self._middlewares[name]
-
-        except KeyError as exc:
-
-            raise LookupError(
-                f"Middleware "
-                f"{name!r} "
-                f"is not registered."
-            ) from exc
-
-    # ---------------------------------------------------------
-    # queries
-    # ---------------------------------------------------------
-
-    def get(
-        self,
-        name: str,
+        type_: MiddlewareType,
+        config: MiddlewareConfig | None = None,
     ) -> RequestMiddleware:
 
-        try:
-            return self._middlewares[name]
+        middleware = self._instances.get(
+            type_,
+        )
 
-        except KeyError as exc:
+        if middleware is not None:
+            return middleware
 
-            raise LookupError(
-                f"Middleware "
-                f"{name!r} "
-                f"is not registered."
-            ) from exc
+        middleware = self._registry.create(
+            type_,
+            config,
+        )
 
-    def try_get(
-        self,
-        name: str,
-    ) -> RequestMiddleware | None:
+        await self._lifecycle.acquire(
+            middleware,
+        )
 
-        return self._middlewares.get(name)
+        self._instances[
+            type_
+        ] = middleware
+
+        return middleware
 
     def contains(
         self,
-        name: str,
+        type_: MiddlewareType,
     ) -> bool:
 
-        return name in self._middlewares
-
-    def names(
-        self,
-    ) -> tuple[str, ...]:
-
-        return tuple(
-            self._middlewares,
-        )
+        return type_ in self._instances
 
     def values(
         self,
     ) -> tuple[RequestMiddleware, ...]:
 
         return tuple(
-            self._middlewares.values(),
+            self._instances.values(),
         )
-
-    def __len__(
-        self,
-    ) -> int:
-
-        return len(self._middlewares)
-
-    # ---------------------------------------------------------
-    # ordering
-    # ---------------------------------------------------------
 
     def ordered(
         self,
@@ -139,34 +83,33 @@ class MiddlewareManager:
                 (
                     middleware
                     for middleware
-                    in self._middlewares.values()
-                    if middleware.enabled
+                    in self._instances.values()
+                    if middleware.config.enabled
                 ),
                 key=lambda middleware: (
-                    middleware.priority,
+                    middleware.config.priority,
                     middleware.name,
                 ),
-            )
+            ),
         )
 
-    # ---------------------------------------------------------
-    # chain
-    # ---------------------------------------------------------
-
-    def build_chain(
+    async def build_chain(
         self,
+        configs: Sequence[MiddlewareSpec],
     ) -> MiddlewareChain:
+
+        middlewares: List[RequestMiddleware] = []
+
+        for item in configs:
+            middleware = await self.get(
+                item.type,
+                item.config,
+            )
+
+            middlewares.append(
+                middleware,
+            )
 
         return MiddlewareChain(
             self.ordered(),
         )
-
-    # ---------------------------------------------------------
-    # mutation
-    # ---------------------------------------------------------
-
-    def clear(
-        self,
-    ) -> None:
-
-        self._middlewares.clear()

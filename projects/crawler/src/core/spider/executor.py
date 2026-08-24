@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import Generic
-
+from typing import Any
 from core.extraction.extractor.context import ExtractContext
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
+from core.spider.config import SpiderConfig
 
 
 from .context import SpiderContext
 from .result import SpiderResult
 from .services import SpiderServices
 from .template.base import TemplateSpider
-from .typing import ConfigT
+
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +31,7 @@ class SpiderRequest:
 
     fingerprint: str
 
-class SpiderExecutor(Generic[ConfigT]):
+class SpiderExecutor:
     """
     Executes the request/discovery/extraction lifecycle
     of a spider.
@@ -53,8 +53,8 @@ class SpiderExecutor(Generic[ConfigT]):
 
     async def execute(
         self,
-        spider: TemplateSpider[ConfigT],
-        context: SpiderContext[ConfigT],
+        spider: TemplateSpider[Any],
+        context: SpiderContext[SpiderConfig],
     ) -> SpiderResult:
 
         result = SpiderResult()

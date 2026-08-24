@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from scrapy import Request
-# from scrapy.crawler import AsyncCrawlerRunner
 from .runner import AsyncCrawlerRunner 
 from scrapy.http import Response
 from typing import Protocol

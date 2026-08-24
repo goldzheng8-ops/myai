@@ -10,7 +10,7 @@ from .typing import SpiderTemplate
 class SpiderRegistry(
     Registry[
         SpiderTemplate,
-        TemplateSpider[Any],
+        type[TemplateSpider[Any]],
     ],
 ):
     pass

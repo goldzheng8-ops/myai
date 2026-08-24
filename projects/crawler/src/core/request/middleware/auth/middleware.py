@@ -6,6 +6,7 @@ from typing import TypeVar
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
+from core.request.middleware.config import MiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.patch import RequestPatch
 
@@ -21,17 +22,18 @@ class AuthMiddleware(
     def __init__(
         self,
         provider: AuthProvider,
-        policy: AuthPolicy | None = None,
+        policy: AuthPolicy,
+        config: MiddlewareConfig | None = None,
     ) -> None:
+        super().__init__(
+            config
+            if config is not None
+            else MiddlewareConfig(),
+        )
 
         self._provider = provider
 
-        self._policy = (
-            policy
-            if policy is not None
-            else AuthPolicy()
-        )
-
+        self._policy = policy
     @property
     def provider(
         self,

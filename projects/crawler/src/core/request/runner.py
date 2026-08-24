@@ -10,7 +10,7 @@ from .events import (
     RequestFailed,
     RequestStarted,
 )
-from .middleware import MiddlewareChain
+from .middleware import  MiddlewareManager
 
 from .executor.base import RequestExecutor
 
@@ -21,7 +21,7 @@ class RequestRunner:
     def __init__(
         self,
         executor: RequestExecutor,
-        middleware: MiddlewareChain,
+        middleware: MiddlewareManager,
         dispatcher: EventDispatcher | None = None,
     ) -> None:
 
@@ -42,9 +42,12 @@ class RequestRunner:
             ),
         )
 
+        chain = await self._middleware.build_chain(
+            context.configs,
+        )
         try:
 
-            context = await self._middleware.execute(
+            context = await chain.execute(
                 context,
                 self._executor.execute,
             )

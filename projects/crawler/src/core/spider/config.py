@@ -14,7 +14,7 @@ from core.request.discovery.config import DiscoveryConfig
 from core.extraction.extractor.config import ExtractConfig
 from core.request.profile import RequestProfile
 from core.request.typing import RequestKind
-
+from core.typing.config import BaseConfig
 
 
 class SpiderConfig(BaseModel):
@@ -100,7 +100,7 @@ WaitUntil = Literal[
 
 
 @dataclass(frozen=True, slots=True)
-class BrowserConfig:
+class BrowserConfig(BaseConfig):
     """
     Browser execution configuration for a browser spider.
     """

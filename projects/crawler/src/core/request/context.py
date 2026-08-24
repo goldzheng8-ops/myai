@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Sequence
 
+from core.request.middleware.config import MiddlewareSpec
 from core.request.result import RequestResult
 from core.runtime import RuntimeContext
 
@@ -23,6 +25,8 @@ class RequestContext:
     fingerprint: str | None = None
 
     session_id: str | None = None
+
+    configs: Sequence[MiddlewareSpec] | None = None
 
     state: RequestState = field(
         default_factory=RequestState,

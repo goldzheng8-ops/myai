@@ -3,16 +3,16 @@ from __future__ import annotations
 from core.cache.protocol import Cache
 
 from core.request.context import RequestContext
+from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.middleware.base import (
     RequestMiddleware,
-    RequestMiddlewareNext,
 )
+from core.request.middleware.config import MiddlewareConfig
 from core.request.response import RequestResponse
 from core.request.result import RequestResult
 
 from .key import (
     CacheKeyProvider,
-    FingerprintCacheKeyProvider,
 )
 from .policy import CachePolicy
 
@@ -31,23 +31,21 @@ class CacheMiddleware(
         self,
         cache: Cache[str, RequestResponse],
         *,
-        policy: CachePolicy | None = None,
-        key_provider: CacheKeyProvider | None = None,
+        policy: CachePolicy,
+        key_provider: CacheKeyProvider,
+        config: MiddlewareConfig | None = None,
     ) -> None:
+        super().__init__(
+            config
+            if config is not None
+            else MiddlewareConfig(),
+        )
 
         self._cache = cache
 
-        self._policy = (
-            policy
-            if policy is not None
-            else CachePolicy()
-        )
+        self._policy = policy
 
-        self._key_provider = (
-            key_provider
-            if key_provider is not None
-            else FingerprintCacheKeyProvider()
-        )
+        self._key_provider = key_provider
 
     @property
     def cache(

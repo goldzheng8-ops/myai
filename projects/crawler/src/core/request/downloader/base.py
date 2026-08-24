@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Generic, TypeVar
+from typing import Generic
 
+from core.lifecycle.protocol import LifecycleParticipant
 from core.request.context import RequestContext
 
-from .config import DownloaderConfig
+
 from .plugin import DownloaderPlugin
 from .request import DownloadRequest
 
+from .typing import ConfigT
 
-ConfigT = TypeVar(
-    "ConfigT",
-    bound=DownloaderConfig,
-)
+
 
 
 class BaseDownloader(
+    LifecycleParticipant,
     DownloaderPlugin,
     Generic[ConfigT],
     ABC,
@@ -39,17 +39,7 @@ class BaseDownloader(
 
         return self._config
 
-    async def start(
-        self,
-    ) -> None:
 
-        return None
-
-    async def close(
-        self,
-    ) -> None:
-
-        return None
 
     def build_request(
         self,
