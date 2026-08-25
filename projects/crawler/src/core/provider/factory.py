@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from .protocol import  Resolver
+from .protocol import  ProviderResolver
 from .base import BaseProvider
 from .typing import T
 
@@ -17,7 +17,7 @@ class FactoryProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        resolver: Resolver[Any,Any],
+        resolver: ProviderResolver[Any,Any],
     ) -> None:
 
         super().__init__(registry,resolver)

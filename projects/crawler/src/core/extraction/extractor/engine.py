@@ -1,6 +1,6 @@
 from typing import Any
 
-from models.config.extractor.base import ExtractConfig
+from .config import ExtractConfig
 
 from .executor import ExtractExecutor
 from .registry import ExtractorRegistry
@@ -27,7 +27,7 @@ class ExtractEngine(
     ) -> Any:
 
 
-        extractor = self._registry.get(
+        extractor = self._registry.create(
             config.type,
         )
 

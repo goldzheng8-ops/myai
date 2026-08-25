@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING, Any
 
-from core.provider.protocol import Resolver
+from core.provider.protocol import ProviderResolver
 
 from .typing import T
 
@@ -17,7 +17,7 @@ class BaseProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        resolver: Resolver[Any,Any],
+        resolver: ProviderResolver[Any,Any],
     ) -> None:
 
         self._registry = registry

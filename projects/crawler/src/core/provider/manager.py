@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from .protocol import Resolver
+from .protocol import ProviderResolver
 from .registry import ProviderRegistry
 from .typing import T
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class ProviderManager(
-    Resolver[Any,Any]
+    ProviderResolver[Any,Any]
 ):
 
     def __init__(

@@ -1,5 +1,5 @@
 from core.spider.executor import SpiderExecutor
-from core.spider.factory import SpiderFactory
+
 
 from .config import SpiderConfigUnion
 from .context import SpiderContext
@@ -13,12 +13,10 @@ class CrawlerRunner:
     def __init__(
         self,
         registry: SpiderRegistry,
-        factory: SpiderFactory,
         executor: SpiderExecutor,
     ) -> None:
 
         self._registry = registry
-        self._factory = factory
         self._executor = executor
 
     @property
@@ -26,13 +24,6 @@ class CrawlerRunner:
         self,
     ) -> SpiderRegistry:
         return self._registry
-
-
-    @property
-    def factory(
-        self,
-    ) -> SpiderFactory:
-        return self._factory
 
 
     @property
@@ -46,12 +37,8 @@ class CrawlerRunner:
         config: SpiderConfigUnion,
     ) -> SpiderResult:
 
-        spider_type = self._registry.get(
+        spider = self._registry.create(
             config.template,
-        )
-
-        spider = self._factory.create(
-            spider_type,
         )
 
         context = SpiderContext(

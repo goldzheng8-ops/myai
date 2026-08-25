@@ -1,6 +1,6 @@
 from typing import Any, Mapping
 
-from core.provider.protocol import Resolver
+from core.provider.protocol import ProviderResolver
 
 from .factory import FactoryProvider
 from .typing import T
@@ -13,7 +13,7 @@ class SingletonProvider(
     def __init__(
         self,
         registry: ProviderRegistry,
-        resolver: Resolver[Any,Any],
+        resolver: ProviderResolver[Any,Any],
     ) -> None:
 
         super().__init__(

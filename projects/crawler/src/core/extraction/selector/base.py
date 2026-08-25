@@ -8,7 +8,7 @@ from core.extraction.response.node import NodeAdapter
 from core.extraction.selector.executor import PipelineExecutor
 
 
-class Pipeline(PipelineExecutor):
+class SelectorPipeline(PipelineExecutor):
 
     def __init__(
         self,

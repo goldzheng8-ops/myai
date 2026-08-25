@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 from core.spider.template import TemplateSpider
+from core.spider.typing import SpiderTemplate
 from pydantic import  Field
 
 from core.request.descriptor import RequestDescriptor
@@ -77,7 +78,7 @@ class SpiderDefinition(ApplicationConfigBase):
     Resolved application spider definition.
     """
 
-    name: str
+    template: SpiderTemplate
 
     spider_type: type[
         TemplateSpider[Any]

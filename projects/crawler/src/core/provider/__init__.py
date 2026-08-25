@@ -6,12 +6,13 @@ from .singleton import SingletonProvider
 from .cached import CachedProvider
 
 from .errors import ProviderError, ServiceNotRegisteredError, ProviderFrozenError
-from .protocol import BaseProvider, Resolver
+from .protocol import ProviderResolver
+from .base import BaseProvider
 
 
 __all__ = [
     "BaseProvider",
-    "Resolver",
+    "ProviderResolver",
     "ProviderBuilder",
     "ProviderManager",
     "ProviderRegistry",

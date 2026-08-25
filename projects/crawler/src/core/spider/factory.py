@@ -1,33 +1,28 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
-from core.provider import  Resolver
+from core.provider import  ProviderResolver
 from core.spider.services import SpiderServices
 from core.spider.template import TemplateSpider
 
 
+SpiderFactory = Callable[
+    [],
+    TemplateSpider[Any],
+]
 
-class SpiderFactory:
-    """
-    Creates spider instances through the application resolver.
-    """
+def build_spider_factory(
+    resolver: ProviderResolver[Any, Any],
+    spider_type: type[TemplateSpider[Any]],
+) -> SpiderFactory:
 
-    def __init__(
-        self,
-        resolver: Resolver[Any, Any],
-    ) -> None:
-        self._resolver = resolver
-
-    def create(
-        self,
-        spider_type: type[TemplateSpider[Any]],
-    ) -> TemplateSpider[Any]:
-
-        services = self._resolver.resolve(
-            SpiderServices,
-        )
+    def factory() -> TemplateSpider[Any]:
 
         return spider_type(
-            services,
+            resolver.resolve(
+                SpiderServices,
+            ),
         )
+
+    return factory

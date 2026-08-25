@@ -1,6 +1,6 @@
 from typing import Any, Protocol
 
-from models.config.value.base import ValueConfig
+from core.extraction.value.config import ValueConfig
 from core.extraction.extractor.context import ExtractContext
 
 

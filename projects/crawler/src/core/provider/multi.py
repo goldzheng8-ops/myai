@@ -6,7 +6,7 @@ from typing import Any, Generic, ItemsView, KeysView
 from core.registry.base import Registry
 from core.typing.vars import K, T
 
-from core.provider.protocol import Resolver
+from core.provider.protocol import ProviderResolver
 
 
 class MultiProvider(
@@ -36,7 +36,7 @@ class MultiProvider(
             K,
             tuple[type[T], ...],
         ],
-        resolver: Resolver[Any,Any],
+        resolver: ProviderResolver[Any,Any],
     ) -> None:
 
         self._registry = registry
@@ -55,7 +55,7 @@ class MultiProvider(
     @property
     def resolver(
         self,
-    ) -> Resolver[Any,Any]:
+    ) -> ProviderResolver[Any,Any]:
 
         return self._resolver
 

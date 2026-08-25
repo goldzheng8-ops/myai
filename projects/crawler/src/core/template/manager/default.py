@@ -1,4 +1,4 @@
-from models.runtime.extract.runtime import RuntimeContext
+from core.runtime import RuntimeContext
 from core.template.adapter.base import RenderableTemplate
 from core.template.backend.base import TemplateBackend
 from core.template.cache.base import TemplateCache

@@ -6,11 +6,19 @@ from core.request.discovery.typing import DiscoveryType
 from core.registry import Registry
 
 
-
 class DiscoveryRegistry(
     Registry[
         DiscoveryType,
-        DiscoveryPlugin[Any],
+        DiscoveryFactory,
     ],
 ):
-    pass
+    """
+    Registry of discovery plugin factories.
+    """
+
+    def create(
+        self,
+        type_: DiscoveryType,
+    ) -> DiscoveryPlugin[Any]:
+
+        return self.get(type_)()
