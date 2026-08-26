@@ -1,3 +1,4 @@
+from core.template.extension.manager import TemplateExtensionManager
 from models.config.template.jinja import JinjaTemplateConfig
 from core.template.typing import TemplateBackendType
 from core.template.adapter.jinja import JinjaRenderableTemplate
@@ -15,6 +16,7 @@ class JinjaBackend(
     def __init__(
         self,
         config: JinjaTemplateConfig,
+        extensions: TemplateExtensionManager,
     ) -> None:
         
         self._environment = config.create_environment()
@@ -29,6 +31,10 @@ class JinjaBackend(
 
         self._globals = GlobalRegistry(
             self._environment.globals,
+        )
+
+        extensions.install(
+            self,
         )
 
     @property

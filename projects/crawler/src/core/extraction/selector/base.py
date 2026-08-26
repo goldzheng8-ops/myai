@@ -16,8 +16,8 @@ class SelectorPipeline(PipelineExecutor):
         extractions: ExtractionRegistry,
     ) -> None:
 
-        self._get_selection = selections.get
-        self._get_extraction = extractions.get
+        self._get_selection = selections.create
+        self._get_extraction = extractions.create
 
     async def execute(
         self,

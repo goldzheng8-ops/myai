@@ -1,7 +1,6 @@
 from typing import Any
 
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator
-from core.extraction.resolver.plugins.template import DefaultTemplateManager
 from core.extraction.selector.base import SelectorPipeline
 from core.extraction.selector.executor import PipelineExecutor
 from core.extraction.selector.extraction.registry import ExtractionRegistry
@@ -36,10 +35,6 @@ def register_resolvers(
                 ExtractionRegistry,
             ),
         ),
-    )
-
-    builder.add_type(
-        DefaultTemplateManager,
     )
 
     # Resolver registry

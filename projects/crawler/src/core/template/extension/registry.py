@@ -1,31 +1,23 @@
-from typing import Iterable
-
+from core.registry import Registry
 from core.template.extension.base import TemplateExtension
+from core.template.extension.factory import TemplateExtensionFactory
+from core.template.typing import TemplateExtensionKey
 
 
-class TemplateExtensionRegistry:
+class TemplateExtensionRegistry(
+    Registry[
+        TemplateExtensionKey,
+        TemplateExtensionFactory,
+    ],
+):
+    """
+    Registry of template extension factories.
+    """
 
-    def __init__(self):
-
-        self._extensions: list[
-            TemplateExtension
-        ] = []
-
-    def register(
+    def create(
         self,
-        extension: TemplateExtension,
-    ) -> None:
+        key:TemplateExtensionKey
+    ) -> TemplateExtension:
 
-        self._extensions.append(
-            extension,
-        )
+        return self.get(key)()
 
-    def extensions(
-        self,
-    ) -> Iterable[
-        TemplateExtension
-    ]:
-
-        return tuple(
-            self._extensions,
-        )

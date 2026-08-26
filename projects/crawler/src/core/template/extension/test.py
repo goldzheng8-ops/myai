@@ -4,11 +4,12 @@ from typing import Any, ClassVar
 
 from core.template.backend.base import TemplateBackend
 from core.template.extension.base import TemplateExtension
+from core.template.typing import ExtensionKind
 
 class TestExtension(
     TemplateExtension,
 ):
-
+    plugin_type = ExtensionKind.TEST
     name: ClassVar[str]
 
     @abstractmethod

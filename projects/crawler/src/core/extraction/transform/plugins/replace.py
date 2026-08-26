@@ -1,17 +1,16 @@
-from core.extraction.transform.config import TransformConfig, ReplaceTransformConfig
+from core.extraction.transform.config import ReplaceTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 
 class ReplaceTransform(TransformPlugin[str, str, ReplaceTransformConfig]):
-    type = ReplaceTransformConfig.type
+    plugin_type = ReplaceTransformConfig.type
 
     def transform_one(
         self,
         value: str,
-        config: TransformConfig,
+        config: ReplaceTransformConfig,
     ) -> str:
-        if not isinstance(config, ReplaceTransformConfig):
-            raise TypeError(f"ReplaceTransform expects ReplaceTransformConfig, got {type(config).__name__}")
+
         return value.replace(
             config.pattern,
             config.replacement,

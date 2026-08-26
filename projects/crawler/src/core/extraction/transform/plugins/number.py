@@ -3,7 +3,7 @@ from core.extraction.transform.base import TransformPlugin
 
 
 class NumberTransform(TransformPlugin[str | int | float, int | float, NumberTransformConfig]):
-    type = NumberTransformConfig.type
+    plugin_type = NumberTransformConfig.type
 
     def transform_one(
         self,

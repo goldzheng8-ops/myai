@@ -4,11 +4,12 @@ from typing import Any, ClassVar
 
 from core.template.backend.base import TemplateBackend
 from core.template.extension.base import TemplateExtension
+from core.template.typing import ExtensionKind
 
 class FilterExtension(
     TemplateExtension,
 ):
-
+    plugin_type = ExtensionKind.FILTER
     name: ClassVar[str]
 
     @abstractmethod

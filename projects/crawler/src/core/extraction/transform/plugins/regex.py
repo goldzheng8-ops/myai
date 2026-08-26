@@ -4,7 +4,7 @@ from core.extraction.transform.base import TransformPlugin
 
 
 class RegexTransform(TransformPlugin[str, str | None, RegexTransformConfig]):
-    type = RegexTransformConfig.type
+    plugin_type = RegexTransformConfig.type
 
     def transform_one(
         self,

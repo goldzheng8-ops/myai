@@ -6,17 +6,13 @@ from core.extraction.transform.typing import TransformType
 from core.plugin.base import Plugin
 from core.extraction.transform.typing import InputT,OutputT,ConfigT
 
-
-
-
-
 class TransformPlugin(
     Plugin,
     Generic[InputT,OutputT,ConfigT],
     ABC,
 ):
 
-    type: ClassVar[TransformType]
+    plugin_type: ClassVar[TransformType]
 
     @abstractmethod
     def transform_one(
@@ -32,6 +28,6 @@ class TransformPlugin(
         config: ConfigT,
     ) -> list[OutputT]:
         return [
-            self.transform_one(v, config)
-            for v in values
+            self.transform_one(value, config)
+            for value in values
         ]

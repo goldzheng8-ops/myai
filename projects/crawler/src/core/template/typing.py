@@ -15,3 +15,8 @@ class ExtensionKind(str, Enum):
     TEST = "test"
 
     GLOBAL = "global"
+
+TemplateExtensionKey = tuple[
+    ExtensionKind,
+    str,
+]

@@ -22,6 +22,7 @@ from .registration.resolvers import register_resolvers
 from .registration.transforms import register_transforms
 from .registration.extractors import register_extractors
 from .registration.discoveries import register_discoveries
+from .registration.selector import register_selector_registries
 
 class ApplicationContainerFactory:
     """
@@ -87,6 +88,10 @@ class ApplicationContainerFactory:
         )
 
         register_middlewares(
+            builder,
+        )
+
+        register_selector_registries(
             builder,
         )
 

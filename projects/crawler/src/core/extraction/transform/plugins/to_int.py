@@ -1,13 +1,12 @@
-from core.extraction.transform.config import TransformConfig, ToIntTransformConfig
+from core.extraction.transform.config import ToIntTransformConfig
 from core.extraction.transform.base import TransformPlugin
 
 
 class ToIntTransform(TransformPlugin[str | int | float, int, ToIntTransformConfig]):
-    type = ToIntTransformConfig.type
+    plugin_type = ToIntTransformConfig.type
 
-    def transform_one(self, value: str | int | float, config: TransformConfig) -> int:
-        if not isinstance(config, ToIntTransformConfig):
-            raise TypeError(f"ToIntTransform expects ToIntTransformConfig, got {type(config).__name__}")
+    def transform_one(self, value: str | int | float, config: ToIntTransformConfig) -> int:
+
         if isinstance(value, bool):
             return int(value)
         if isinstance(value, int):

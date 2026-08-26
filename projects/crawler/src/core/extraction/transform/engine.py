@@ -25,7 +25,7 @@ class TransformEngine(
         result = value
 
         for config in configs:
-            plugin = self.registry.get(config.type)
+            plugin = self.registry.create(config.type)
 
             if isinstance(result, list):
                 result = plugin.transform_many(

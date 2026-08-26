@@ -10,17 +10,17 @@ class TemplateExtensionManager:
         self,
         registry:
         TemplateExtensionRegistry,
-    ):
+    ) -> None:
 
         self._registry = registry
 
     def install(
         self,
-        backend:
-        TemplateBackend,
-    ):
+        backend:TemplateBackend,
+    ) -> None:
 
-        for extension in self._registry.extensions():
+        for key in self._registry.keys():
+            extension=self._registry.create(key)
 
             extension.install(
                 backend,

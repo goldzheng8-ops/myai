@@ -19,12 +19,9 @@ from core.extraction.extractor import (
     ExtractExecutor,
 )
 
-
-
-def register_extractor_dependencies(
+def register_extractors(
     builder: ProviderBuilder,
 ) -> None:
-
     builder.add_factory(
         ValueExecutor,
         lambda resolver: ValueEngine(
@@ -45,11 +42,6 @@ def register_extractor_dependencies(
             ),
         ),
     )
-
-
-def register_extractors(
-    builder: ProviderBuilder,
-) -> None:
 
     builder.add_factory(
         ExtractorRegistry,

@@ -26,7 +26,7 @@ class Plugin(
 
         return None
     
-    type: ClassVar[Any]
+    plugin_type: ClassVar[Any]
 
     name: ClassVar[str] = ""
 
