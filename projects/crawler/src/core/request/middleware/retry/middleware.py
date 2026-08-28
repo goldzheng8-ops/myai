@@ -4,27 +4,26 @@ import asyncio
 
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import RetryMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 
 from .policy import RetryPolicy
 
 
-class RetryMiddleware(
-    RequestMiddleware,
-):
+class RetryMiddleware(RequestMiddleware):
 
     def __init__(
         self,
         policy: RetryPolicy,
-        config: MiddlewareConfig | None = None,
+        config: RetryMiddlewareConfig | None = None,
     ) -> None:
         super().__init__(
             config
             if config is not None
-            else MiddlewareConfig(),
+            else RetryMiddlewareConfig(),
         )
-        self._policy =policy
+
+        self._policy = policy
 
     @property
     def policy(

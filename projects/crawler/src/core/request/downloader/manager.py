@@ -1,7 +1,7 @@
 from typing import Any
 
 from core.request.downloader import BaseDownloader
-from core.request.downloader.config import DownloaderConfig
+from core.request.downloader.config import DownloaderSpecUnion
 from core.request.downloader.registry import DownloaderRegistry
 from core.lifecycle.manager import LifecycleManager
 from core.request.typing import DownloaderType
@@ -21,18 +21,17 @@ class DownloaderManager:
 
     async def get(
         self,
-        type_: DownloaderType,
-        config: DownloaderConfig | None = None,        
+        spec: DownloaderSpecUnion
     ) -> BaseDownloader[Any]:
-        downloader = self._instances.get(type_)
+        downloader = self._instances.get(spec.type)
 
         if downloader is not None:
             return downloader
 
-        downloader = self._registry.create_any(type_,config)
+        downloader = self._registry.create_any(spec.type,spec.config)
 
         await self._lifecycle.acquire(downloader)
 
-        self._instances[type_] = downloader
+        self._instances[spec.type] = downloader
 
         return downloader

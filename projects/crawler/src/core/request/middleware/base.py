@@ -12,25 +12,18 @@ from core.request.middleware.plugin import MiddlewarePlugin
 
 
 
-class RequestMiddleware(MiddlewarePlugin,ABC):
-    """
-    Base class for request middleware.
-
-    Middleware may execute logic before and/or after
-    the next middleware in the chain.
-    """
-
+class RequestMiddleware(MiddlewarePlugin, ABC):
 
     def __init__(
         self,
-        config: MiddlewareConfig,
+        config: MiddlewareConfig | None = None,
     ) -> None:
-
-        self._config = config
+        self._config = (
+            config
+            if config is not None
+            else MiddlewareConfig()
+        )
 
     @property
-    def config(
-        self,
-    ) -> MiddlewareConfig:
-
+    def config(self) -> MiddlewareConfig:
         return self._config

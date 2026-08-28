@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Annotated, Literal
 
 from core.request.downloader.typing import BrowserTypeName, WaitUntilState
-
+from core.request.typing import DownloaderType
+from core.typing.config import BaseConfig
+from pydantic import Field
 
 @dataclass(frozen=True, slots=True)
 class DownloaderConfig:
@@ -61,3 +64,28 @@ class ScrapyDownloaderConfig(
     """
 
     download_timeout: float | None = None
+
+
+class DownloaderSpec(BaseConfig):
+    type: DownloaderType
+
+class HttpxDownloaderSpec(DownloaderSpec):
+    type: Literal[DownloaderType.HTTPX] = DownloaderType.HTTPX
+    config: HttpxDownloaderConfig
+
+class PlaywrightDownloaderSpec(DownloaderSpec):
+    type: Literal[DownloaderType.PLAYWRIGHT] = DownloaderType.PLAYWRIGHT
+    config: PlaywrightDownloaderConfig
+
+class ScrapyDownloaderSpec(DownloaderSpec):
+    type: Literal[DownloaderType.SCRAPY] = DownloaderType.SCRAPY
+    config: ScrapyDownloaderConfig
+
+DownloaderSpecUnion = Annotated[
+    (
+        HttpxDownloaderSpec
+        | PlaywrightDownloaderSpec
+        | ScrapyDownloaderSpec
+    ),
+    Field(discriminator="type"),
+]

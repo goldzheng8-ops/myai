@@ -1,49 +1,54 @@
-from typing import Any
+from __future__ import annotations
+from typing import Annotated, Any, Literal
 from pydantic import Field
 
 from core.typing.config import BaseConfig
-from core.extraction.selector.config import SelectorConfig
-from core.extraction.value.config import ValueConfig
-from core.extraction.transform.config import TransformConfig
+from core.extraction.selector.config import SelectorConfigUnion
+from core.extraction.value.config import ValueConfigUnion
+from core.extraction.transform.config import TransformConfigUnion
 
 from .typing import ExtractType
 
 class ExtractConfig(BaseConfig):
-
     type: ExtractType
-
     name: str
-
     metadata: dict[str, Any] = Field(
         default_factory=dict,
     )
 
+
 class FieldConfig(ExtractConfig):
+    type: Literal[ExtractType.FIELD] = ExtractType.FIELD
 
-    type = ExtractType.FIELD
-
-    source: ValueConfig
+    source: ValueConfigUnion
 
     required: bool = False
-
     default: Any = None
 
-    transforms: list[
-        TransformConfig
-    ] = Field(default_factory=list)
+    transforms: list[TransformConfigUnion] = Field(
+        default_factory=list,
+    )
+
 
 class ListConfig(ExtractConfig):
+    type: Literal[ExtractType.LIST] = ExtractType.LIST
 
-    type = ExtractType.LIST
+    selector: SelectorConfigUnion
+    item: ExtractConfigUnion
 
-    selector: SelectorConfig
-
-    item: ExtractConfig
 
 class ObjectConfig(ExtractConfig):
+    type: Literal[ExtractType.OBJECT] = ExtractType.OBJECT
 
-    type = ExtractType.OBJECT
+    children: list[ExtractConfigUnion] = Field(
+        default_factory=list,
+    )
 
-    children: list[
-        ExtractConfig
-    ] = Field(default_factory=list)
+ExtractConfigUnion = Annotated[
+    (
+        FieldConfig
+        | ListConfig
+        | ObjectConfig
+    ),
+    Field(discriminator="type"),
+]

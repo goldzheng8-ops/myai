@@ -1,7 +1,10 @@
+from typing import Annotated, Literal
+
 from core.typing.config import BaseConfig
 from core.extraction.selector.selection.mode import SelectionMode
 from core.extraction.selector.extraction.mode import ExtractMode
 from core.extraction.selector.typing import SelectorType
+from pydantic import Field
 
 
 
@@ -12,19 +15,34 @@ class SelectorConfig(BaseConfig):
     extract: ExtractMode = ExtractMode.TEXT
     attribute: str | None = None
 
+
 class CssSelectorConfig(SelectorConfig):
-    type: SelectorType = SelectorType.CSS
+    type: Literal[SelectorType.CSS] = SelectorType.CSS
+
 
 class JmesPathSelectorConfig(SelectorConfig):
-    type: SelectorType = SelectorType.JMESPATH
+    type: Literal[SelectorType.JMESPATH] = SelectorType.JMESPATH
+
 
 class JsonPathSelectorConfig(SelectorConfig):
-    type: SelectorType = SelectorType.JSONPATH
+    type: Literal[SelectorType.JSONPATH] = SelectorType.JSONPATH
+
 
 class RegexSelectorConfig(SelectorConfig):
-    type: SelectorType = SelectorType.REGEX
+    type: Literal[SelectorType.REGEX] = SelectorType.REGEX
     flags: int = 0
 
+
 class XpathSelectorConfig(SelectorConfig):
-    type: SelectorType = SelectorType.XPATH
-    selector: str
+    type: Literal[SelectorType.XPATH] = SelectorType.XPATH
+
+SelectorConfigUnion = Annotated[
+    (
+        CssSelectorConfig
+        | JmesPathSelectorConfig
+        | JsonPathSelectorConfig
+        | RegexSelectorConfig
+        | XpathSelectorConfig
+    ),
+    Field(discriminator="type"),
+]

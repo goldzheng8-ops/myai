@@ -82,6 +82,7 @@ class SpiderExecutor:
             item = queue.popleft()
 
             request_context = RequestContext(
+                configs=context.config.middlewares,
                 descriptor=item.descriptor,
                 runtime=context.runtime,
                 fingerprint=item.fingerprint,

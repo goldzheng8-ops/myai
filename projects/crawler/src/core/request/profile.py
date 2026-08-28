@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from core.request.downloader.config import DownloaderSpecUnion
+
 from .typing import(
-    DownloaderType,
     ResponseFormat,
 )
 
@@ -14,6 +15,6 @@ class RequestProfile:
     Execution profile of a request.
     """
 
-    downloader: DownloaderType
+    downloader: DownloaderSpecUnion
 
     response_format: ResponseFormat

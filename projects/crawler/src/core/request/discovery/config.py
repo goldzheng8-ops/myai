@@ -1,11 +1,11 @@
+from typing import Annotated, Literal
 
-
-
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 from core.typing.config import BaseConfig
 from core.request.discovery.typing import DiscoveryType
 from core.request.profile import RequestProfile
 from core.request.patch import RequestPatch
+from pydantic import Field
 
 class DiscoveryConfig(BaseConfig):
     enabled: bool = True
@@ -14,39 +14,81 @@ class DiscoveryConfig(BaseConfig):
 
 class ApiDiscoveryConfig(DiscoveryConfig):
     patch: RequestPatch
+
+
 class UrlDiscoveryConfig(DiscoveryConfig):
     profile: RequestProfile
 
 
 class HtmlDiscoveryConfig(UrlDiscoveryConfig):
-    selector: SelectorConfig
+    selector: SelectorConfigUnion
+
+
 class FeedDiscoveryConfig(UrlDiscoveryConfig):
     pass
 
-
 class DetailLinkConfig(HtmlDiscoveryConfig):
-    type = DiscoveryType.DETAIL_LINK
+    type: Literal[DiscoveryType.DETAIL_LINK] = (
+        DiscoveryType.DETAIL_LINK
+    )
+
+
 class NextPageConfig(HtmlDiscoveryConfig):
-    type = DiscoveryType.NEXT_PAGE
+    type: Literal[DiscoveryType.NEXT_PAGE] = (
+        DiscoveryType.NEXT_PAGE
+    )
+
+
 class PageNumberConfig(HtmlDiscoveryConfig):
-    type = DiscoveryType.PAGE_NUMBER
+    type: Literal[DiscoveryType.PAGE_NUMBER] = (
+        DiscoveryType.PAGE_NUMBER
+    )
 
 
 class RssConfig(FeedDiscoveryConfig):
-    type = DiscoveryType.RSS
+    type: Literal[DiscoveryType.RSS] = DiscoveryType.RSS
+
+
 class SitemapConfig(FeedDiscoveryConfig):
-    type = DiscoveryType.SITEMAP
-
-
+    type: Literal[DiscoveryType.SITEMAP] = DiscoveryType.SITEMAP
 
 class OffsetApiConfig(ApiDiscoveryConfig):
+    type: Literal[DiscoveryType.OFFSET_API] = (
+        DiscoveryType.OFFSET_API
+    )
+
     parameter: str = "offset"
     limit: int = 20
     start: int = 0
+
+
 class CursorApiConfig(ApiDiscoveryConfig):
-    selector: SelectorConfig
+    type: Literal[DiscoveryType.CURSOR_API] = (
+        DiscoveryType.CURSOR_API
+    )
+
+    selector: SelectorConfigUnion
+
 
 class InfiniteScrollConfig(ApiDiscoveryConfig):
-    selector: SelectorConfig
+    type: Literal[DiscoveryType.INFINITE_SCROLL] = (
+        DiscoveryType.INFINITE_SCROLL
+    )
+
+    selector: SelectorConfigUnion
     scroll_count: int = 1
     scroll_delay: float = 0.5
+
+DiscoveryConfigUnion = Annotated[
+    (
+        DetailLinkConfig
+        | NextPageConfig
+        | PageNumberConfig
+        | RssConfig
+        | SitemapConfig
+        | OffsetApiConfig
+        | CursorApiConfig
+        | InfiniteScrollConfig
+    ),
+    Field(discriminator="type"),
+]

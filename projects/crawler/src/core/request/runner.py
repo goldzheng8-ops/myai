@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 
 from core.event import Event, EventDispatcher
+from core.request.middleware.chain_builder import MiddlewareChainBuilder
 from core.request.result import RequestResult
 
 from .context import RequestContext
@@ -10,7 +11,7 @@ from .events import (
     RequestFailed,
     RequestStarted,
 )
-from .middleware import  MiddlewareManager
+
 
 from .executor.base import RequestExecutor
 
@@ -21,7 +22,7 @@ class RequestRunner:
     def __init__(
         self,
         executor: RequestExecutor,
-        middleware: MiddlewareManager,
+        middleware: MiddlewareChainBuilder,
         dispatcher: EventDispatcher | None = None,
     ) -> None:
 
@@ -42,7 +43,7 @@ class RequestRunner:
             ),
         )
 
-        chain = await self._middleware.build_chain(
+        chain = await self._middleware.build(
             context.configs,
         )
         try:

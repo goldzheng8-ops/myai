@@ -3,8 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Protocol
 
+from core.spider.config import SpiderConfigUnion
+from pydantic import TypeAdapter
 import yaml
+from pydantic import ValidationError
 
+
+class ConfigLoadError(Exception):
+    pass
 
 class ConfigLoader(Protocol):
     """
@@ -19,43 +25,69 @@ class ConfigLoader(Protocol):
 
 
 class YamlConfigLoader:
-    """
-    Loads application configuration from YAML.
-    """
+
+    def __init__(self) -> None:
+        self._adapter = TypeAdapter(
+            SpiderConfigUnion,
+        )
 
     def load(
         self,
-        source: str | Path,
-    ) -> dict[str, Any]:
+        path: str | Path,
+    ) -> SpiderConfigUnion:
 
-        path = Path(source)
-
-        if not path.exists():
-            raise FileNotFoundError(
-                f"Configuration file does not exist: "
-                f"{path}",
-            )
-
-        if not path.is_file():
-            raise ValueError(
-                f"Configuration path is not a file: "
-                f"{path}",
-            )
+        path = Path(path)
 
         with path.open(
             "r",
             encoding="utf-8",
         ) as file:
+            data: Any = yaml.safe_load(file)
 
-            data = yaml.safe_load(file)
+        return self._adapter.validate_python(data)
 
-        if data is None:
-            return {}
+    def load_text(
+        self,
+        text: str,
+    ) -> SpiderConfigUnion:
 
-        if not isinstance(data, dict):
-            raise TypeError(
-                "Application configuration root "
-                "must be a mapping.",
+        try:
+            data: Any = yaml.safe_load(text)
+
+            return self._adapter.validate_python(
+                data,
             )
 
-        return data
+        except yaml.YAMLError as exc:
+            raise ConfigLoadError(
+                "Invalid YAML configuration"
+            ) from exc
+
+        except ValidationError as exc:
+            raise ConfigLoadError(
+                "Invalid spider configuration"
+            ) from exc
+
+    def dump(
+        self,
+        config: SpiderConfigUnion,
+        path: str | Path,
+    ) -> None:
+
+        path = Path(path)
+
+        data = config.model_dump(
+            mode="json",
+            exclude_none=True,
+        )
+
+        text = yaml.safe_dump(
+            data,
+            allow_unicode=True,
+            sort_keys=False,
+        )
+
+        path.write_text(
+            text,
+            encoding="utf-8",
+        )

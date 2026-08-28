@@ -29,12 +29,12 @@ class DownloaderRequestExecutor(
         context: RequestContext,
     ) -> RequestContext:
 
-        downloader_type = (
+        downloader_spec = (
             context.descriptor.profile.downloader
         )
 
         downloader = await self._manager.get(
-            downloader_type,
+            downloader_spec,
         )
 
         download_result = await downloader.download(

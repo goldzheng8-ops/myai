@@ -1,12 +1,12 @@
 from __future__ import annotations
-from typing import List, Sequence
+
 
 from core.request.middleware.registry import MiddlewareRegistry
 from core.lifecycle.manager import LifecycleManager
 from core.request.middleware.typing import MiddlewareType
-from core.request.middleware.config import MiddlewareConfig, MiddlewareSpec
+from core.request.middleware.config import  MiddlewareSpecUnion
 
-from .chain import MiddlewareChain
+
 from .base import RequestMiddleware
 
 
@@ -33,32 +33,29 @@ class MiddlewareManager:
 
     async def get(
         self,
-        type_: MiddlewareType,
-        config: MiddlewareConfig | None = None,
+        spec: MiddlewareSpecUnion,
     ) -> RequestMiddleware:
 
         middleware = self._instances.get(
-            type_,
+            spec.type,
         )
 
         if middleware is not None:
             return middleware
 
         middleware = self._registry.create(
-            type_,
-            config,
+            spec.type,
+            spec.config,
         )
 
         await self._lifecycle.acquire(
             middleware,
         )
 
-        self._instances[
-            type_
-        ] = middleware
+        self._instances[spec.type] = middleware
 
         return middleware
-
+    
     def contains(
         self,
         type_: MiddlewareType,
@@ -74,42 +71,3 @@ class MiddlewareManager:
             self._instances.values(),
         )
 
-    def ordered(
-        self,
-    ) -> tuple[RequestMiddleware, ...]:
-
-        return tuple(
-            sorted(
-                (
-                    middleware
-                    for middleware
-                    in self._instances.values()
-                    if middleware.config.enabled
-                ),
-                key=lambda middleware: (
-                    middleware.config.priority,
-                    middleware.name,
-                ),
-            ),
-        )
-
-    async def build_chain(
-        self,
-        configs: Sequence[MiddlewareSpec],
-    ) -> MiddlewareChain:
-
-        middlewares: List[RequestMiddleware] = []
-
-        for item in configs:
-            middleware = await self.get(
-                item.type,
-                item.config,
-            )
-
-            middlewares.append(
-                middleware,
-            )
-
-        return MiddlewareChain(
-            self.ordered(),
-        )

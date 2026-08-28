@@ -8,7 +8,7 @@ from core.request.middleware.auth.policy import AuthPolicy
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider
 from core.request.middleware.cache.policy import CachePolicy
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import MiddlewareConfig, RetryMiddlewareConfig
 from core.request.middleware.cookie.policy import CookiePolicy
 from core.request.middleware.deduplicate.policy import DeduplicatePolicy
 from core.request.middleware.fingerprint.provider import FingerprintProvider
@@ -138,22 +138,33 @@ def build_proxy_middleware_factory(
         )
 
     return factory
-def build_retry_middleware_factory(
-    resolver: ProviderResolver[Any, Any],
-) -> MiddlewareFactory:
+class RetryMiddlewareFactory:
 
-    def factory(
+    def __init__(
+        self,
+        resolver: ProviderResolver[Any, Any],
+    ) -> None:
+        self._resolver = resolver
+
+    def __call__(
+        self,
         config: MiddlewareConfig | None = None,
     ) -> RetryMiddleware:
-
+        if config is not None and not isinstance(
+            config,
+            RetryMiddlewareConfig,
+        ):
+            raise TypeError(
+                "RetryMiddleware requires "
+                "RetryMiddlewareConfig."
+            )
         return RetryMiddleware(
-            policy=resolver.resolve(
+            policy=self._resolver.resolve(
                 RetryPolicy,
             ),
             config=config,
         )
 
-    return factory
 def build_session_middleware_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> MiddlewareFactory:

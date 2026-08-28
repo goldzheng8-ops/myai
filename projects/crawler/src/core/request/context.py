@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Sequence
 
-from core.request.middleware.config import MiddlewareSpec
+from core.request.middleware.config import  MiddlewareSpecUnion
 from core.request.result import RequestResult
 from core.runtime import RuntimeContext
 
@@ -18,6 +18,7 @@ class RequestContext:
 
     descriptor: RequestDescriptor
 
+    configs: Sequence[MiddlewareSpecUnion]
     runtime: RuntimeContext = field(
         default_factory=RuntimeContext,
     )
@@ -26,7 +27,6 @@ class RequestContext:
 
     session_id: str | None = None
 
-    configs: Sequence[MiddlewareSpec] | None = None
 
     state: RequestState = field(
         default_factory=RequestState,

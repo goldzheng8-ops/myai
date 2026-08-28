@@ -1,64 +1,79 @@
-application:
-  name: ai-space
-  environment: development
+name: example_news
 
-runtime:
-  concurrency: 8
-  timeout: 30
+template: list
+kind: list
 
-spiders:
+profile:
+  downloader:
 
-  - template: browser
-    class_path: ai_space.spiders.news.NewsSpider
+    type: httpx
+    config:
+      timeout: 30
+      verify_ssl: true
+      follow_redirects: true
+      max_redirects: 20
+      http2: false
+  response_format: html
 
-  - template: list
-    class_path: ai_space.spiders.example.ExampleSpider
+start_requests:
 
-  - name: example-list
-    template: list
-    kind: list
+  - url: "https://example.com/news"
+    method: GET
+    timeout: 30
 
-    profile:
-      downloader: httpx
-      response_format: html
 
-    start_requests:
-      - url: https://example.com
-        method: GET
+middlewares:
 
-    extraction:
-      fields:
-        - name: title
-          selector:
-            type: css
-            selector: "h1"
+  - type: fingerprint
+    enabled: true
+    priority: 100
 
-    discovery: []
+    config: {}
 
-  - name: example-browser
-    template: browser
-    kind: list
+  - type: retry
+    enabled: true
+    priority: 200
 
-    profile:
-      downloader: playwright
-      response_format: html
+    config:
+      max_retries: 3
+      backoff: 1.0
 
-    start_requests:
-      - url: https://example.com
+extraction:
 
-    extraction:
-      fields:
-        - name: title
-          selector:
-            type: css
-            selector: "h1"
+  type: object
+  name: article
 
-    discovery: []
+  children:
 
-    browser:
-      headless: true
-      wait_until: domcontentloaded
-      scroll:
-        enabled: true
-        count: 3
-        delay: 0.5
+    - type: field
+      name: title
+
+      source:
+        type: selector
+
+        selector:
+          type: css
+          selector: "h1.title"
+
+      required: true
+
+      transforms:
+        - type: strip
+
+        - type: regex
+          pattern: "\\s+"
+          replacement: " "
+
+discovery:
+
+  - type: detail_link
+
+    selector:
+      type: css
+      selector: "article a"
+
+  - type: next_page
+
+    selector:
+      type: css
+      selector: "a.next"

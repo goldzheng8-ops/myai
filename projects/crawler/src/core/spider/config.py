@@ -5,13 +5,14 @@ from typing import Annotated, Any, Literal
 
 
 from core.request.config import RequestConfig
+from core.request.middleware.config import MiddlewareSpecUnion
 from pydantic import BaseModel, ConfigDict, Field
 
 from .typing import SpiderTemplate
 
 
-from core.request.discovery.config import DiscoveryConfig
-from core.extraction.extractor.config import ExtractConfig
+from core.request.discovery.config import DiscoveryConfigUnion
+from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.profile import RequestProfile
 from core.request.typing import RequestKind
 from core.typing.config import BaseConfig
@@ -38,38 +39,52 @@ class SpiderConfig(BaseModel):
         RequestConfig,
         ...,
     ] = ()
-
+    middlewares: tuple[
+        MiddlewareSpecUnion,
+        ...
+    ] = ()
     settings: dict[str, Any] = Field(
         default_factory=dict,
     )
 
 class ListSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.LIST] = SpiderTemplate.LIST
 
-    extraction: ExtractConfig
+    extraction: ExtractConfigUnion
 
     discovery: tuple[
-        DiscoveryConfig,
-        ...,
+        DiscoveryConfigUnion,
+        ...
     ] = ()
 
 class DetailSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.DETAIL] = (
+        SpiderTemplate.DETAIL
+    )
 
-    extraction: ExtractConfig
+    extraction: ExtractConfigUnion
 
 class ApiSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.API] = SpiderTemplate.API
 
-    extraction: ExtractConfig
+    extraction: ExtractConfigUnion
 
     discovery: tuple[
-        DiscoveryConfig,
-        ...,
+        DiscoveryConfigUnion,
+        ...
     ] = ()
 
 class BrowserSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.BROWSER] = (
+        SpiderTemplate.BROWSER
+    )
 
-    extraction: ExtractConfig
+    extraction: ExtractConfigUnion
 
-    discovery: tuple[DiscoveryConfig, ...] = ()
+    discovery: tuple[
+        DiscoveryConfigUnion,
+        ...
+    ] = ()
 
     browser: BrowserConfig
 
@@ -80,9 +95,7 @@ SpiderConfigUnion = Annotated[
         | ApiSpiderConfig
         | BrowserSpiderConfig
     ),
-    Field(
-        discriminator="template",
-    ),
+    Field(discriminator="template"),
 ]
 
 BrowserType = Literal[

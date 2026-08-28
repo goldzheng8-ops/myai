@@ -15,7 +15,7 @@ from core.request.middleware import (
     build_deduplicate_middleware_factory,
     build_fingerprint_middleware_factory,
     build_proxy_middleware_factory,
-    build_retry_middleware_factory,
+    RetryMiddlewareFactory,
     build_session_middleware_factory,
     build_throttle_middleware_factory,
 
@@ -194,7 +194,7 @@ def create_middleware_registry(
 
     registry.register(
         MiddlewareType.RETRY,
-        build_retry_middleware_factory(
+        RetryMiddlewareFactory(
             resolver,
         ),
     )

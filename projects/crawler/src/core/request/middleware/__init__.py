@@ -45,7 +45,7 @@ from .factory import(
     build_deduplicate_middleware_factory,
     build_fingerprint_middleware_factory,
     build_proxy_middleware_factory,
-    build_retry_middleware_factory,
+    RetryMiddlewareFactory,
     build_session_middleware_factory,
     build_throttle_middleware_factory,
 )
@@ -57,7 +57,7 @@ __all__ = [
     "build_deduplicate_middleware_factory",
     "build_fingerprint_middleware_factory",
     "build_proxy_middleware_factory",
-    "build_retry_middleware_factory",
+    "RetryMiddlewareFactory",
     "build_session_middleware_factory",
     "build_throttle_middleware_factory",
     "MiddlewareType",
