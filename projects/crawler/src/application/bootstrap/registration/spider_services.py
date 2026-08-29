@@ -8,16 +8,16 @@ from core.spider.services import SpiderServices
 
 
 def register_spider_services(
-        builder: ProviderBuilder,
-    ) -> None:
+    builder: ProviderBuilder,
+) -> None:
 
-        builder.add_factory(
-            SpiderServices,
-            lambda resolver: SpiderServices(
-                request_runner=resolver.resolve(RequestRunner),
-                extract_engine=resolver.resolve(ExtractEngine),
-                discovery_engine=resolver.resolve(DiscoveryEngine),
-                fingerprint_provider=resolver.resolve(FingerprintProvider),
-                response_adapter_factory=resolver.resolve(ResponseAdapterFactory),
-            ),
-        )
+    builder.add_factory(
+        SpiderServices,
+        lambda resolver: SpiderServices(
+            request_runner=resolver.resolve(RequestRunner),
+            extract_engine=resolver.resolve(ExtractEngine),
+            discovery_engine=resolver.resolve(DiscoveryEngine),
+            fingerprint_provider=resolver.resolve(FingerprintProvider),
+            response_adapter_factory=resolver.resolve(ResponseAdapterFactory),
+        ),
+    )

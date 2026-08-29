@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Protocol
 
-from core.spider.config import SpiderConfigUnion
+from application.config.model import ApplicationConfig
 from pydantic import TypeAdapter
 import yaml
 from pydantic import ValidationError
@@ -28,13 +28,13 @@ class YamlConfigLoader:
 
     def __init__(self) -> None:
         self._adapter = TypeAdapter(
-            SpiderConfigUnion,
+            ApplicationConfig,
         )
 
     def load(
         self,
         path: str | Path,
-    ) -> SpiderConfigUnion:
+    ) -> ApplicationConfig:
 
         path = Path(path)
 
@@ -49,7 +49,7 @@ class YamlConfigLoader:
     def load_text(
         self,
         text: str,
-    ) -> SpiderConfigUnion:
+    ) -> ApplicationConfig:
 
         try:
             data: Any = yaml.safe_load(text)
@@ -70,7 +70,7 @@ class YamlConfigLoader:
 
     def dump(
         self,
-        config: SpiderConfigUnion,
+        config: ApplicationConfig,
         path: str | Path,
     ) -> None:
 

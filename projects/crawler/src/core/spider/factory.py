@@ -5,6 +5,10 @@ from typing import Any, Callable
 from core.provider import  ProviderResolver
 from core.spider.services import SpiderServices
 from core.spider.template import TemplateSpider
+from core.spider.template.api import TemplateApiSpider
+from core.spider.template.browser import TemplateBrowserSpider
+from core.spider.template.detail import TemplateDetailSpider
+from core.spider.template.list import TemplateListSpider
 
 
 SpiderFactory = Callable[
@@ -12,14 +16,55 @@ SpiderFactory = Callable[
     TemplateSpider[Any],
 ]
 
-def build_spider_factory(
+def build_api_spider_factory(
     resolver: ProviderResolver[Any, Any],
-    spider_type: type[TemplateSpider[Any]],
 ) -> SpiderFactory:
 
-    def factory() -> TemplateSpider[Any]:
+    def factory() -> TemplateApiSpider:
 
-        return spider_type(
+        return TemplateApiSpider(
+            resolver.resolve(
+                SpiderServices,
+            ),
+        )
+
+    return factory
+
+def build_browser_spider_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> SpiderFactory:
+
+    def factory() -> TemplateBrowserSpider:
+
+        return TemplateBrowserSpider(
+            resolver.resolve(
+                SpiderServices,
+            ),
+        )
+
+    return factory
+
+def build_detail_spider_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> SpiderFactory:
+
+    def factory() -> TemplateDetailSpider:
+
+        return TemplateDetailSpider(
+            resolver.resolve(
+                SpiderServices,
+            ),
+        )
+
+    return factory
+
+def build_list_spider_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> SpiderFactory:
+
+    def factory() -> TemplateListSpider:
+
+        return TemplateListSpider(
             resolver.resolve(
                 SpiderServices,
             ),

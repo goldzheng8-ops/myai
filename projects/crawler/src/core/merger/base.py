@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from typing import Generic
 
 from .typing import T
@@ -9,7 +10,12 @@ class BaseMerger(
     Generic[T],
     ABC,
 ):
+    """
+    Base class for configuration/value mergers.
 
+    A merger combines a parent value with an optional child value
+    according to a specific merge strategy.
+    """
 
     def merge(
         self,
@@ -18,13 +24,12 @@ class BaseMerger(
     ) -> T:
 
         if child is None:
-            return parent
+            return deepcopy(parent)
 
         return self.do_merge(
             parent,
             child,
         )
-
 
     @abstractmethod
     def do_merge(

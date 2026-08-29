@@ -1,9 +1,7 @@
 from copy import deepcopy
-from typing import Any, Mapping, TypeVar
-
+from .typing import T
 from .base import BaseMerger
 
-T = TypeVar("T")
 
 
 class AppendListMerger(
@@ -43,10 +41,6 @@ class ReplaceListMerger(
 class UniqueListMerger(
     BaseMerger[list[T]],
 ):
-    """
-    Append child items while preserving order
-    and removing duplicates.
-    """
 
     plugin_type = "unique_list"
 
@@ -58,64 +52,13 @@ class UniqueListMerger(
 
         result = deepcopy(parent)
 
-        seen = set(result)
-
-        for item in child:
-            if item not in seen:
-                seen.add(item)
-                result.append(deepcopy(item))
-
-        return result
-
-class KeyedListMerger(
-    BaseMerger[list[Mapping[str, Any]]],
-):
-
-    plugin_type = "keyed_list"
-    
-    def __init__(
-        self,
-        key: str,
-    ) -> None:
-
-        self._key = key
-
-    def do_merge(
-
-        self,
-
-        parent:list[Mapping[str, Any]],
-
-        child:list[Mapping[str, Any]] 
-
-    )->list[Mapping[str, Any]]:
-
-        result = deepcopy(parent)
-
-        index = {
-
-            item[self._key]: i
-
-            for i, item in enumerate(result)
-
-        }
-
         for item in child:
 
-            value = item[self._key]
-
-            if value in index:
-
-                result[
-                    index[value]
-                ] = deepcopy(item)
-
-            else:
-
-                index[value] = len(result)
-
+            if item not in result:
                 result.append(
-                    deepcopy(item)
+                    deepcopy(item),
                 )
 
         return result
+
+

@@ -6,7 +6,7 @@ from .middlewares import (
     register_middlewares,
 )
 from .resolvers import register_resolvers
-from .spiders import register_spiders
+from .spider_components import register_spiders
 from .transforms import register_transforms
 from .adapters import register_adapters
 from .runtimes import register_runtimes

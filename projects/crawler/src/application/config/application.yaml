@@ -1,79 +1,76 @@
-name: example_news
+name: ai-space
 
-template: list
-kind: list
+environment: development
 
-profile:
-  downloader:
+runtime:
+  concurrency: 8
+  timeout: 30
 
-    type: httpx
-    config:
-      timeout: 30
-      verify_ssl: true
-      follow_redirects: true
-      max_redirects: 20
-      http2: false
-  response_format: html
+spiders:
 
-start_requests:
+  - name: news
+    template: list
+    kind: list
 
-  - url: "https://example.com/news"
-    method: GET
-    timeout: 30
+    profile:
+      downloader:
+        type: httpx
+        config:
+          timeout: 30
+          verify_ssl: true
+          follow_redirects: true
+          max_redirects: 20
+          http2: false
 
+      response_format: html
 
-middlewares:
+    start_requests:
+      - url: https://example.com/news
 
-  - type: fingerprint
-    enabled: true
-    priority: 100
+    middlewares:
+      - type: retry
+        enabled: true
+        priority: 200
+        config:
+          max_retries: 3
+          backoff: 1.0
 
-    config: {}
+    extraction:
 
-  - type: retry
-    enabled: true
-    priority: 200
+      type: object
+      name: article
 
-    config:
-      max_retries: 3
-      backoff: 1.0
+      children:
 
-extraction:
+        - type: field
+          name: title
 
-  type: object
-  name: article
+          source:
+            type: selector
 
-  children:
+            selector:
+              type: css
+              selector: "h1.title"
 
-    - type: field
-      name: title
+          required: true
 
-      source:
-        type: selector
+          transforms:
+            - type: strip
+
+            - type: regex
+              pattern: "\\s+"
+              replacement: " "
+
+    discovery:
+
+      - type: detail_link
 
         selector:
           type: css
-          selector: "h1.title"
+          selector: "article a"
 
-      required: true
+      - type: next_page
 
-      transforms:
-        - type: strip
-
-        - type: regex
-          pattern: "\\s+"
-          replacement: " "
-
-discovery:
-
-  - type: detail_link
-
-    selector:
-      type: css
-      selector: "article a"
-
-  - type: next_page
-
-    selector:
-      type: css
-      selector: "a.next"
+        selector:
+          type: css
+          selector: "a.next"

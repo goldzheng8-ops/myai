@@ -1,194 +1,62 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Mapping
-from core.spider.template import TemplateSpider
-from core.spider.typing import SpiderTemplate
+from core.extraction.extractor.config import ExtractConfigUnion
+from core.request.config import RequestConfig
+from core.request.discovery.config import DiscoveryConfigUnion, RequestProfile
+from core.request.middleware.chain_builder import MiddlewareSpecUnion
+from core.typing.config import BaseConfig
 from pydantic import  Field
 
-from core.request.descriptor import RequestDescriptor
-from core.spider.config import BaseConfig
-from core.request.typing import RequestKind
-from core.request.profile import RequestProfile
+from core.spider.config import BrowserConfig, RequestKind, SpiderConfigUnion
+
 
 from application.config.base import ApplicationConfigBase
 
 
-class RuntimeSettings(ApplicationConfigBase):
+class RuntimeConfig(ApplicationConfigBase):
     concurrency: int = 8
     timeout: float | None = 30.0
 
-@dataclass(frozen=True, slots=True)
-class RequestDefinition(ApplicationConfigBase):
-    url: str
+class ApplicationConfig(BaseConfig):
+    name: str = "ai-space"
+    environment: str = "development"
 
-    method: str = "GET"
-
-    headers: Mapping[str, str] = field(
-        default_factory=dict,
+    runtime: RuntimeConfig = Field(
+        default_factory=RuntimeConfig,
     )
 
-    cookies: Mapping[str, str] = field(
-        default_factory=dict,
-    )
+    spiders: tuple[
+        SpiderConfigUnion,
+        ...
+    ] = ()
 
-    params: Mapping[str, Any] = field(
-        default_factory=dict,
-    )
-
-    body: Any | None = None
-
-    meta: Mapping[str, Any] = field(
-        default_factory=dict,
-    )
-
-@dataclass(frozen=True, slots=True)
-class SpiderFileDefinition(ApplicationConfigBase):
-    """
-    User-facing declarative spider configuration.
-    """
-
-    name: str
-
+class CrawlRequest(BaseConfig):
     spider: str
 
-    kind: RequestKind
+    override: SpiderConfigOverride | None = None
 
-    profile: RequestProfile
-
-    start_requests: tuple[
-        RequestDefinition,
-        ...
-    ] = ()
-
-    extraction: Mapping[str, Any] = field(
-        default_factory=dict,
-    )
-
-    discovery: tuple[
-        Mapping[str, Any],
-        ...
-    ] = ()
-
-    browser: Mapping[str, Any] | None = None
-
-@dataclass(frozen=True, slots=True)
-class SpiderDefinition(ApplicationConfigBase):
-    """
-    Resolved application spider definition.
-    """
-
-    template: SpiderTemplate
-
-    spider_type: type[
-        TemplateSpider[Any]
-    ]
-
-    kind: RequestKind
-
-    profile: RequestProfile
-
-    start_requests: tuple[
-        RequestDefinition,
-        ...
-    ] = ()
-
-    extraction: Mapping[str, Any] = field(
-        default_factory=dict,
-    )
-
-    discovery: tuple[
-        Mapping[str, Any],
-        ...
-    ] = ()
-
-    browser: Mapping[str, Any] | None = None
-
-class ConfigOverride(ApplicationConfigBase):
-    start_requests: tuple[RequestDescriptor, ...] | None = None
+class SpiderConfigOverride(BaseConfig):
 
     kind: RequestKind | None = None
 
     profile: RequestProfile | None = None
 
-    extraction: dict[str, Any] | None = None
-
-    discovery: tuple[dict[str, Any], ...] | None = None
-
-    browser: dict[str, Any] | None = None
-
-
-class CrawlRequest(ApplicationConfigBase):
-    spider: str
-
-    override: ConfigOverride = Field(
-        default_factory=ConfigOverride,
-    )
-
-
-class ApplicationFileConfig(BaseConfig):
-
-    name: str = "ai-space"
-
-    environment: str = "development"
-
-    runtime: RuntimeSettings = Field(
-        default_factory=RuntimeSettings,
-    )
-
-    spiders: tuple[
-        SpiderFileDefinition,
-        ...,
-    ] = ()
-
-    crawls: tuple[CrawlRequest, ...] = ()
-
-
-class ApplicationConfig(ApplicationConfigBase):
-    """
-    Fully resolved application configuration.
-
-    This is the configuration consumed by bootstrap/container.
-    """
-
-    name: str = "ai-space"
-
-    environment: str = "development"
-
-    runtime: RuntimeSettings = Field(
-        default_factory=RuntimeSettings,
-    )
-
-    spiders: tuple[SpiderDefinition, ...] = ()
-
-class ResolvedCrawlConfig(BaseConfig):
-    """
-    Fully resolved configuration for one crawl job.
-
-    It is produced by ConfigResolver from:
-        ApplicationConfig + CrawlRequest.override
-
-    It contains no runtime objects.
-    """
-
-    spider: str
-
-    kind: RequestKind
-
-    profile: RequestProfile
-
     start_requests: tuple[
-        RequestDescriptor,
+        RequestConfig,
         ...
-    ] = ()
+    ] | None = None
 
-    extraction: dict[str, Any] = Field(
-        default_factory=dict,
-    )
+    middlewares: tuple[
+        MiddlewareSpecUnion,
+        ...
+    ] | None = None
+
+    extraction: ExtractConfigUnion | None = None
 
     discovery: tuple[
-        dict[str, Any],
+        DiscoveryConfigUnion,
         ...
-    ] = ()
+    ] | None = None
 
-    browser: dict[str, Any] | None = None
+    browser: BrowserConfig | None = None
+

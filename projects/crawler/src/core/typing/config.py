@@ -6,4 +6,5 @@ class BaseConfig(BaseModel):
         extra="forbid",
         validate_assignment=True,
         use_enum_values=True,
+        frozen=True,
     )

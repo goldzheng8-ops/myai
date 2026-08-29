@@ -9,7 +9,8 @@ from core.provider import (
 from .container import ApplicationContainer
 from .registration.downloaders import register_downloaders
 from .registration.middlewares import register_middleware_dependencies,register_middlewares
-from .registration.spiders import register_spiders
+from .registration.spider_components import register_spider_components
+from .registration.spider_configs import register_spider_configs
 from .registration.runtimes import register_runtimes
 from .registration.adapters import register_adapters
 from .registration.extraction_services import register_extraction_services
@@ -65,9 +66,13 @@ class ApplicationContainerFactory:
             builder,
         )
 
-        register_spiders(
+        register_spider_configs(
             builder,
             config,
+        )
+        
+        register_spider_components(
+            builder,
         )
 
         register_adapters(

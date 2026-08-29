@@ -13,7 +13,6 @@ class MappingMerger(
 
     plugin_type = "mapping"
 
-
     def do_merge(
         self,
         parent: JsonDict,
@@ -46,19 +45,19 @@ class RecursiveMappingMerger(
 
         result = deepcopy(parent)
 
-        for key, value in child.items():
-
+        for key, child_value in child.items():
+            parent_value = result.get(key)
             if (
 
                 key in result
 
                 and isinstance(
-                    result[key],
+                    parent_value,
                     dict,
                 )
 
                 and isinstance(
-                    value,
+                    child_value,
                     dict,
                 )
 
@@ -66,12 +65,12 @@ class RecursiveMappingMerger(
 
                 left = cast(
                     JsonDict,
-                    result[key],
+                    parent_value,
                 )
 
                 right = cast(
                     JsonDict,
-                    value,
+                    child_value,
                 )
 
                 result[key] = self.do_merge(
@@ -81,6 +80,6 @@ class RecursiveMappingMerger(
 
             else:
 
-                result[key] = deepcopy(value)
+                result[key] = deepcopy(child_value)
 
         return result
