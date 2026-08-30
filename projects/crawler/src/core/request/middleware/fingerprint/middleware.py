@@ -1,11 +1,11 @@
 from core.request.context import RequestContext
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import FingerprintMiddlewareConfig
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.middleware import RequestMiddleware, RequestMiddlewareNext
 
 
 class FingerprintMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[FingerprintMiddlewareConfig],
 ):
     """
     Calculate and attach the fingerprint of a request.
@@ -17,12 +17,10 @@ class FingerprintMiddleware(
     def __init__(
         self,
         provider: FingerprintProvider,
-        config: MiddlewareConfig | None = None,
+        config: FingerprintMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
         self._provider =provider
 
@@ -32,7 +30,10 @@ class FingerprintMiddleware(
     ) -> FingerprintProvider:
 
         return self._provider
-
+    @property
+    def config(self) -> FingerprintMiddlewareConfig:
+        return self._config
+    
     async def process(
         self,
         context: RequestContext,

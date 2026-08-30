@@ -5,11 +5,10 @@ from dataclasses import dataclass
 
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import DeduplicateMiddlewareConfig
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.result import RequestResult
 
-from .policy import DeduplicatePolicy
 
 
 @dataclass(frozen=True, slots=True)
@@ -51,46 +50,31 @@ class DeduplicateOutcome:
 
 
 class DeduplicateMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[DeduplicateMiddlewareConfig],
 ):
     type = MiddlewareType.DEDUPLICATE
     def __init__(
         self,
-        policy: DeduplicatePolicy,
-        config: MiddlewareConfig | None = None,
+        config: DeduplicateMiddlewareConfig,
     ) -> None:
 
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
-        self._policy = policy
-
         self._in_flight: dict[
             str,
             asyncio.Future[DeduplicateOutcome],
         ] = {}
 
         self._lock = asyncio.Lock()
-
     @property
-    def policy(
-        self,
-    ) -> DeduplicatePolicy:
-
-        return self._policy
-
+    def config(self) -> DeduplicateMiddlewareConfig:
+        return self._config
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
 
         fingerprint = context.fingerprint
 

@@ -3,11 +3,10 @@ from __future__ import annotations
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import ProxyMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.patch import RequestPatch
 
-from .policy import ProxyPolicy
 from .provider import ProxyProvider
 from .model import ProxyConfig
 
@@ -16,23 +15,18 @@ PROXY_RUNTIME_KEY = "request.proxy"
 
 
 class ProxyMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[ProxyMiddlewareConfig],
 ):
 
     def __init__(
         self,
         provider: ProxyProvider,
-        policy: ProxyPolicy,
-        config: MiddlewareConfig | None = None,
+        config: ProxyMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
         self._provider = provider
-
-        self._policy =policy
 
     @property
     def provider(
@@ -40,25 +34,15 @@ class ProxyMiddleware(
     ) -> ProxyProvider:
 
         return self._provider
-
     @property
-    def policy(
-        self,
-    ) -> ProxyPolicy:
-
-        return self._policy
-
+    def config(self) -> ProxyMiddlewareConfig:
+        return self._config
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
-
+        
         proxy = await self._provider.provide(
             context,
         )
@@ -82,7 +66,7 @@ class ProxyMiddleware(
 
         existing = context.descriptor.proxy
 
-        if existing is not None and not self._policy.override:
+        if existing is not None and not self.config.override:
             context.runtime.set(
                 PROXY_RUNTIME_KEY,
                 context.descriptor.proxy,

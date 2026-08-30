@@ -1,7 +1,9 @@
 
 from enum import Enum
-from typing import  TypeAlias,TYPE_CHECKING
+from typing import  TypeAlias,TYPE_CHECKING, TypeVar
 from collections.abc import Awaitable, Callable
+
+from core.request.middleware.config import MiddlewareConfig
 
 
 
@@ -24,3 +26,9 @@ class MiddlewareType(str,Enum):
     SESSION = "session"
     COOKIE = "cookie"
     THROTTLE = "throttle"
+
+MiddlewareConfigT = TypeVar(
+    "MiddlewareConfigT",
+    bound=MiddlewareConfig,
+    contravariant=True,
+)

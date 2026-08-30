@@ -6,58 +6,42 @@ from typing import TypeVar
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import AuthMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.patch import RequestPatch
-
-from .policy import AuthPolicy
 from .provider import AuthCredentials, AuthProvider
 
 T = TypeVar("T")
 
 class AuthMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[AuthMiddlewareConfig],
 ):
 
     def __init__(
         self,
         provider: AuthProvider,
-        policy: AuthPolicy,
-        config: MiddlewareConfig | None = None,
+        config: AuthMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
 
         self._provider = provider
-
-        self._policy = policy
     @property
     def provider(
         self,
     ) -> AuthProvider:
 
         return self._provider
-
     @property
-    def policy(
-        self,
-    ) -> AuthPolicy:
-
-        return self._policy
-
+    def config(self) -> AuthMiddlewareConfig:
+        return self._config
+    
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
 
         credentials = await self._provider.provide(
             context,
@@ -81,23 +65,24 @@ class AuthMiddleware(
     ) -> None:
 
         descriptor = context.descriptor
+        config = self.config
 
         headers = self._merge_mapping(
             descriptor.headers,
             credentials.headers,
-            override=self._policy.override_headers,
+            override=config.override_headers,
         )
 
         cookies = self._merge_mapping(
             descriptor.cookies,
             credentials.cookies,
-            override=self._policy.override_cookies,
+            override=config.override_cookies,
         )
 
         params = self._merge_mapping(
             descriptor.params,
             credentials.params,
-            override=self._policy.override_params,
+            override=config.override_params,
         )
 
         patch = RequestPatch(

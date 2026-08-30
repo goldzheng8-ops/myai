@@ -2,50 +2,40 @@ from __future__ import annotations
 
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import SessionMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 
 from .model import Session
-from .policy import SessionPolicy
 from .store import SessionStore
 
 
 SESSION_RUNTIME_KEY = "request.session"
 
 
-class SessionMiddleware(RequestMiddleware):
+class SessionMiddleware(RequestMiddleware[SessionMiddlewareConfig]):
 
     def __init__(
         self,
         store: SessionStore,
-        policy: SessionPolicy,
-        config: MiddlewareConfig | None = None,
+        config: SessionMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
         self._store = store
-
-        self._policy =policy
 
     @property
     def store(self) -> SessionStore:
         return self._store
-
     @property
-    def policy(self) -> SessionPolicy:
-        return self._policy
-
+    def config(self) -> SessionMiddlewareConfig:
+        return self._config
+    
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(context)
 
         session_id = self._resolve_session_id(
             context,
@@ -62,7 +52,7 @@ class SessionMiddleware(RequestMiddleware):
 
         if session is None:
 
-            if not self._policy.create_if_missing:
+            if not self.config.create_if_missing:
                 return await next_(context)
 
             session = Session(
@@ -82,7 +72,7 @@ class SessionMiddleware(RequestMiddleware):
 
         finally:
 
-            if self._policy.save_after_request:
+            if self.config.save_after_request:
                 await self._store.save(
                     session,
                 )
@@ -95,4 +85,4 @@ class SessionMiddleware(RequestMiddleware):
         if context.session_id is not None:
             return context.session_id
 
-        return self._policy.default_session_id
+        return self.config.default_session_id

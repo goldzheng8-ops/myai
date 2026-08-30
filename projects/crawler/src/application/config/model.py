@@ -12,10 +12,38 @@ from core.spider.config import BrowserConfig, RequestKind, SpiderConfigUnion
 
 from application.config.base import ApplicationConfigBase
 
+class EngineRuntimeConfig(ApplicationConfigBase):
+    """
+    Runtime configuration of the crawler engine.
+    """
+
+    concurrency: int = 8
+
+    timeout: float | None = 30.0
+
+
+class ThrottleRuntimeConfig(ApplicationConfigBase):
+    """
+    Runtime configuration of throttling.
+    """
+
+    delay: float = 0.0
+
+    concurrency: int | None = None
+
 
 class RuntimeConfig(ApplicationConfigBase):
-    concurrency: int = 8
-    timeout: float | None = 30.0
+    """
+    Application runtime configuration.
+    """
+
+    engine: EngineRuntimeConfig = Field(
+        default_factory=EngineRuntimeConfig,
+    )
+
+    throttle: ThrottleRuntimeConfig = Field(
+        default_factory=ThrottleRuntimeConfig,
+    )
 
 class ApplicationConfig(BaseConfig):
     name: str = "ai-space"

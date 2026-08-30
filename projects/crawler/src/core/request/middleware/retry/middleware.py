@@ -7,30 +7,23 @@ from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import RetryMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 
-from .policy import RetryPolicy
-
-
-class RetryMiddleware(RequestMiddleware):
+class RetryMiddleware(
+    RequestMiddleware[RetryMiddlewareConfig],
+):
 
     def __init__(
         self,
-        policy: RetryPolicy,
-        config: RetryMiddlewareConfig | None = None,
+        config: RetryMiddlewareConfig,
     ) -> None:
         super().__init__(
-            config
-            if config is not None
-            else RetryMiddlewareConfig(),
+            config,
         )
 
-        self._policy = policy
-
     @property
-    def policy(
+    def config(
         self,
-    ) -> RetryPolicy:
-
-        return self._policy
+    ) -> RetryMiddlewareConfig:
+        return self._config
 
     async def process(
         self,
@@ -38,44 +31,55 @@ class RetryMiddleware(RequestMiddleware):
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
 
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
-
-        last_exception: BaseException | None = None
-
-        for attempt in range(
-            1,
-            self._policy.max_attempts + 1,
+        for retry_number in range(
+            self.config.max_retries + 1,
         ):
-
             try:
-
                 return await next_(
                     context,
                 )
 
             except asyncio.CancelledError:
-
                 raise
 
-            except Exception as exc:
+            except Exception:
 
-                last_exception = exc
-
-                if attempt >= self._policy.max_attempts:
+                if (
+                    retry_number
+                    >= self.config.max_retries
+                ):
                     raise
 
-                if self._policy.delay > 0:
+                delay = self._calculate_delay(
+                    retry_number,
+                )
 
+                if delay > 0:
                     await asyncio.sleep(
-                        self._policy.delay,
+                        delay,
                     )
-
-        if last_exception is not None:
-            raise last_exception
 
         raise RuntimeError(
             "RetryMiddleware exited without a result."
         )
+
+    def _calculate_delay(
+        self,
+        retry_number: int,
+    ) -> float:
+
+        delay = (
+            self.config.retry_delay
+            * (
+                self.config.backoff_factor
+                ** retry_number
+            )
+        )
+
+        if self.config.max_delay is not None:
+            delay = min(
+                delay,
+                self.config.max_delay,
+            )
+
+        return delay

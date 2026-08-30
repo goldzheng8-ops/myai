@@ -3,18 +3,15 @@ from __future__ import annotations
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import CookieMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.patch import RequestPatch
 
 from ..session.middleware import SESSION_RUNTIME_KEY
 from ..session.model import Session
 
-from .policy import CookiePolicy
-
-
 class CookieMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[CookieMiddlewareConfig],
 ):
     """
     Manage request cookies through the current Session.
@@ -26,35 +23,21 @@ class CookieMiddleware(
 
     def __init__(
         self,
-        policy: CookiePolicy,
-        config: MiddlewareConfig | None = None,
+        config: CookieMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
-        self._policy =policy
-
     @property
-    def policy(
-        self,
-    ) -> CookiePolicy:
-
-        return self._policy
-
+    def config(self) -> CookieMiddlewareConfig:
+        return self._config
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
-
-        if self._policy.merge_session_cookies:
+        config=self.config
+        if config.merge_session_cookies:
             self._apply_session_cookies(
                 context,
             )
@@ -63,7 +46,7 @@ class CookieMiddleware(
             context,
         )
 
-        if self._policy.update_session_cookies:
+        if config.update_session_cookies:
             self._update_session_cookies(
                 context,
             )

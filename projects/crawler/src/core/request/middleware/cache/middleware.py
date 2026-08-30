@@ -7,18 +7,17 @@ from core.request.middleware.typing import RequestMiddlewareNext
 from core.request.middleware.base import (
     RequestMiddleware,
 )
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import CacheMiddlewareConfig
 from core.request.response import RequestResponse
 from core.request.result import RequestResult
 
 from .key import (
     CacheKeyProvider,
 )
-from .policy import CachePolicy
 
 
 class CacheMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[CacheMiddlewareConfig],
 ):
     """
     Request middleware providing response caching.
@@ -31,20 +30,13 @@ class CacheMiddleware(
         self,
         cache: Cache[str, RequestResponse],
         *,
-        policy: CachePolicy,
         key_provider: CacheKeyProvider,
-        config: MiddlewareConfig | None = None,
+        config: CacheMiddlewareConfig,
     ) -> None:
         super().__init__(
-            config
-            if config is not None
-            else MiddlewareConfig(),
+            config,
         )
-
         self._cache = cache
-
-        self._policy = policy
-
         self._key_provider = key_provider
 
     @property
@@ -54,12 +46,6 @@ class CacheMiddleware(
 
         return self._cache
 
-    @property
-    def policy(
-        self,
-    ) -> CachePolicy:
-
-        return self._policy
 
     @property
     def key_provider(
@@ -67,23 +53,26 @@ class CacheMiddleware(
     ) -> CacheKeyProvider:
 
         return self._key_provider
-
+    @property
+    def config(self) -> CacheMiddlewareConfig:
+        return self._config
+    
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
+        config = self.config
         method = context.descriptor.method
 
-        if not self._policy.allows(method):
+        if method not in config.methods:
             return await next_(context)
 
         key = self._key_provider.build(
             context,
         )
 
-        if self._policy.read:
+        if config.read:
 
             cached = self._cache.get(
                 key,
@@ -101,7 +90,7 @@ class CacheMiddleware(
             context,
         )
 
-        if self._policy.write:
+        if config.write:
             self._store_response(
                 key,
                 context,

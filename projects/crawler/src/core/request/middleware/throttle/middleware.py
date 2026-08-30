@@ -1,43 +1,34 @@
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.config import MiddlewareConfig
+from core.request.middleware.config import ThrottleMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
-from core.request.middleware.throttle.policy import ThrottlePolicy
 from core.request.middleware.throttle.resolver import ThrottleKeyResolver
 from core.request.middleware.throttle.limiter import ThrottleLimiter
 
 class ThrottleMiddleware(
-    RequestMiddleware,
+    RequestMiddleware[ThrottleMiddlewareConfig],
 ):
 
     def __init__(
         self,
         limiter: ThrottleLimiter,
         resolver: ThrottleKeyResolver,
-        policy: ThrottlePolicy,
-        config: MiddlewareConfig | None = None,
+        config: ThrottleMiddlewareConfig,
     ) -> None:
         super().__init__(
             config
-            if config is not None
-            else MiddlewareConfig(),
         )
         self._limiter = limiter
 
         self._resolver =resolver
-
-        self._policy =policy
-
+    @property
+    def config(self) -> ThrottleMiddlewareConfig:
+        return self._config
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-
-        if not self._policy.enabled:
-            return await next_(
-                context,
-            )
 
         key = self._resolver.resolve(
             context,

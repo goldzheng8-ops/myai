@@ -1,5 +1,6 @@
 from typing import Any
 
+from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder, ProviderResolver
 from core.cache.protocol import Cache
@@ -8,57 +9,38 @@ from core.request.middleware import (
     MiddlewareRegistry,
     MiddlewareManager,
     MiddlewareType,
-
-    build_auth_middleware_factory,
-    build_cache_middleware_factory,
-    build_cookie_middleware_factory,
-    build_deduplicate_middleware_factory,
-    build_fingerprint_middleware_factory,
-    build_proxy_middleware_factory,
     RetryMiddlewareFactory,
-    build_session_middleware_factory,
-    build_throttle_middleware_factory,
+    AuthMiddlewareFactory,
+    CacheMiddlewareFactory,
+    CookieMiddlewareFactory,
+    DeduplicateMiddlewareFactory,
+    FingerprintMiddlewareFactory,
+    ProxyMiddlewareFactory,
+    SessionMiddlewareFactory,
+    ThrottleMiddlewareFactory,
 
     AuthProvider,
     BasicAuthProvider,
-    AuthPolicy,
-
-    CachePolicy,
     CacheKeyProvider,
     FingerprintCacheKeyProvider,
-
-    CookiePolicy,
-    DeduplicatePolicy,
-
     FingerprintProvider,
     DefaultFingerprintProvider,
-
     ProxyProvider,
-    ProxyPolicy,
-
-    RetryPolicy,
-
     SessionStore,
     MemorySessionStore,
-    SessionPolicy,
-
     ThrottleLimiter,
     InMemoryThrottleLimiter,
     ThrottleKeyResolver,
     HostThrottleKeyResolver,
-    ThrottlePolicy,
 )
 def register_middleware_dependencies(
     builder: ProviderBuilder,
+    config: ApplicationConfig,
 ) -> None:
-
+    throttle = config.runtime.throttle
     builder.add_type(
         AuthProvider,
         BasicAuthProvider,
-    )
-
-    builder.add_type(
-        AuthPolicy,
     )
 
     builder.add_type(
@@ -67,21 +49,10 @@ def register_middleware_dependencies(
     )
 
     builder.add_type(
-        CachePolicy,
-    )
-
-    builder.add_type(
         CacheKeyProvider,
         FingerprintCacheKeyProvider,
     )
 
-    builder.add_type(
-        CookiePolicy,
-    )
-
-    builder.add_type(
-        DeduplicatePolicy,
-    )
 
     builder.add_type(
         FingerprintProvider,
@@ -92,26 +63,18 @@ def register_middleware_dependencies(
         ProxyProvider,
     )
 
-    builder.add_type(
-        ProxyPolicy,
-    )
-
-    builder.add_type(
-        RetryPolicy,
-    )
 
     builder.add_type(
         SessionStore,
         MemorySessionStore,
     )
 
-    builder.add_type(
-        SessionPolicy,
-    )
-
-    builder.add_type(
+    builder.add_factory(
         ThrottleLimiter,
-        InMemoryThrottleLimiter,
+        lambda resolver: InMemoryThrottleLimiter(
+            delay=throttle.delay,
+            concurrency=throttle.concurrency,
+        ),
     )
 
     builder.add_type(
@@ -119,9 +82,6 @@ def register_middleware_dependencies(
         HostThrottleKeyResolver,
     )
 
-    builder.add_type(
-        ThrottlePolicy,
-    )
 def register_middlewares(
     builder: ProviderBuilder,
 ) -> None:
@@ -152,63 +112,57 @@ def create_middleware_registry(
 
     registry.register(
         MiddlewareType.AUTH,
-        build_auth_middleware_factory(
+        AuthMiddlewareFactory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.CACHE,
-        build_cache_middleware_factory(
+        CacheMiddlewareFactory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.COOKIE,
-        build_cookie_middleware_factory(
-            resolver,
-        ),
+        CookieMiddlewareFactory(),
     )
 
     registry.register(
         MiddlewareType.DEDUPLICATE,
-        build_deduplicate_middleware_factory(
-            resolver,
-        ),
+        DeduplicateMiddlewareFactory(),
     )
 
     registry.register(
         MiddlewareType.FINGERPRINT,
-        build_fingerprint_middleware_factory(
+        FingerprintMiddlewareFactory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.PROXY,
-        build_proxy_middleware_factory(
+        ProxyMiddlewareFactory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.RETRY,
-        RetryMiddlewareFactory(
-            resolver,
-        ),
+        RetryMiddlewareFactory(),
     )
 
     registry.register(
         MiddlewareType.SESSION,
-        build_session_middleware_factory(
+        SessionMiddlewareFactory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.THROTTLE,
-        build_throttle_middleware_factory(
+        ThrottleMiddlewareFactory(
             resolver,
         ),
     )

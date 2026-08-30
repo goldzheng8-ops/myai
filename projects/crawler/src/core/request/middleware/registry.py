@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 from core.registry import Registry
 from core.request.middleware import RequestMiddleware
@@ -11,13 +12,13 @@ from core.request.middleware.config import MiddlewareConfig
 class MiddlewareRegistry(
     Registry[
         MiddlewareType,
-        MiddlewareFactory,
+        MiddlewareFactory[Any],
     ],
 ):
 
     def create(
         self,
         type_: MiddlewareType,
-        config: MiddlewareConfig | None = None,
-    ) -> RequestMiddleware:
+        config: MiddlewareConfig,
+    ) -> RequestMiddleware[Any]:
         return self.get(type_)(config)

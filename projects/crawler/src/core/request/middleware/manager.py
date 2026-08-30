@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 
 from core.request.middleware.registry import MiddlewareRegistry
@@ -28,13 +29,13 @@ class MiddlewareManager:
         self._lifecycle = lifecycle
         self._instances: dict[
             MiddlewareType,
-            RequestMiddleware,
+            RequestMiddleware[Any],
         ] = {}
 
     async def get(
         self,
         spec: MiddlewareSpecUnion,
-    ) -> RequestMiddleware:
+    ) -> RequestMiddleware[Any]:
 
         middleware = self._instances.get(
             spec.type,
@@ -65,7 +66,7 @@ class MiddlewareManager:
 
     def values(
         self,
-    ) -> tuple[RequestMiddleware, ...]:
+    ) -> tuple[RequestMiddleware[Any], ...]:
 
         return tuple(
             self._instances.values(),

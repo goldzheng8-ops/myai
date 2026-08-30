@@ -90,6 +90,7 @@ class ApplicationContainerFactory:
 
         register_middleware_dependencies(
             builder,
+            config,
         )
 
         register_middlewares(

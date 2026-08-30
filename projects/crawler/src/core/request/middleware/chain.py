@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Sequence
-from typing import Final, Iterator
+from typing import Any, Final, Iterator
 
 from ..context import RequestContext
 
@@ -16,7 +16,7 @@ RequestTerminal = Callable[
 
 
 def _wrap_handler(
-    middleware: RequestMiddleware,
+    middleware: RequestMiddleware[Any],
     next_handler: RequestMiddlewareNext,
 ) -> RequestMiddlewareNext:
     async def handler(current: RequestContext) -> RequestContext:
@@ -39,17 +39,17 @@ class MiddlewareChain:
 
     def __init__(
         self,
-        middlewares: Sequence[RequestMiddleware],
+        middlewares: Sequence[RequestMiddleware[Any]],
     ) -> None:
 
         self._middlewares: Final[
-            tuple[RequestMiddleware, ...]
+            tuple[RequestMiddleware[Any], ...]
         ] = tuple(middlewares)
 
     @property
     def middlewares(
         self,
-    ) -> tuple[RequestMiddleware, ...]:
+    ) -> tuple[RequestMiddleware[Any], ...]:
 
         return self._middlewares
 
@@ -59,7 +59,7 @@ class MiddlewareChain:
 
         return len(self._middlewares)
 
-    def __iter__(self) -> Iterator[RequestMiddleware]:
+    def __iter__(self) -> Iterator[RequestMiddleware[Any]]:
 
         return iter(self._middlewares)
 

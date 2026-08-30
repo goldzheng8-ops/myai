@@ -1,10 +1,15 @@
 name: ai-space
-
 environment: development
 
 runtime:
-  concurrency: 8
-  timeout: 30
+
+  engine:
+    concurrency: 8
+    timeout: 30
+
+  throttle:
+    delay: 0.5
+    concurrency: 2
 
 spiders:
 

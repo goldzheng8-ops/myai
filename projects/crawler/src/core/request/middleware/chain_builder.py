@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Any, Sequence
 
 from core.request.middleware import MiddlewareManager
 from core.request.middleware.base import RequestMiddleware
@@ -20,7 +20,7 @@ class MiddlewareChainBuilder:
     ) -> MiddlewareChain:
 
         entries: list[
-            tuple[int, str, RequestMiddleware]
+            tuple[int, str, RequestMiddleware[Any]]
         ] = []
 
         for spec in specs:

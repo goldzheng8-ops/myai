@@ -23,8 +23,8 @@ def register_runtimes(
             runner=resolver.resolve(
                 AsyncCrawlerRunner,
             ),
-            concurrency=config.runtime.concurrency,
-            timeout=config.runtime.timeout,
+            concurrency=config.runtime.engine.concurrency,
+            timeout=config.runtime.engine.timeout,
         ),
     )
 

@@ -1,29 +1,19 @@
 from __future__ import annotations
 from abc import ABC
+from typing import Generic
 
-
-
-from core.request.middleware.config import MiddlewareConfig
 from core.request.middleware.plugin import MiddlewarePlugin
+from .typing import MiddlewareConfigT
 
 
-
-
-
-
-
-class RequestMiddleware(MiddlewarePlugin, ABC):
+class RequestMiddleware(Generic[MiddlewareConfigT],MiddlewarePlugin, ABC):
 
     def __init__(
         self,
-        config: MiddlewareConfig | None = None,
+        config: MiddlewareConfigT,
     ) -> None:
         self._config = (
             config
-            if config is not None
-            else MiddlewareConfig()
         )
 
-    @property
-    def config(self) -> MiddlewareConfig:
-        return self._config
+
