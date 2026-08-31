@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from core.request.descriptor import RequestDescriptor
 from scrapy import Request
 
 from core.request.context import RequestContext
@@ -34,7 +35,7 @@ class ScrapyRequestBridge:
             priority=meta.priority,
             dont_filter=meta.dont_filter,
             meta=self._build_meta(
-                context,
+                request,
             ),
             cb_kwargs={
                 "request_context": context,
@@ -61,7 +62,7 @@ class ScrapyRequestBridge:
 
     @staticmethod
     def _build_meta(
-        context: RequestContext,
+        request: RequestDescriptor,
     ) -> dict[str, Any]:
         """
         Build Scrapy's request.meta.
@@ -70,7 +71,11 @@ class ScrapyRequestBridge:
         into Scrapy meta. Only data explicitly intended for
         Scrapy/runtime integration belongs here.
         """
+        meta = dict[str, Any]()
 
-        return {
-            "request_context": context,
-        }
+        proxy = request.proxy
+
+        if proxy is not None:
+            meta["proxy"] = proxy.as_url()
+
+        return meta

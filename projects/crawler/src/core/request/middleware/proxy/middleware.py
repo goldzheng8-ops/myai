@@ -23,32 +23,44 @@ class ProxyMiddleware(
         provider: ProxyProvider,
         config: ProxyMiddlewareConfig,
     ) -> None:
-        super().__init__(
-            config
-        )
+        super().__init__(config)
         self._provider = provider
 
     @property
     def provider(
         self,
     ) -> ProxyProvider:
-
         return self._provider
+
     @property
-    def config(self) -> ProxyMiddlewareConfig:
+    def config(
+        self,
+    ) -> ProxyMiddlewareConfig:
         return self._config
+
     async def process(
         self,
         context: RequestContext,
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
-        
+
+        proxy = context.descriptor.proxy
+
+        if proxy is not None and not self.config.override:
+            context.runtime.set(
+                PROXY_RUNTIME_KEY,
+                proxy,
+            )
+
+            return await next_(
+                context,
+            )
+
         proxy = await self._provider.provide(
             context,
         )
 
         if proxy is not None:
-
             self._apply_proxy(
                 context,
                 proxy,
@@ -64,22 +76,11 @@ class ProxyMiddleware(
         proxy: ProxyConfig,
     ) -> None:
 
-        existing = context.descriptor.proxy
-
-        if existing is not None and not self.config.override:
-            context.runtime.set(
-                PROXY_RUNTIME_KEY,
-                context.descriptor.proxy,
-            )
-            return
-
-        context.descriptor = (
-            RequestBuilder.from_patch(
-                descriptor=context.descriptor,
-                patch=RequestPatch(
-                    proxy=proxy,
-                ),
-            )
+        context.descriptor = RequestBuilder.from_patch(
+            descriptor=context.descriptor,
+            patch=RequestPatch(
+                proxy=proxy,
+            ),
         )
 
         context.runtime.set(

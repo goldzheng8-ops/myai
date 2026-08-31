@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-
 from application.bootstrap.application import ApplicationBootstrap
 from application.bootstrap.factory import ApplicationContainerFactory
 from application.config.loader import YamlConfigLoader

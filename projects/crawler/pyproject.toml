@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116",
     "uvicorn[standard]>=0.35",
-    "scrapy>=2.13",
+    "scrapy[httpx]>=2.18",
     "httpx>=0.28",
     "fake-useragent>=2.2.0",
     "scrapy-playwright>=0.0.48",

@@ -9,10 +9,6 @@ from scrapy import Spider
 class RuntimeSpider(Spider):
     """
     Internal long-lived spider used by the Scrapy runtime.
-
-    This spider does not implement business crawling logic.
-    It only keeps a Scrapy execution engine alive so that
-    ExecutionEngine.download_async() can be used directly.
     """
 
     name = "ai_space_runtime"
@@ -30,10 +26,9 @@ class RuntimeSpider(Spider):
 
         self._stop_event = stop_event
 
-    async def start(self) -> AsyncIterator[None]:
-        """
-        Keep the spider alive until the runtime is closed.
-        """
+    async def start(
+        self,
+    ) -> AsyncIterator[None]:
 
         await self._stop_event.wait()
 

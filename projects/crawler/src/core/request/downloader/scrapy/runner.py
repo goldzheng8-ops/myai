@@ -7,11 +7,9 @@ from scrapy.crawler import (
     AsyncCrawlerRunner as ScrapyAsyncCrawlerRunner,
 )
 from scrapy.http import Request, Response
-from scrapy.settings import Settings
-
+from scrapy.crawler import Crawler
 from .spider import RuntimeSpider
-
-
+from .settings import create_scrapy_settings
 
 class AsyncCrawlerRunner(Protocol):
     """
@@ -34,25 +32,21 @@ class ScrapyAsyncCrawlerRunnerAdapter:
 
     def __init__(
         self,
-        settings: Settings | dict[str, Any] | None = None,
+        settings: dict[str, Any] | None = None,
     ) -> None:
 
-        if isinstance(settings, Settings):
-            self._settings = settings
-        else:
-            self._settings = Settings(
-                settings,
-            )
+        self._settings=create_scrapy_settings(settings)
 
         self._runner = ScrapyAsyncCrawlerRunner(
             self._settings,
         )
 
-        self._crawler = None
+        self._crawler: Crawler | None = None
 
         self._crawl_task: asyncio.Task[None] | None = None
 
         self._ready = asyncio.Event()
+        self._stop_event = asyncio.Event()
 
         self._started = False
         self._closed = False
@@ -61,22 +55,24 @@ class ScrapyAsyncCrawlerRunnerAdapter:
     def runner(
         self,
     ) -> ScrapyAsyncCrawlerRunner:
-
         return self._runner
 
     @property
-    def crawler(self) -> Any:
-
+    def crawler(
+        self,
+    ) -> Crawler | None:
         return self._crawler
 
     @property
-    def started(self) -> bool:
-
+    def started(
+        self,
+    ) -> bool:
         return self._started
 
     @property
-    def closed(self) -> bool:
-
+    def closed(
+        self,
+    ) -> bool:
         return self._closed
 
     async def start(self) -> None:
@@ -90,6 +86,7 @@ class ScrapyAsyncCrawlerRunnerAdapter:
             return
 
         self._ready.clear()
+        self._stop_event.clear()
 
         crawler = self._runner.create_crawler(
             RuntimeSpider,
@@ -98,16 +95,16 @@ class ScrapyAsyncCrawlerRunnerAdapter:
         self._crawler = crawler
 
         crawler.signals.connect(
-            self._on_spider_opened,
-            signal="spider_opened",
+            self._on_engine_started,
+            signal="engine_started",
         )
 
         self._crawl_task = self._runner.crawl(
             crawler,
+            stop_event=self._stop_event,
         )
 
         try:
-
             await self._wait_until_ready()
 
         except BaseException:
@@ -159,8 +156,9 @@ class ScrapyAsyncCrawlerRunnerAdapter:
 
         self._closed = True
 
-        try:
+        self._stop_event.set()
 
+        try:
             await self._runner.stop()
 
         finally:
@@ -168,7 +166,6 @@ class ScrapyAsyncCrawlerRunnerAdapter:
             task = self._crawl_task
 
             if task is not None:
-
                 await asyncio.gather(
                     task,
                     return_exceptions=True,
@@ -235,10 +232,13 @@ class ScrapyAsyncCrawlerRunnerAdapter:
                     return_exceptions=True,
                 )
 
-    async def _cancel_crawl(self) -> None:
+    async def _cancel_crawl(
+        self,
+    ) -> None:
+
+        self._stop_event.set()
 
         try:
-
             await self._runner.stop()
 
         finally:
@@ -252,11 +252,9 @@ class ScrapyAsyncCrawlerRunnerAdapter:
                     return_exceptions=True,
                 )
 
-    def _on_spider_opened(
+    def _on_engine_started(
         self,
-        spider: RuntimeSpider,
         **_: Any,
     ) -> None:
 
         self._ready.set()
-

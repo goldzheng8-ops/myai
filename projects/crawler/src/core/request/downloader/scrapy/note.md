@@ -56,3 +56,6 @@ AsyncCrawlerRunner.start() 如何保证 reactor / crawler 只初始化一次；
 fetch() 如何安全调用 ExecutionEngine.download_async()；
 close() 如何保证 RuntimeSpider → Crawler → ExecutionEngine → AsyncCrawlerRunner 完整退出。
 这一步完成以后，Scrapy 这一层才真正算“基础设施冻结”，然后再回到 SpiderExecutor → ExtractEngine → CrawlerRunner 做整条链路的集成测试。
+
+scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware
+官方文档特别说明 HttpxDownloadHandler 支持 SOCKS
