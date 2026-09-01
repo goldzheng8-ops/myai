@@ -131,6 +131,7 @@ class ApplicationContainerFactory:
 
         register_crawler(
             builder,
+            config,
         )
 
 

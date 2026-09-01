@@ -25,3 +25,11 @@ class SpiderConfigRegistry:
             raise KeyError(
                 f"Spider configuration not found: {name!r}"
             ) from None
+
+    def first_name(self) -> str:
+        try:
+            return next(iter(self._configs))
+        except StopIteration as exc:
+            raise RuntimeError(
+                "No spider configuration is registered."
+            ) from exc

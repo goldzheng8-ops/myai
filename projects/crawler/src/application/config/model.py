@@ -1,11 +1,12 @@
 from __future__ import annotations
+from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion, RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
 from core.typing.config import BaseConfig
-from pydantic import  Field
+from pydantic import  Field, model_validator
 
 from core.spider.config import BrowserConfig, RequestKind, SpiderConfigUnion
 
@@ -52,12 +53,25 @@ class ApplicationConfig(BaseConfig):
     runtime: RuntimeConfig = Field(
         default_factory=RuntimeConfig,
     )
-
+    default_spider: str = "news"
     spiders: tuple[
         SpiderConfigUnion,
         ...
     ] = ()
+    @model_validator(mode="after")
+    def validate_default_spider(self) -> Self:
+        names = {
+            spider.name
+            for spider in self.spiders
+        }
 
+        if self.default_spider not in names:
+            raise ValueError(
+                f"Default spider {self.default_spider!r} "
+                "is not registered."
+            )
+
+        return self
 class CrawlRequest(BaseConfig):
     spider: str
 

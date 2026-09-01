@@ -6,7 +6,7 @@ from .middlewares import (
     register_middlewares,
 )
 from .resolvers import register_resolvers
-from .spider_components import register_spiders
+from .spider_components import register_spider_components
 from .transforms import register_transforms
 from .adapters import register_adapters
 from .runtimes import register_runtimes
@@ -23,7 +23,7 @@ __all__ = [
     "register_middleware_dependencies",
     "register_middlewares",
     "register_resolvers",
-    "register_spiders",
+    "register_spider_components",
     "register_transforms",
     "register_adapters",
     "register_runtimes",
