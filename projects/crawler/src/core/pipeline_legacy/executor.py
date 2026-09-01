@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from core.pipeline.protocol import PipelineExecutorProtocol
+from core.pipeline_legacy.protocol import PipelineExecutorProtocol
 
 from .pipeline import Pipeline
 from .pipeline_runner import PipelineRunner

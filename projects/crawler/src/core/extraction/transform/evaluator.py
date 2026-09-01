@@ -1,6 +1,6 @@
 from typing import Any, Protocol, Sequence
 
-from core.extraction.transform.config import TransformConfig
+from core.extraction.transform.config import TransformConfigUnion
 
 
 
@@ -9,6 +9,6 @@ class TransformExecutor(Protocol):
     def transform(
         self,
         value: Any,
-        configs: Sequence[TransformConfig],
+        configs: Sequence[TransformConfigUnion],
     ) -> Any:
         ...

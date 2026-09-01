@@ -12,7 +12,7 @@ class NextPageDiscovery(
     ]
 ):
 
-    type = DiscoveryType.NEXT_PAGE
+    plugin_type = DiscoveryType.NEXT_PAGE
 
     config_type = NextPageConfig
 

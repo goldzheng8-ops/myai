@@ -13,7 +13,7 @@ class SitemapDiscovery(
     ]
 ):
 
-    type = DiscoveryType.SITEMAP
+    plugin_type = DiscoveryType.SITEMAP
 
     config_type = SitemapConfig
 

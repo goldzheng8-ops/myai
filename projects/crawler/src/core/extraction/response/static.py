@@ -7,7 +7,7 @@ from typing import Any
 
 from core.extraction.response.base import ResponseAdapter
 from core.extraction.response.node import NodeAdapter
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 
 
@@ -61,7 +61,7 @@ class StaticResponseAdapter(
 
     async def _select_regex(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Any:
 
         content = await self.content()
@@ -89,7 +89,7 @@ class StaticResponseAdapter(
 
     async def _select_jmespath(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Any:
 
         data = await self.json()
@@ -101,7 +101,7 @@ class StaticResponseAdapter(
 
     async def _select_jsonpath(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Any:
 
         data = await self.json()

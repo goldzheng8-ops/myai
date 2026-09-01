@@ -1,10 +1,16 @@
+from abc import ABC
+
 from jinja2 import StrictUndefined
 from jinja2 import Undefined
-
-from .base import TemplateConfig
-
-
 from jinja2 import Environment
+
+from core.typing.config import BaseConfig
+
+class TemplateConfig(
+    BaseConfig,
+    ABC,
+):
+    """Base configuration for template renderers."""
 
 
 class JinjaTemplateConfig(

@@ -1,13 +1,10 @@
 import html as html_lib
 import re
 from typing import Any
+import markdown as markdown_lib
 
 from core.template.extension.filter import FilterExtension
 
-try:
-    import markdown as markdown_lib
-except ImportError:  # pragma: no cover
-    markdown_lib = None
 
 
 class StripHtmlFilter(FilterExtension):

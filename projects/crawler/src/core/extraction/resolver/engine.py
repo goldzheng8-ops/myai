@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.extraction.value.config import ValueConfig
+from core.extraction.value.config import ValueConfigUnion
 from core.extraction.extractor.context import ExtractContext
 from core.extraction.resolver.executor import ResolverExecutor
 from core.extraction.resolver.registry import ResolverRegistry
@@ -18,7 +18,7 @@ class ResolverEngine(
 
     async def resolve(
         self,
-        config: ValueConfig,
+        config: ValueConfigUnion,
         context: ExtractContext,
     ) -> Any:
 

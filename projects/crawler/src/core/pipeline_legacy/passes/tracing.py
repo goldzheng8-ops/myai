@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.pipeline.runtime import PipelineRuntime
-from core.pipeline.typing import ContextT
+from core.pipeline_legacy.runtime import PipelineRuntime
+from core.pipeline_legacy.typing import ContextT
 from .monitoring import MonitoringPass
 
 

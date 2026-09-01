@@ -7,7 +7,7 @@ from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import AuthMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.patch import RequestPatch
 from .provider import AuthCredentials, AuthProvider
 
@@ -16,7 +16,7 @@ T = TypeVar("T")
 class AuthMiddleware(
     RequestMiddleware[AuthMiddlewareConfig],
 ):
-
+    plugin_type = MiddlewareType.AUTH
     def __init__(
         self,
         provider: AuthProvider,

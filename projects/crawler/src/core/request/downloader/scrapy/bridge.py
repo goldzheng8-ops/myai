@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
-from core.request.descriptor import RequestDescriptor
-from scrapy import Request
+from core.request.descriptor import  RequestDescriptor
+from core.request.typing import RequestCookies
+from scrapy.http import Request
+from scrapy.http.request import CookiesT
 
 from core.request.context import RequestContext
 
@@ -53,12 +55,13 @@ class ScrapyRequestBridge:
 
     @staticmethod
     def _build_cookies(
-        cookies: Mapping[str, str],
-    ) -> dict[str | bytes, str | bytes]:
-        return {
-            name: value
-            for name, value in cookies.items()
-        }
+        cookies: RequestCookies,
+    ) -> CookiesT:
+
+        return cast(
+            CookiesT,
+            cookies,
+        )
 
     @staticmethod
     def _build_meta(

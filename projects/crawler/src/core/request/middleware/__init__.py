@@ -27,8 +27,6 @@ from .proxy.provider import ProxyProvider
 
 
 from .retry import RetryMiddleware
-from .retry.policy import RetryPolicy
-
 from .session.middleware import SessionMiddleware
 from .session.store import SessionStore,MemorySessionStore
 
@@ -85,7 +83,6 @@ __all__ = [
     "FingerprintProvider",
     "DefaultFingerprintProvider",
     "ProxyProvider",
-    "RetryPolicy",
     "SessionStore",
     "MemorySessionStore",
     "ThrottleLimiter",

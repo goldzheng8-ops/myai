@@ -10,7 +10,6 @@ from core.extraction.transform.config import TransformConfigUnion
 from .typing import ExtractType
 
 class ExtractConfig(BaseConfig):
-    type: ExtractType
     name: str
     metadata: dict[str, Any] = Field(
         default_factory=dict,

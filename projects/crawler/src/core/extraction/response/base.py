@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Any, Sequence
 
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter
 from core.extraction.response.dispatch import SelectorDispatchTable, NodeDispatchTable
@@ -20,7 +20,7 @@ class ResponseAdapter(ABC):
 
     async def select(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Any:
 
         handler = (
@@ -35,7 +35,7 @@ class ResponseAdapter(ABC):
 
     async def select_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
         handler = (
             self._node_dispatch.dispatch(

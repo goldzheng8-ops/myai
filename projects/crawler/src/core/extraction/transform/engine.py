@@ -1,6 +1,6 @@
 from typing import Any, Sequence, cast
 
-from core.extraction.transform.config import TransformConfig
+from core.extraction.transform.config import TransformConfigUnion
 from core.extraction.transform.evaluator import TransformExecutor
 
 
@@ -19,7 +19,7 @@ class TransformEngine(
     def transform(
         self,
         value: Any,
-        configs: Sequence[TransformConfig],
+        configs: Sequence[TransformConfigUnion],
     ) -> Any:
 
         result = value

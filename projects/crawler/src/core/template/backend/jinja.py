@@ -1,5 +1,5 @@
 from core.template.extension.manager import TemplateExtensionManager
-from models.config.template.jinja import JinjaTemplateConfig
+from core.template.backend.config import JinjaTemplateConfig
 from core.template.typing import TemplateBackendType
 from core.template.adapter.jinja import JinjaRenderableTemplate
 from core.template.backend.registry import  FilterRegistry, GlobalRegistry, TestRegistry

@@ -5,12 +5,12 @@ import asyncio
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import RetryMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 
 class RetryMiddleware(
     RequestMiddleware[RetryMiddlewareConfig],
 ):
-
+    plugin_type = MiddlewareType.RETRY
     def __init__(
         self,
         config: RetryMiddlewareConfig,

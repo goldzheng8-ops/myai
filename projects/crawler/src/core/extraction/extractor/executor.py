@@ -1,6 +1,6 @@
 from typing import Any, Protocol
 
-from core.extraction.extractor.config import ExtractConfig
+from core.extraction.extractor.config import ExtractConfigUnion
 from core.extraction.extractor.context import ExtractContext
 
 
@@ -10,7 +10,7 @@ class ExtractExecutor(
 
     async def extract(
         self,
-        config: ExtractConfig,
+        config: ExtractConfigUnion,
         context: ExtractContext,
     ) -> Any:
         ...

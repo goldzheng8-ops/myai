@@ -15,7 +15,7 @@ class TemplateDetailSpider(
     TemplateSpider[DetailSpiderConfig],
 ):
 
-    template = SpiderTemplate.DETAIL
+    plugin_type = SpiderTemplate.DETAIL
 
 
 
@@ -25,15 +25,17 @@ class TemplateDetailSpider(
         request: RequestContext,
         extract_context: ExtractContext,
     ) -> SpiderStep:
-
-        item = (
-            await self.services.extract_engine.extract(
-                context.config.extraction,
-                extract_context,
+        try:
+            item = (
+                await self.services.extract_engine.extract(
+                    context.config.extraction,
+                    extract_context,
+                )
             )
-        )
 
-        return SpiderStep(
-            request=request,
-            items=[item],
-        )
+            return SpiderStep(
+                request=request,
+                items=[item],
+            )
+        finally:
+            await extract_context.response.close()

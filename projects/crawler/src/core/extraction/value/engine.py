@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
-from core.extraction.transform.config import TransformConfig
-from core.extraction.value.config import ValueConfig
+from core.extraction.transform.config import TransformConfigUnion
+from core.extraction.value.config import ValueConfigUnion
 from core.extraction.extractor.context import ExtractContext
 from core.extraction.transform.evaluator import TransformExecutor
 from core.extraction.value.evaluator import ValueExecutor
@@ -23,9 +23,9 @@ class ValueEngine(
 
     async def resolve(
         self,
-        config: ValueConfig,
+        config: ValueConfigUnion,
         context: ExtractContext,
-        transforms: Sequence[TransformConfig] = (),
+        transforms: Sequence[TransformConfigUnion] = (),
     ) -> Any:
 
         value = await self._resolver.resolve(

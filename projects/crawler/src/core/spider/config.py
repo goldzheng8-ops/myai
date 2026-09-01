@@ -33,8 +33,6 @@ class SpiderConfig(BaseModel):
 
     profile: RequestProfile
 
-    template: SpiderTemplate
-
     start_requests: tuple[
         RequestConfig,
         ...,

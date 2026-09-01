@@ -3,9 +3,9 @@ from __future__ import annotations
 from abc import ABC
 from typing import final
 
-from core.pipeline.pass_ import PipelinePass
-from core.pipeline.runtime import PipelineRuntime
-from core.pipeline.typing import ContextT, PipelineNext
+from core.pipeline_legacy.pass_ import PipelinePass
+from core.pipeline_legacy.runtime import PipelineRuntime
+from core.pipeline_legacy.typing import ContextT, PipelineNext
 
 
 class MonitoringPass(

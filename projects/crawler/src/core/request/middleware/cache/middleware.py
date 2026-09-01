@@ -3,7 +3,7 @@ from __future__ import annotations
 from core.cache.protocol import Cache
 
 from core.request.context import RequestContext
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.middleware.base import (
     RequestMiddleware,
 )
@@ -25,7 +25,7 @@ class CacheMiddleware(
     The middleware caches transport-level RequestResponse
     objects and never caches ResponseAdapter instances.
     """
-
+    plugin_type = MiddlewareType.CACHE
     def __init__(
         self,
         cache: Cache[str, RequestResponse],

@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence, Sized
 from typing import Any
 
 from core.template.extension.test import TestExtension
@@ -17,7 +17,7 @@ class EmptyTest(TestExtension):
     def test(self, value: Any) -> bool:
         if value is None:
             return True
-        if isinstance(value, (str, list, tuple, set, dict)):
+        if isinstance(value, Sized):
             return len(value) == 0
         return False
 

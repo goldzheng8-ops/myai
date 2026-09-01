@@ -11,7 +11,7 @@ class PageNumberDiscovery(
     ]
 ):
 
-    type = DiscoveryType.PAGE_NUMBER
+    plugin_type = DiscoveryType.PAGE_NUMBER
 
     config_type = PageNumberConfig
 

@@ -7,7 +7,7 @@ from parsel import Selector
 
 from core.extraction.response.static import StaticResponseAdapter
 from core.extraction.response.node import NodeAdapter
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 
 class HttpxNodeAdapter(
@@ -65,7 +65,7 @@ class HttpxNodeAdapter(
 
     async def _css_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         nodes = self._selector.css(
@@ -79,7 +79,7 @@ class HttpxNodeAdapter(
 
     async def _xpath_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         nodes = self._selector.xpath(
@@ -160,7 +160,7 @@ class HttpxResponseAdapter(
 
     async def select_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         root = self._selector()

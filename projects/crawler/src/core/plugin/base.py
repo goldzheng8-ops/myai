@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Any, ClassVar
 
-from core.request.downloader.base import LifecycleParticipant
+from core.lifecycle.protocol import LifecycleParticipant
 
 from .protocol import PluginProtocol
 

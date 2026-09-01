@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Generic
 
-from core.pipeline import Pipeline
+from core.pipeline_legacy import Pipeline
 
 from .descriptor import WorkflowDescriptor
 from .typing import ContextT, NodeId

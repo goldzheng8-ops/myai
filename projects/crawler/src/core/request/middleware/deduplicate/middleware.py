@@ -52,7 +52,7 @@ class DeduplicateOutcome:
 class DeduplicateMiddleware(
     RequestMiddleware[DeduplicateMiddlewareConfig],
 ):
-    type = MiddlewareType.DEDUPLICATE
+    plugin_type = MiddlewareType.DEDUPLICATE
     def __init__(
         self,
         config: DeduplicateMiddlewareConfig,

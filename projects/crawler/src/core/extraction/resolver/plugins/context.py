@@ -19,6 +19,5 @@ class ContextResolver(
         context:ExtractContext,
     ) -> Any:
 
-        return context.runtime.resolve(
-            config.key,
-        )
+        return config.key
+        

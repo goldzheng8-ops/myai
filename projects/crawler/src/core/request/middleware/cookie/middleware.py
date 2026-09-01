@@ -4,7 +4,7 @@ from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import CookieMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.patch import RequestPatch
 
 from ..session.middleware import SESSION_RUNTIME_KEY
@@ -20,7 +20,7 @@ class CookieMiddleware(
     persist sessions. SessionMiddleware is responsible for the
     session lifecycle and persistence.
     """
-
+    plugin_type = MiddlewareType.COOKIE
     def __init__(
         self,
         config: CookieMiddlewareConfig,

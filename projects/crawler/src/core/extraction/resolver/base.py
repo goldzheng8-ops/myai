@@ -1,13 +1,11 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
-from core.extraction.value.config import ValueConfig
 from core.plugin.base import Plugin
 from core.extraction.extractor.context import ExtractContext
 
 ConfigT = TypeVar(
     "ConfigT",
-    bound=ValueConfig,
 )
 class Resolver(
 

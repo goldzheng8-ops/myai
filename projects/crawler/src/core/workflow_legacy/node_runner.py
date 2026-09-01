@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from core.pipeline.executor import PipelineExecutor
+from core.pipeline_legacy.executor import PipelineExecutor
 from core.runtime.context import RuntimeContext
 
 from .errors import WorkflowNodeExecutionError

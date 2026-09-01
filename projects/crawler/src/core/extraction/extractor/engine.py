@@ -1,6 +1,6 @@
 from typing import Any
 
-from .config import ExtractConfig
+from .config import ExtractConfigUnion
 
 from .executor import ExtractExecutor
 from .registry import ExtractorRegistry
@@ -22,7 +22,7 @@ class ExtractEngine(
 
     async def extract(
         self,
-        config: ExtractConfig,
+        config: ExtractConfigUnion,
         context: ExtractContext,
     ) -> Any:
 

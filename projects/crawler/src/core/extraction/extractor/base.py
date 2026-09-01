@@ -1,26 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import  Any, Generic, TypeVar
 
 
-from core.extraction.extractor.base import ExtractConfig
+from core.extraction.extractor.config import ExtractConfig
 from core.extraction.extractor.context import ExtractContext
 from core.plugin.base import Plugin
 
-
-ConfigT=TypeVar("ConfigT")
-
-
-
-ConfigT = TypeVar(
-    "ConfigT",
+ExtractorConfigT = TypeVar(
+    "ExtractorConfigT",
     bound=ExtractConfig,
 )
 
 
 class Extractor(
     Plugin,
-    ABC,
-    Generic[ConfigT],
+    Generic[ExtractorConfigT],
 ):
 
     plugin_type: Any
@@ -29,7 +23,7 @@ class Extractor(
     @abstractmethod
     async def extract(
         self,
-        config: ConfigT,
+        config: ExtractorConfigT,
         context: ExtractContext,
     ) -> Any:
         ...

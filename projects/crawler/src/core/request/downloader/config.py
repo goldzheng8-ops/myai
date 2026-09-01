@@ -66,18 +66,15 @@ class ScrapyDownloaderConfig(
     download_timeout: float | None = None
 
 
-class DownloaderSpec(BaseConfig):
-    type: DownloaderType
-
-class HttpxDownloaderSpec(DownloaderSpec):
+class HttpxDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.HTTPX] = DownloaderType.HTTPX
     config: HttpxDownloaderConfig
 
-class PlaywrightDownloaderSpec(DownloaderSpec):
+class PlaywrightDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.PLAYWRIGHT] = DownloaderType.PLAYWRIGHT
     config: PlaywrightDownloaderConfig
 
-class ScrapyDownloaderSpec(DownloaderSpec):
+class ScrapyDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.SCRAPY] = DownloaderType.SCRAPY
     config: ScrapyDownloaderConfig
 

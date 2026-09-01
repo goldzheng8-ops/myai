@@ -5,7 +5,7 @@ from playwright.async_api import BrowserContext, Locator, Page
 import json
 from typing import Any, Sequence
 
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter
 
@@ -48,7 +48,7 @@ class PlaywrightNodeAdapter(NodeAdapter):
 
     async def _css_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         locator = self._locator.locator(
@@ -66,7 +66,7 @@ class PlaywrightNodeAdapter(NodeAdapter):
 
     async def _xpath_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         locator = self._locator.locator(
@@ -186,7 +186,7 @@ class PlaywrightResponseAdapter(
 
     async def _css_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         locator = self._page.locator(
@@ -207,7 +207,7 @@ class PlaywrightResponseAdapter(
 
     async def _xpath_nodes(
         self,
-        selector: SelectorConfig,
+        selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
         locator = self._page.locator(

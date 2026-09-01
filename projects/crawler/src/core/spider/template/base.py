@@ -5,6 +5,7 @@ from typing import  ClassVar, Generic,TypeVar
 
 
 from core.extraction.extractor.context import ExtractContext
+from core.plugin import Plugin
 from core.request.context import RequestContext
 
 from core.spider.step import SpiderStep
@@ -23,11 +24,12 @@ ConfigT = TypeVar(
 
 
 class TemplateSpider(
+    Plugin,
     Generic[ConfigT],
     ABC,
 ):
 
-    template: ClassVar[SpiderTemplate]
+    plugin_type: ClassVar[SpiderTemplate]
 
     def __init__(
         self,

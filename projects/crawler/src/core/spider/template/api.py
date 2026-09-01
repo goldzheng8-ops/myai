@@ -13,7 +13,7 @@ class TemplateApiSpider(
     TemplateSpider[ApiSpiderConfig],
 ):
 
-    template = SpiderTemplate.API
+    plugin_type = SpiderTemplate.API
 
 
 
@@ -24,24 +24,27 @@ class TemplateApiSpider(
         extract_context: ExtractContext, 
     ) -> SpiderStep:
 
-        item = (
-            await self.services.extract_engine.extract(
-                context.config.extraction,
+        try:
+            item = (
+                await self.services.extract_engine.extract(
+                    context.config.extraction,
+                    extract_context,
+                )
+            )
+
+            requests = await self._discover(
+                context,
                 extract_context,
             )
-        )
 
-        requests = await self._discover(
-            context,
-            extract_context,
-        )
-
-        return SpiderStep(
-            request=request,
-            items=[item],
-            requests=requests,
-        )
-
+            return SpiderStep(
+                request=request,
+                items=[item],
+                requests=requests,
+            )
+        finally:
+            await extract_context.response.close()
+            
     async def _discover(
         self,
         context: SpiderContext[ApiSpiderConfig],

@@ -17,7 +17,7 @@ class TemplateListSpider(
     TemplateSpider[ListSpiderConfig],
 ):
 
-    template = SpiderTemplate.LIST
+    plugin_type = SpiderTemplate.LIST
 
     async def process(
         self,
@@ -25,22 +25,24 @@ class TemplateListSpider(
         request: RequestContext,
         extract_context: ExtractContext,
     ) -> SpiderStep:
+        try:
+            item = await self.services.extract_engine.extract(
+                context.config.extraction,
+                extract_context,
+            )
 
-        item = await self.services.extract_engine.extract(
-            context.config.extraction,
-            extract_context,
-        )
+            requests = await self._discover(
+                context,
+                extract_context,
+            )
 
-        requests = await self._discover(
-            context,
-            extract_context,
-        )
-
-        return SpiderStep(
-            request=request,
-            items=[item],
-            requests=requests,
-        )
+            return SpiderStep(
+                request=request,
+                items=[item],
+                requests=requests,
+            )
+        finally:
+            await extract_context.response.close()
 
     async def _discover(
         self,

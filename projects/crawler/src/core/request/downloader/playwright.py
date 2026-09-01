@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 from core.request.context import RequestContext
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
@@ -9,6 +8,7 @@ from playwright.async_api import (
     BrowserType,
     Page,
     Playwright,
+    ProxySettings,
     Response,
     async_playwright,
 )
@@ -76,6 +76,7 @@ class PlaywrightDownloader(
                 locale=self.config.locale,
                 user_agent=self.config.user_agent,
                 java_script_enabled=self.config.javascript,
+                proxy=self._build_proxy(context),
             )
         )
 
@@ -180,3 +181,25 @@ class PlaywrightDownloader(
         if self._playwright is not None:
             await self._playwright.stop()
             self._playwright = None
+            
+    def _build_proxy(
+        self,
+        context: RequestContext,
+    ) -> ProxySettings | None:
+
+        proxy = context.descriptor.proxy
+
+        if proxy is None:
+            return None
+
+        result: ProxySettings = {
+            "server": proxy.url,
+        }
+
+        if proxy.username is not None:
+            result["username"] = proxy.username
+
+        if proxy.password is not None:
+            result["password"] = proxy.password
+
+        return result

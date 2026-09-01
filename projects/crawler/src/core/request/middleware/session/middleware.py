@@ -3,7 +3,7 @@ from __future__ import annotations
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import SessionMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 
 from .model import Session
 from .store import SessionStore
@@ -13,7 +13,7 @@ SESSION_RUNTIME_KEY = "request.session"
 
 
 class SessionMiddleware(RequestMiddleware[SessionMiddlewareConfig]):
-
+    plugin_type = MiddlewareType.SESSION
     def __init__(
         self,
         store: SessionStore,

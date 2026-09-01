@@ -1,7 +1,7 @@
 
 
 from core.extraction.response.base import ResponseAdapter
-from .config import DiscoveryConfig
+from .config import DiscoveryConfigUnion
 from core.request.discovery.registry import DiscoveryRegistry
 from core.request.discovery.result import DiscoveryResult
 from core.request.context import RequestContext
@@ -28,10 +28,10 @@ class DiscoveryEngine:
         *,
         response: ResponseAdapter,
         context: RequestContext,
-        config: DiscoveryConfig,
+        config: DiscoveryConfigUnion,
     ) -> DiscoveryResult:
 
-        plugin = self._registry.get(
+        plugin = self._registry.create(
             config.type,
         )
 

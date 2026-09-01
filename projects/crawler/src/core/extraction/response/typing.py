@@ -3,7 +3,7 @@ from typing import Any,  TypeAlias
 
 
 
-from core.extraction.selector.config import SelectorConfig
+from core.extraction.selector.config import SelectorConfigUnion
 
 # ValueSelectorHandler: TypeAlias = Callable[
 #     [SelectorConfig],
@@ -27,7 +27,7 @@ from core.extraction.selector.config import SelectorConfig
 
 SelectorHandler: TypeAlias = Callable[
     [
-        SelectorConfig,
+        SelectorConfigUnion,
     ],
     Awaitable[Any],
 ]

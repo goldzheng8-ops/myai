@@ -1,14 +1,14 @@
-from collections.abc import Iterable
-from typing import Any
+from collections.abc import Iterable as AbcIterable
+from typing import Any, Iterable, List, Optional, cast
 
 from core.template.extension.filter import FilterExtension
 
 
-def _as_list(value: Any) -> list[Any] | None:
+def _as_list(value: Any) -> Optional[List[Any]]:
     if value is None or isinstance(value, (str, bytes)):
         return None
-    if isinstance(value, Iterable):
-        return list(value)
+    if isinstance(value, AbcIterable):
+        return list(cast(Iterable[Any], value))
     return None
 
 

@@ -1,14 +1,14 @@
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import ThrottleMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.middleware.throttle.resolver import ThrottleKeyResolver
 from core.request.middleware.throttle.limiter import ThrottleLimiter
 
 class ThrottleMiddleware(
     RequestMiddleware[ThrottleMiddlewareConfig],
 ):
-
+    plugin_type = MiddlewareType.THROTTLE
     def __init__(
         self,
         limiter: ThrottleLimiter,

@@ -12,7 +12,7 @@ class DetailLinkDiscovery(
     ]
 ):
 
-    type = DiscoveryType.DETAIL_LINK
+    plugin_type = DiscoveryType.DETAIL_LINK
 
     config_type = DetailLinkConfig
 

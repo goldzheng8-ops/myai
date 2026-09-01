@@ -1,10 +1,10 @@
 import logging
 import time
 
-from core.pipeline.runtime import PipelineRuntime
+from core.pipeline_legacy.runtime import PipelineRuntime
 
 from .monitoring import MonitoringPass
-from core.pipeline.typing import ContextT
+from core.pipeline_legacy.typing import ContextT
 
 class LoggingPass(
     MonitoringPass[ContextT],

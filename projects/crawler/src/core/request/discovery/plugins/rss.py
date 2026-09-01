@@ -14,7 +14,7 @@ class RssDiscovery(
     ]
 ):
 
-    type = DiscoveryType.RSS
+    plugin_type = DiscoveryType.RSS
 
     config_type = RssConfig
 

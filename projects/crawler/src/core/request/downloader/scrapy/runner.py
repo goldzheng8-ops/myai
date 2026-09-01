@@ -140,11 +140,6 @@ class ScrapyAsyncCrawlerRunnerAdapter:
 
         engine = crawler.engine
 
-        if engine is None:
-            raise RuntimeError(
-                "Scrapy execution engine is unavailable.",
-            )
-
         return await engine.download_async(
             request,
         )

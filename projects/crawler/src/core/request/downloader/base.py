@@ -3,7 +3,6 @@ from __future__ import annotations
 from abc import ABC
 from typing import Generic
 
-from core.lifecycle.protocol import LifecycleParticipant
 from core.request.context import RequestContext
 
 
@@ -16,7 +15,6 @@ from .typing import ConfigT
 
 
 class BaseDownloader(
-    LifecycleParticipant,
     DownloaderPlugin,
     Generic[ConfigT],
     ABC,

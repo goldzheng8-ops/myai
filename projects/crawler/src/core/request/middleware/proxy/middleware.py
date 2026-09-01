@@ -4,7 +4,7 @@ from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import ProxyMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 from core.request.patch import RequestPatch
 
 from .provider import ProxyProvider
@@ -17,7 +17,7 @@ PROXY_RUNTIME_KEY = "request.proxy"
 class ProxyMiddleware(
     RequestMiddleware[ProxyMiddlewareConfig],
 ):
-
+    plugin_type = MiddlewareType.PROXY
     def __init__(
         self,
         provider: ProxyProvider,

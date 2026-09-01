@@ -1,7 +1,7 @@
 from typing import Any, Protocol, Sequence
 
-from core.extraction.transform.config import TransformConfig
-from core.extraction.value.config import ValueConfig
+from core.extraction.transform.config import TransformConfigUnion
+from core.extraction.value.config import ValueConfigUnion
 from core.extraction.extractor.context import ExtractContext
 
 
@@ -9,8 +9,8 @@ class ValueExecutor(Protocol):
 
     async def resolve(
         self,
-        config: ValueConfig,
+        config: ValueConfigUnion,
         context: ExtractContext,
-        transforms: Sequence[TransformConfig] = (),
+        transforms: Sequence[TransformConfigUnion] = (),
     ) -> Any:
         ...

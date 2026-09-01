@@ -9,7 +9,6 @@ from pydantic import Field
 
 
 class SelectorConfig(BaseConfig):
-    type: SelectorType
     selector: str
     selection: SelectionMode = SelectionMode.SINGLE
     extract: ExtractMode = ExtractMode.TEXT

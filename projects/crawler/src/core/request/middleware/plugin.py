@@ -15,7 +15,7 @@ class MiddlewarePlugin(
     Public contract implemented by all request downloaders.
     """
 
-    type: ClassVar[MiddlewareType]
+    plugin_type: ClassVar[MiddlewareType]
 
     @abstractmethod
     async def process(

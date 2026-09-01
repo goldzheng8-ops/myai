@@ -16,7 +16,7 @@ class CursorApiDiscovery(
     ApiDiscoveryPlugin[CursorApiConfig]
 ):
 
-    type = DiscoveryType.CURSOR_API
+    plugin_type = DiscoveryType.CURSOR_API
 
     config_type = CursorApiConfig
 

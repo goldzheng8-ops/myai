@@ -7,3 +7,4 @@ TransformFactory: TypeAlias = Callable[
     [],
     TransformPlugin[Any, Any, Any],
 ]
+

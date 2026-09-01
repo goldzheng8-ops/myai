@@ -1,11 +1,9 @@
 from enum import Enum
 from typing import TypeVar
 
-from core.extraction.transform.config import TransformConfig
-
 InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
-ConfigT=TypeVar("ConfigT", bound=TransformConfig)
+ConfigT=TypeVar("ConfigT")
 
 class TransformType(str,Enum):
 

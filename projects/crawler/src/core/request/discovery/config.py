@@ -8,9 +8,7 @@ from core.request.patch import RequestPatch
 from pydantic import Field
 
 class DiscoveryConfig(BaseConfig):
-    enabled: bool = True
-    type: DiscoveryType
-
+    pass
 
 class ApiDiscoveryConfig(DiscoveryConfig):
     patch: RequestPatch

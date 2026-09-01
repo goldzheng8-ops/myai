@@ -15,7 +15,7 @@ class OffsetApiDiscovery(
     ApiDiscoveryPlugin[OffsetApiConfig]
 ):
 
-    type = DiscoveryType.OFFSET_API
+    plugin_type = DiscoveryType.OFFSET_API
 
     config_type = OffsetApiConfig
 
