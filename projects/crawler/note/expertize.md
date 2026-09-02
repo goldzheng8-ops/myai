@@ -21,3 +21,13 @@
 ## 10. Modular Monolith
 
 # Domain-Oriented Plugin Architecture（面向领域的插件化架构）
+
+
+docker compose up --build crawler
+docker compose up crawler
+
+docker compose run --rm crawler
+docker compose run --rm --build crawler
+
+docker compose down
+docker compose run --rm --build crawler-dev

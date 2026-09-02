@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Any
+from collections.abc import Sequence
 from core.request.response.model import HttpxResponse
 import httpx
 from parsel import Selector

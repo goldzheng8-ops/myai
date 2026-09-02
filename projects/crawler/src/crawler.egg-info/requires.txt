@@ -1,4 +1,6 @@
 fastapi>=0.116
+pydantic<3,>=2.11
+pydantic-settings<3,>=2.10
 markdown>=3.10.3
 uvicorn[standard]>=0.35
 scrapy[httpx]>=2.18
@@ -9,7 +11,6 @@ scrapy-rotating-proxies>=0.6.2
 sqlalchemy[asyncio]>=2.0
 asyncpg>=0.29
 aiosqlite>=0.10
-beautifulsoup4>=4.15.0
 jmespath>=1.1.0
 jsonpath-ng>=1.8.0
 jinja2>=3.1.6

@@ -1,9 +1,9 @@
 from core.extraction.transform.config import ToFloatConfig
 from core.extraction.transform.base import TransformPlugin
-
+from core.extraction.transform.typing import TransformType
 
 class ToFloatTransform(TransformPlugin[str | int | float, float, ToFloatConfig]):
-    plugin_type = ToFloatConfig.type
+    plugin_type = TransformType.DATETIME
 
     def transform_one(self, value: str | int | float, config: ToFloatConfig) -> float:
 

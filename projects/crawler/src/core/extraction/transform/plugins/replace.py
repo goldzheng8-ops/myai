@@ -1,9 +1,9 @@
 from core.extraction.transform.config import ReplaceTransformConfig
 from core.extraction.transform.base import TransformPlugin
-
+from core.extraction.transform.typing import TransformType
 
 class ReplaceTransform(TransformPlugin[str, str, ReplaceTransformConfig]):
-    plugin_type = ReplaceTransformConfig.type
+    plugin_type = TransformType.DATETIME
 
     def transform_one(
         self,

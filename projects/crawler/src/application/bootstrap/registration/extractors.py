@@ -1,21 +1,21 @@
 from typing import Any
 
 from core.extraction.extractor.engine import ExtractEngine
+from core.extraction.extractor.registry import ExtractorRegistry
 from core.extraction.resolver.engine import ResolverExecutor
 from core.extraction.transform.engine import TransformExecutor
 from core.extraction.value.engine import ValueEngine
 from core.extraction.value.evaluator import ValueExecutor
+from core.extraction.extractor.typing import ExtractType
 from core.provider import (
     ProviderBuilder,
     ProviderResolver,
 )
 
-from core.extraction.extractor import (
+from core.extraction.extractor.factory import (
     build_field_extractor_factory,
     build_list_extractor_factory,
     build_object_extractor_factory,
-    ExtractorRegistry,
-    ExtractType,
     ExtractExecutor,
 )
 

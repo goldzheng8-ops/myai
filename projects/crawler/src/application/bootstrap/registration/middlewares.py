@@ -5,34 +5,19 @@ from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder, ProviderResolver
 from core.cache.protocol import Cache
 from core.cache.memory import MemoryCache
-from core.request.middleware import (
-    MiddlewareRegistry,
-    MiddlewareManager,
-    MiddlewareType,
-    RetryMiddlewareFactory,
-    AuthMiddlewareFactory,
-    CacheMiddlewareFactory,
-    CookieMiddlewareFactory,
-    DeduplicateMiddlewareFactory,
-    FingerprintMiddlewareFactory,
-    ProxyMiddlewareFactory,
-    SessionMiddlewareFactory,
-    ThrottleMiddlewareFactory,
+from core.request.middleware.auth.basic import BasicAuthProvider
+from core.request.middleware.auth.provider import AuthProvider
+from core.request.middleware.cache.key import CacheKeyProvider, FingerprintCacheKeyProvider
+from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory, ProxyMiddlewareFactory, RetryMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory
+from core.request.middleware.fingerprint.provider import DefaultFingerprintProvider, FingerprintProvider
+from core.request.middleware.manager import MiddlewareManager
+from core.request.middleware.typing import MiddlewareType
+from core.request.middleware.proxy.provider import ProxyProvider
+from core.request.middleware.registry import MiddlewareRegistry
+from core.request.middleware.session.store import MemorySessionStore, SessionStore
+from core.request.middleware.throttle.limiter import InMemoryThrottleLimiter, ThrottleLimiter
+from core.request.middleware.throttle.resolver import HostThrottleKeyResolver, ThrottleKeyResolver
 
-    AuthProvider,
-    BasicAuthProvider,
-    CacheKeyProvider,
-    FingerprintCacheKeyProvider,
-    FingerprintProvider,
-    DefaultFingerprintProvider,
-    ProxyProvider,
-    SessionStore,
-    MemorySessionStore,
-    ThrottleLimiter,
-    InMemoryThrottleLimiter,
-    ThrottleKeyResolver,
-    HostThrottleKeyResolver,
-)
 def register_middleware_dependencies(
     builder: ProviderBuilder,
     config: ApplicationConfig,

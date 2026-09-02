@@ -1,5 +1,5 @@
-from typing import Any, Sequence
-
+from typing import Any
+from collections.abc import Sequence
 from core.extraction.selector.config import SelectorConfig
 from core.extraction.selector.extraction.registry import ExtractionRegistry
 from core.extraction.selector.selection.registry import SelectionRegistry

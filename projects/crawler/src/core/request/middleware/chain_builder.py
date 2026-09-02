@@ -1,6 +1,6 @@
-from typing import Any, Sequence
-
-from core.request.middleware import MiddlewareManager
+from typing import Any
+from collections.abc import Sequence
+from core.request.middleware.manager import MiddlewareManager
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.chain import MiddlewareChain
 from core.request.middleware.config import MiddlewareSpecUnion

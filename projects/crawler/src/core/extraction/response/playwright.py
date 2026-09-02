@@ -3,7 +3,8 @@ from core.extraction.response.browser import BrowserResponseAdapter
 from core.request.response.model import BrowserResponse
 from playwright.async_api import BrowserContext, Locator, Page
 import json
-from typing import Any, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType

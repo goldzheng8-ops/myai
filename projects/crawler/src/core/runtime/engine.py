@@ -1,6 +1,12 @@
-from core.runtime.context import RuntimeContext
+from typing import TYPE_CHECKING, Any
+
 from core.runtime.expression import ResolveExpression
 from core.runtime.registry import ResolveRegistry
+
+if TYPE_CHECKING:
+    from core.runtime.context import RuntimeContext
+else:
+    RuntimeContext = Any
 
 
 class ResolveEngine:

@@ -1,6 +1,6 @@
 from abc import ABC
 from abc import abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 from typing import Any
 
 from core.extraction.selector.config import SelectorConfig

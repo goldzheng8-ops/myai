@@ -1,13 +1,13 @@
 from typing import Any
 
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator
+from core.extraction.resolver.registry import ResolverRegistry
 from core.extraction.selector.base import SelectorPipeline
 from core.extraction.selector.executor import PipelineExecutor
 from core.extraction.selector.extraction.registry import ExtractionRegistry
 from core.extraction.selector.selection.registry import SelectionRegistry
 from core.provider import ProviderBuilder,ProviderResolver
-from core.extraction.resolver import (
-    ResolverRegistry,
+from core.extraction.resolver.factory import (
     create_constant_resolver,
     create_context_resolver,
     build_expression_resolver_factory,

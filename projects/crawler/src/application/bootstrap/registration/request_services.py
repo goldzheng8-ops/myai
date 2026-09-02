@@ -4,7 +4,7 @@ from core.provider import ProviderBuilder
 from core.request.downloader.manager import DownloaderManager
 from core.request.executor import RequestExecutor
 from core.request.executor.downloader import DownloaderRequestExecutor
-from core.request.middleware import MiddlewareManager
+from core.request.middleware.manager import MiddlewareManager
 from core.request.runner import RequestRunner
 
 

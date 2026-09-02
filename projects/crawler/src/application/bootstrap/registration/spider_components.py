@@ -2,19 +2,19 @@ from typing import Any
 from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.response.factory import ResponseAdapterFactory
 from core.request.discovery.engine import DiscoveryEngine
-from core.request.middleware.fingerprint import FingerprintProvider
+from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
+from core.spider.registry import SpiderRegistry
 from core.spider.services import SpiderServices
 from core.spider.executor import SpiderExecutor
 from core.provider import ProviderBuilder, ProviderResolver
-from core.spider import (
-    SpiderRegistry,
+from core.spider.factory import (
     build_api_spider_factory,
     build_browser_spider_factory,
     build_detail_spider_factory,
     build_list_spider_factory,
-    SpiderTemplate,
 )
+from core.spider.typing import SpiderTemplate
 
 
 def register_spider_components(

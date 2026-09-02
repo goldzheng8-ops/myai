@@ -2,9 +2,9 @@ from typing import Any
 
 from core.provider import ProviderBuilder, ProviderResolver
 from core.request.discovery.engine import DiscoveryEngine
+from core.request.discovery.registry import DiscoveryRegistry
 from core.request.discovery.typing import DiscoveryType
-from core.request.discovery import (
-    DiscoveryRegistry,
+from core.request.discovery.factory import (
     create_cursor_api_discovery,
     create_detail_link_discovery,
     create_infinite_scroll_discovery,

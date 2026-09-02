@@ -5,8 +5,13 @@ from types import MappingProxyType
 from typing import Any, Self
 
 from core.cache.protocol import Cache
-from core.runtime.engine import ResolveEngine
 from core.runtime.expression import DotPathExpression, ResolveExpression
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from core.runtime.engine import ResolveEngine
+else:
+    ResolveEngine = Any
 
 from .scope import RuntimeScope
 

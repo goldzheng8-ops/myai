@@ -1,12 +1,15 @@
 from __future__ import annotations
-from abc import ABC
-from typing import Generic
+from typing import Generic, TypeVar
 
+from core.request.middleware.config import MiddlewareConfig
 from core.request.middleware.plugin import MiddlewarePlugin
-from .typing import MiddlewareConfigT
+MiddlewareConfigT = TypeVar(
+    "MiddlewareConfigT",
+    bound=MiddlewareConfig,
+    contravariant=True,
+)
 
-
-class RequestMiddleware(Generic[MiddlewareConfigT],MiddlewarePlugin, ABC):
+class RequestMiddleware(MiddlewarePlugin, Generic[MiddlewareConfigT]):
 
     def __init__(
         self,

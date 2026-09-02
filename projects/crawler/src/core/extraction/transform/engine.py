@@ -1,5 +1,5 @@
-from typing import Any, Sequence, cast
-
+from typing import Any, cast
+from collections.abc import Sequence
 from core.extraction.transform.config import TransformConfigUnion
 from core.extraction.transform.evaluator import TransformExecutor
 

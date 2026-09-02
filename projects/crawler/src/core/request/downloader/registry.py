@@ -1,12 +1,12 @@
 from __future__ import annotations
 from typing import Any, Literal, overload
 from core.registry import Registry
-from core.request.downloader import BaseDownloader
+from core.request.downloader.base import BaseDownloader
 from core.request.downloader.factory import DownloaderFactory
 from core.request.downloader.httpx import HttpxDownloader
 from core.request.downloader.playwright import PlaywrightDownloader
 from core.request.downloader.scrapy.downloader import ScrapyDownloader
-from core.request.downloader.config import  HttpxDownloaderConfig, PlaywrightDownloaderConfig, ScrapyDownloaderConfig
+from core.request.downloader.config import HttpxDownloaderConfig, PlaywrightDownloaderConfig, ScrapyDownloaderConfig
 from core.request.typing import DownloaderType
 from .config import DownloaderConfig
 

@@ -1,21 +1,19 @@
+from core.extraction.transform.plugins.datetime import DateTimeTransform
+from core.extraction.transform.plugins.join import JoinTransform
+from core.extraction.transform.plugins.lower import LowerTransform
+from core.extraction.transform.plugins.number import NumberTransform
+from core.extraction.transform.plugins.prefix import PrefixTransform
+from core.extraction.transform.plugins.regex import RegexTransform
+from core.extraction.transform.plugins.replace import ReplaceTransform
+from core.extraction.transform.plugins.split import SplitTransform
+from core.extraction.transform.plugins.strip import StripTransform
+from core.extraction.transform.plugins.suffix import SuffixTransform
+from core.extraction.transform.plugins.to_float import ToFloatTransform
+from core.extraction.transform.plugins.to_int import ToIntTransform
+from core.extraction.transform.plugins.upper import UpperTransform
+from core.extraction.transform.registry import TransformRegistry
+from core.extraction.transform.typing import TransformType
 from core.provider import ProviderBuilder
-from core.extraction.transform import (
-    TransformRegistry,
-    TransformType,
-    DateTimeTransform,
-    JoinTransform,
-    LowerTransform,
-    NumberTransform,
-    PrefixTransform,
-    RegexTransform,
-    ReplaceTransform,
-    SplitTransform,
-    StripTransform,
-    SuffixTransform,
-    ToFloatTransform,
-    ToIntTransform,
-    UpperTransform,
-)
 
 
 def register_transforms(

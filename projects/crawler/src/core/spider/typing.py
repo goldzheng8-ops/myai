@@ -1,8 +1,11 @@
 # core/spider/typing.py
-from enum import Enum
-from typing import TypeVar
+from __future__ import annotations
 
-from core.spider.config import SpiderConfig
+from enum import Enum
+from typing import TYPE_CHECKING, TypeVar
+
+if TYPE_CHECKING:
+    from core.spider.config import SpiderConfig
 
 
 class SpiderTemplate(str, Enum):
@@ -21,6 +24,6 @@ class SpiderStatus(str, Enum):
 
 ConfigT = TypeVar(
     "ConfigT",
-    bound=SpiderConfig,
+    bound="SpiderConfig",
     covariant=True,
 )

@@ -1,7 +1,7 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
-from core.extraction.response.node import NodeAdapter
 from core.extraction.response.dispatch import NodeDispatchTable
 from core.extraction.selector.config import SelectorConfigUnion
 

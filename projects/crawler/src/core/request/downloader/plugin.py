@@ -4,8 +4,10 @@ from abc import ABC, abstractmethod
 from typing import ClassVar
 
 from core.plugin import Plugin
-from core.request.context import RequestContext
+
+from core.request.downloader.base import RequestContext
 from core.request.typing import DownloaderType
+
 
 from .result import DownloadResult
 

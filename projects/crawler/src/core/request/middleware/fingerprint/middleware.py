@@ -1,7 +1,7 @@
 from core.request.context import RequestContext
 from core.request.middleware.config import FingerprintMiddlewareConfig
 from core.request.middleware.fingerprint.provider import FingerprintProvider
-from core.request.middleware import RequestMiddleware
+from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 
 class FingerprintMiddleware(

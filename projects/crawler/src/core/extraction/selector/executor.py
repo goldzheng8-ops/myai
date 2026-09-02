@@ -1,4 +1,5 @@
-from typing import Any, Protocol, Sequence
+from typing import Any, Protocol
+from collections.abc import Sequence
 
 from core.extraction.selector.config import SelectorConfig
 from core.extraction.response.node import NodeAdapter

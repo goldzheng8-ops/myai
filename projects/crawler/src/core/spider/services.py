@@ -5,7 +5,7 @@ from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.response.factory import (
     ResponseAdapterFactory,
 )
-from core.request.middleware.fingerprint import FingerprintProvider
+from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
 
 

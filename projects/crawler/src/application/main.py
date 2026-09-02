@@ -13,10 +13,13 @@ async def main() -> None:
     )
 
     application = bootstrap.create(
-        "config.yaml",
+        "application.yaml",
     )
 
-    await application.run()
+    try:
+        await application.run()
+    finally:
+        await application.close()
 
 
 if __name__ == "__main__":

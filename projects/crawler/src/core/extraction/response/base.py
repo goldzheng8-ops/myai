@@ -1,6 +1,6 @@
 from abc import ABC
-from typing import Any, Sequence
-
+from typing import Any
+from collections.abc import Sequence
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter

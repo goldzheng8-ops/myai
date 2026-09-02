@@ -2,10 +2,10 @@ from collections.abc import Iterable
 
 from core.extraction.transform.config import JoinTransformConfig
 from core.extraction.transform.base import TransformPlugin
-
+from core.extraction.transform.typing import TransformType
 
 class JoinTransform(TransformPlugin[Iterable[str], str, JoinTransformConfig]):
-    plugin_type = JoinTransformConfig.type
+    plugin_type = TransformType.DATETIME
 
     def transform_one(
         self,

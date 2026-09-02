@@ -1,19 +1,18 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from core.request.context import RequestContext
 from enum import Enum
-from typing import  TypeAlias,TYPE_CHECKING, TypeVar
+from typing import TypeAlias
 from collections.abc import Awaitable, Callable
 
-from core.request.middleware.config import MiddlewareConfig
 
-
-
-if TYPE_CHECKING :
-    from core.request.context import RequestContext
 
 
 RequestMiddlewareNext: TypeAlias = Callable[
-    [RequestContext],
-    Awaitable[RequestContext],
+    ["RequestContext"],
+    Awaitable["RequestContext"],
 ]
 
 class MiddlewareType(str,Enum):
@@ -27,8 +26,3 @@ class MiddlewareType(str,Enum):
     COOKIE = "cookie"
     THROTTLE = "throttle"
 
-MiddlewareConfigT = TypeVar(
-    "MiddlewareConfigT",
-    bound=MiddlewareConfig,
-    contravariant=True,
-)

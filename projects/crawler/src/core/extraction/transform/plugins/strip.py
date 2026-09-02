@@ -1,9 +1,9 @@
 from core.extraction.transform.config import StripTransformConfig
 from core.extraction.transform.base import TransformPlugin
-
+from core.extraction.transform.typing import TransformType
 
 class StripTransform(TransformPlugin[str, str, StripTransformConfig]):
-    plugin_type = StripTransformConfig.type
+    plugin_type = TransformType.DATETIME
 
     def transform_one(self, value: str, config: StripTransformConfig) -> str:
 

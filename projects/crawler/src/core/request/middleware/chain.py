@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Sequence
-from typing import Any, Final, Iterator
-
-from ..context import RequestContext
+from collections.abc import Awaitable, Callable, Sequence, Iterator
+from typing import Any, Final
+from core.request.context import RequestContext
 
 from .base import RequestMiddleware
 from .typing import RequestMiddlewareNext

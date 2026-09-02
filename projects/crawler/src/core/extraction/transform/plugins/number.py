@@ -1,9 +1,9 @@
 from core.extraction.transform.config import NumberTransformConfig
 from core.extraction.transform.base import TransformPlugin
-
+from core.extraction.transform.typing import TransformType
 
 class NumberTransform(TransformPlugin[str | int | float, int | float, NumberTransformConfig]):
-    plugin_type = NumberTransformConfig.type
+    plugin_type = TransformType.DATETIME
 
     def transform_one(
         self,

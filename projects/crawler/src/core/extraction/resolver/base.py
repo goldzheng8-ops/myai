@@ -1,5 +1,5 @@
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Generic, TypeVar
 from core.plugin.base import Plugin
 from core.extraction.extractor.context import ExtractContext
@@ -13,7 +13,6 @@ class Resolver(
 
     Generic[ConfigT],
 
-    ABC,
 
 ):
 

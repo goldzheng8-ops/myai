@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.request.downloader import BaseDownloader
+from core.request.downloader.base import BaseDownloader
 from core.request.downloader.config import DownloaderSpecUnion
 from core.request.downloader.registry import DownloaderRegistry
 from core.lifecycle.manager import LifecycleManager

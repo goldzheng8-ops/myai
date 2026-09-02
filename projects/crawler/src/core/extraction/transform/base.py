@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Iterable
 from typing import ClassVar, Generic
 
@@ -9,7 +9,6 @@ from core.extraction.transform.typing import InputT,OutputT,ConfigT
 class TransformPlugin(
     Plugin,
     Generic[InputT,OutputT,ConfigT],
-    ABC,
 ):
 
     plugin_type: ClassVar[TransformType]

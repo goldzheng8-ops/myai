@@ -1,5 +1,5 @@
-from typing import Any, Protocol, Sequence
-
+from typing import Any, Protocol
+from collections.abc import Sequence
 from core.extraction.transform.config import TransformConfigUnion
 
 

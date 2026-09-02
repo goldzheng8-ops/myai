@@ -3,7 +3,16 @@ from typing import Any, Protocol
 
 from core.cache.protocol import Cache
 from core.provider import ProviderResolver
-from core.request.middleware import AuthMiddleware, CacheMiddleware, CookieMiddleware, DeduplicateMiddleware, FingerprintMiddleware, ProxyMiddleware, RequestMiddleware, RetryMiddleware, SessionMiddleware, ThrottleMiddleware
+from core.request.middleware.auth.middleware import AuthMiddleware
+from core.request.middleware.cache.middleware import CacheMiddleware
+from core.request.middleware.cookie.middleware import CookieMiddleware
+from core.request.middleware.deduplicate.middleware import DeduplicateMiddleware
+from core.request.middleware.fingerprint.middleware import FingerprintMiddleware
+from core.request.middleware.proxy.middleware import ProxyMiddleware
+from core.request.middleware.base import RequestMiddleware
+from core.request.middleware.retry.middleware import RetryMiddleware
+from core.request.middleware.session.middleware import SessionMiddleware
+from core.request.middleware.throttle.middleware import ThrottleMiddleware
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider
 from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, ProxyMiddlewareConfig, RetryMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig
@@ -12,7 +21,7 @@ from core.request.middleware.proxy.provider import ProxyProvider
 from core.request.middleware.session.store import SessionStore
 from core.request.middleware.throttle.limiter import ThrottleLimiter
 from core.request.middleware.throttle.resolver import ThrottleKeyResolver
-from .typing import MiddlewareConfigT
+from .base import MiddlewareConfigT
 
 class MiddlewareFactory(Protocol[MiddlewareConfigT]):
     def __call__(

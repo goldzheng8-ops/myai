@@ -5,7 +5,7 @@ from typing import ClassVar
 
 from core.plugin import Plugin
 from .typing import MiddlewareType, RequestMiddlewareNext
-from ..context import RequestContext
+from core.request.context import RequestContext
 
 class MiddlewarePlugin(
     Plugin,

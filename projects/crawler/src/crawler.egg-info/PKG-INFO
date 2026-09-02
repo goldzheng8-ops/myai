@@ -5,6 +5,8 @@ Summary: Scrapy microservice for AI-SPACE
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 Requires-Dist: fastapi>=0.116
+Requires-Dist: pydantic<3,>=2.11
+Requires-Dist: pydantic-settings<3,>=2.10
 Requires-Dist: markdown>=3.10.3
 Requires-Dist: uvicorn[standard]>=0.35
 Requires-Dist: scrapy[httpx]>=2.18
@@ -15,7 +17,6 @@ Requires-Dist: scrapy-rotating-proxies>=0.6.2
 Requires-Dist: sqlalchemy[asyncio]>=2.0
 Requires-Dist: asyncpg>=0.29
 Requires-Dist: aiosqlite>=0.10
-Requires-Dist: beautifulsoup4>=4.15.0
 Requires-Dist: jmespath>=1.1.0
 Requires-Dist: jsonpath-ng>=1.8.0
 Requires-Dist: jinja2>=3.1.6
