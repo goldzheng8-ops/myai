@@ -12,12 +12,7 @@ from core.request.downloader.registry import DownloaderRegistry
 def register_downloaders(
     builder: ProviderBuilder,
 ) -> None:
-    builder.add_factory(
-        DownloaderRegistry,
-        lambda resolver: create_downloader_registry(
-            resolver,
-        ),
-    )
+    
     builder.add_factory(
         DownloaderManager,
         lambda resolver: DownloaderManager(
@@ -27,6 +22,13 @@ def register_downloaders(
             lifecycle=resolver.resolve(
                 LifecycleManager,
             ),
+        ),
+    )
+    
+    builder.add_factory(
+        DownloaderRegistry,
+        lambda resolver: create_downloader_registry(
+            resolver,
         ),
     )
 

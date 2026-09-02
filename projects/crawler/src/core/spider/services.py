@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.request.discovery.engine import DiscoveryEngine
-from core.extraction.extractor.engine import ExtractEngine
+from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.response.factory import (
     ResponseAdapterFactory,
 )
@@ -19,7 +19,7 @@ class SpiderServices:
 
     request_runner: RequestRunner
 
-    extract_engine: ExtractEngine
+    extract_engine: ExtractExecutor
 
     discovery_engine: DiscoveryEngine
 

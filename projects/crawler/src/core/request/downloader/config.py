@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Annotated, Literal
 
 from core.request.downloader.typing import BrowserTypeName, WaitUntilState
@@ -8,8 +7,8 @@ from core.request.typing import DownloaderType
 from core.typing.config import BaseConfig
 from pydantic import Field
 
-@dataclass(frozen=True, slots=True)
-class DownloaderConfig:
+
+class DownloaderConfig(BaseConfig):
     """
     Common configuration for downloader implementations.
     """
@@ -17,7 +16,7 @@ class DownloaderConfig:
     timeout: float | None = None
 
 
-@dataclass(frozen=True, slots=True)
+
 class PlaywrightDownloaderConfig(
     DownloaderConfig,
 ):
@@ -38,7 +37,7 @@ class PlaywrightDownloaderConfig(
     user_agent: str | None = None
 
 
-@dataclass(frozen=True, slots=True)
+
 class HttpxDownloaderConfig(
     DownloaderConfig,
 ):
@@ -55,7 +54,7 @@ class HttpxDownloaderConfig(
     http2: bool = False
 
 
-@dataclass(frozen=True, slots=True)
+
 class ScrapyDownloaderConfig(
     DownloaderConfig,
 ):

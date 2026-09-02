@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Annotated, Any, Literal
 
 
 from core.request.config import RequestConfig
 from core.request.middleware.config import MiddlewareSpecUnion
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
 from .typing import SpiderTemplate
 
@@ -18,14 +17,10 @@ from core.request.typing import RequestKind
 from core.typing.config import BaseConfig
 
 
-class SpiderConfig(BaseModel):
+class SpiderConfig(BaseConfig):
     """
     Common static configuration of a spider.
     """
-
-    model_config = ConfigDict(
-        frozen=True,
-    )
 
     name: str
 
@@ -84,7 +79,6 @@ class BrowserSpiderConfig(SpiderConfig):
         ...
     ] = ()
 
-    browser: BrowserConfig
 
 SpiderConfigUnion = Annotated[
     (
@@ -110,24 +104,3 @@ WaitUntil = Literal[
 ]
 
 
-@dataclass(frozen=True, slots=True)
-class BrowserConfig(BaseConfig):
-    """
-    Browser execution configuration for a browser spider.
-    """
-
-    browser: BrowserType = "chromium"
-
-    headless: bool = True
-
-    wait_until: WaitUntil = "load"
-
-    timeout: float | None = 30.0
-
-    viewport_width: int = 1280
-
-    viewport_height: int = 720
-
-    user_agent: str | None = None
-
-    javascript: bool = True

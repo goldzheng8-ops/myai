@@ -8,12 +8,9 @@ from core.request.middleware.chain_builder import MiddlewareSpecUnion
 from core.typing.config import BaseConfig
 from pydantic import  Field, model_validator
 
-from core.spider.config import BrowserConfig, RequestKind, SpiderConfigUnion
+from core.spider.config import  RequestKind, SpiderConfigUnion
 
-
-from application.config.base import ApplicationConfigBase
-
-class EngineRuntimeConfig(ApplicationConfigBase):
+class EngineRuntimeConfig(BaseConfig):
     """
     Runtime configuration of the crawler engine.
     """
@@ -23,7 +20,7 @@ class EngineRuntimeConfig(ApplicationConfigBase):
     timeout: float | None = 30.0
 
 
-class ThrottleRuntimeConfig(ApplicationConfigBase):
+class ThrottleRuntimeConfig(BaseConfig):
     """
     Runtime configuration of throttling.
     """
@@ -33,7 +30,7 @@ class ThrottleRuntimeConfig(ApplicationConfigBase):
     concurrency: int | None = None
 
 
-class RuntimeConfig(ApplicationConfigBase):
+class RuntimeConfig(BaseConfig):
     """
     Application runtime configuration.
     """
@@ -100,5 +97,5 @@ class SpiderConfigOverride(BaseConfig):
         ...
     ] | None = None
 
-    browser: BrowserConfig | None = None
+
 

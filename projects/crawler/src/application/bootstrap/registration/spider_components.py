@@ -1,5 +1,11 @@
 from typing import Any
-
+from core.extraction.extractor.executor import ExtractExecutor
+from core.extraction.response.factory import ResponseAdapterFactory
+from core.request.discovery.engine import DiscoveryEngine
+from core.request.middleware.fingerprint import FingerprintProvider
+from core.request.runner import RequestRunner
+from core.spider.services import SpiderServices
+from core.spider.executor import SpiderExecutor
 from core.provider import ProviderBuilder, ProviderResolver
 from core.spider import (
     SpiderRegistry,
@@ -14,6 +20,26 @@ from core.spider import (
 def register_spider_components(
     builder: ProviderBuilder,
 ) -> None:
+
+    builder.add_factory(
+        SpiderExecutor,
+        lambda resolver: SpiderExecutor(
+            services=resolver.resolve(
+                SpiderServices,
+            ),
+        ),
+    )
+
+    builder.add_factory(
+        SpiderServices,
+        lambda resolver: SpiderServices(
+            request_runner=resolver.resolve(RequestRunner),
+            extract_engine=resolver.resolve(ExtractExecutor),
+            discovery_engine=resolver.resolve(DiscoveryEngine),
+            fingerprint_provider=resolver.resolve(FingerprintProvider),
+            response_adapter_factory=resolver.resolve(ResponseAdapterFactory),
+        ),
+    )
 
     builder.add_factory(
         SpiderRegistry,

@@ -2,10 +2,11 @@
 from typing import Any
 
 from core.request.typing import HttpMethod
-from pydantic import BaseModel, Field
+from core.typing.config import BaseConfig
+from pydantic import Field
 
 
-class RequestConfig(BaseModel):
+class RequestConfig(BaseConfig):
     url: str
     headers: dict[str, str] = Field(default_factory=dict)
     cookies: dict[str, str] = Field(default_factory=dict)

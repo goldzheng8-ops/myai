@@ -13,19 +13,13 @@ def register_request_services(
 ) -> None:
 
     builder.add_factory(
-        DownloaderRequestExecutor,
+        RequestExecutor,
         lambda resolver: DownloaderRequestExecutor(
             manager=resolver.resolve(
                 DownloaderManager,
             ),
         ),
-    )
 
-    builder.add_factory(
-        RequestExecutor,
-        lambda resolver: resolver.resolve(
-            DownloaderRequestExecutor,
-        ),
     )
     builder.add_factory(
         RequestRunner,

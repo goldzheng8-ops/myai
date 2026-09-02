@@ -7,23 +7,25 @@ from core.provider import (
 )
 
 from .container import ApplicationContainer
-from .registration.downloaders import register_downloaders
-from .registration.middlewares import register_middleware_dependencies,register_middlewares
-from .registration.spider_components import register_spider_components
-from .registration.spider_configs import register_spider_configs
-from .registration.runtimes import register_runtimes
-from .registration.adapters import register_adapters
-from .registration.extraction_services import register_extraction_services
-from .registration.spider_services import register_spider_services
-from .registration.lifecycle import register_lifecycle
-from .registration.crawler import register_crawler
-from .registration.request_services import register_request_services
-from .registration.events import register_events
-from .registration.resolvers import register_resolvers
-from .registration.transforms import register_transforms
-from .registration.extractors import register_extractors
-from .registration.discoveries import register_discoveries
-from .registration.selector import register_selector_registries
+from .registration import (
+    register_adapters,
+    register_crawler,
+    register_discoveries,
+    register_downloaders,
+    register_events,
+    register_extractors,
+    register_lifecycle,
+    register_middleware_dependencies,
+    register_middlewares,
+    register_runtimes,
+    register_request_services,
+    register_resolvers,
+    register_selector_registries,
+    register_spider_components,
+    register_spider_configs,
+    register_template,
+    register_transforms,
+)
 
 class ApplicationContainerFactory:
     """
@@ -101,6 +103,10 @@ class ApplicationContainerFactory:
             builder,
         )
 
+        register_template(
+            builder,
+        )
+
         register_resolvers(
             builder,
         )
@@ -118,14 +124,6 @@ class ApplicationContainerFactory:
         )
 
         register_request_services(
-            builder,
-        )
-
-        register_extraction_services(
-            builder,
-        )
-
-        register_spider_services(
             builder,
         )
 

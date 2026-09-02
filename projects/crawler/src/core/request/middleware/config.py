@@ -1,17 +1,16 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
 from typing import Annotated, Literal
 
 from core.request.typing import HttpMethod
 from core.request.middleware.typing import MiddlewareType
+from core.typing.config import BaseConfig
 from pydantic import Field
 
 
-@dataclass(frozen=True, slots=True)
-class MiddlewareConfig:
+
+class MiddlewareConfig(BaseConfig):
     pass
 
-@dataclass(frozen=True, slots=True)
 class RetryMiddlewareConfig(
     MiddlewareConfig,
 ):
@@ -40,13 +39,13 @@ class RetryMiddlewareConfig(
                 "max_delay must be greater than or equal to 0."
             )
 
-@dataclass(frozen=True, slots=True)
+
 class AuthMiddlewareConfig(MiddlewareConfig):
     override_headers: bool = False
     override_cookies: bool = False
     override_params: bool = False
 
-@dataclass(frozen=True, slots=True)
+
 class CacheMiddlewareConfig(
     MiddlewareConfig,
 ):
@@ -58,92 +57,91 @@ class CacheMiddlewareConfig(
             HttpMethod.HEAD,
         }
     )
-@dataclass(frozen=True, slots=True)
+
 class CookieMiddlewareConfig(
     MiddlewareConfig,
 ):
     merge_session_cookies: bool = True
     update_session_cookies: bool = True
-@dataclass(frozen=True, slots=True)
+
 class DeduplicateMiddlewareConfig(
     MiddlewareConfig,
 ):
     pass
-@dataclass(frozen=True, slots=True)
+
 class FingerprintMiddlewareConfig(
     MiddlewareConfig,
 ):
     pass
-@dataclass(frozen=True, slots=True)
+
 class ProxyMiddlewareConfig(
     MiddlewareConfig,
 ):
     override: bool = False
-@dataclass(frozen=True, slots=True)
+
 class SessionMiddlewareConfig(
     MiddlewareConfig,
 ):
     default_session_id: str | None = None
     create_if_missing: bool = True
     save_after_request: bool = True
-@dataclass(frozen=True, slots=True)
+
 class ThrottleMiddlewareConfig(
     MiddlewareConfig,
 ):
     pass
 
 
-@dataclass(frozen=True, slots=True)
-class MiddlewareSpec:
-    type: MiddlewareType
+
+class MiddlewareSpec(BaseConfig):
     enabled: bool = True
     priority: int = 0
-    config: MiddlewareConfig | None = None
+
 
 class RetryMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.RETRY] = (MiddlewareType.RETRY)
-    config: RetryMiddlewareConfig = field(
+    config: RetryMiddlewareConfig = Field(
         default_factory=RetryMiddlewareConfig,
     ) 
-@dataclass(frozen=True, slots=True)
+
 class AuthMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.AUTH] = MiddlewareType.AUTH
-    config: AuthMiddlewareConfig = field(
+    config: AuthMiddlewareConfig = Field(
         default_factory=AuthMiddlewareConfig,
     )
 class CacheMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.CACHE] = (MiddlewareType.CACHE)
-    config: CacheMiddlewareConfig = field(
+    config: CacheMiddlewareConfig = Field(
         default_factory=CacheMiddlewareConfig,
     ) 
 class CookieMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.COOKIE] = (MiddlewareType.COOKIE)
-    config: CookieMiddlewareConfig = field(
+    config: CookieMiddlewareConfig = Field(
         default_factory=CookieMiddlewareConfig,
     ) 
 class DeduplicateMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.DEDUPLICATE] = (MiddlewareType.DEDUPLICATE)
-    config: DeduplicateMiddlewareConfig = field(
+    config: DeduplicateMiddlewareConfig = Field(
         default_factory=DeduplicateMiddlewareConfig,
     ) 
 class FingerprintMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.FINGERPRINT] = (MiddlewareType.FINGERPRINT)
-    config: FingerprintMiddlewareConfig = field(
+    config: FingerprintMiddlewareConfig = Field(
         default_factory=FingerprintMiddlewareConfig,
     ) 
 class ProxyMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.PROXY] = (MiddlewareType.PROXY)
-    config: ProxyMiddlewareConfig = field(
+    config: ProxyMiddlewareConfig = Field(
         default_factory=ProxyMiddlewareConfig,
     ) 
 class SessionMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.SESSION] = (MiddlewareType.SESSION)
-    config: SessionMiddlewareConfig = field(
+    config: SessionMiddlewareConfig = Field(
         default_factory=SessionMiddlewareConfig,
     ) 
 class ThrottleMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.THROTTLE] = (MiddlewareType.THROTTLE)
-    config: ThrottleMiddlewareConfig = field(
+    config: ThrottleMiddlewareConfig = Field(
         default_factory=ThrottleMiddlewareConfig,
     ) 
 

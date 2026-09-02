@@ -1,6 +1,7 @@
 from typing import Any
 
 from core.provider import ProviderBuilder, ProviderResolver
+from core.request.discovery.engine import DiscoveryEngine
 from core.request.discovery.typing import DiscoveryType
 from core.request.discovery import (
     DiscoveryRegistry,
@@ -18,6 +19,15 @@ from core.request.discovery import (
 def register_discoveries(
     builder: ProviderBuilder,
 ) -> None:
+
+    builder.add_factory(
+        DiscoveryEngine,
+        lambda resolver: DiscoveryEngine(
+            registry=resolver.resolve(
+                DiscoveryRegistry,
+            ),
+        ),
+    )
 
     builder.add_factory(
         DiscoveryRegistry,
