@@ -5,6 +5,7 @@ import asyncio
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import RetryMiddlewareConfig
+from core.request.middleware.retry.policy import RetryPolicy
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 
 class RetryMiddleware(
@@ -13,11 +14,13 @@ class RetryMiddleware(
     plugin_type = MiddlewareType.RETRY
     def __init__(
         self,
+        policy: RetryPolicy,
         config: RetryMiddlewareConfig,
     ) -> None:
         super().__init__(
             config,
         )
+        self._policy = policy
 
     @property
     def config(
@@ -38,16 +41,18 @@ class RetryMiddleware(
                 return await next_(
                     context,
                 )
-
             except asyncio.CancelledError:
                 raise
 
-            except Exception:
+            except Exception as exc:
 
-                if (
-                    retry_number
-                    >= self.config.max_retries
+                if not self._policy.should_retry(
+                    context=context,
+                    exception=exc,
                 ):
+                    raise
+
+                if retry_number >= self.config.max_retries:
                     raise
 
                 delay = self._calculate_delay(
@@ -55,9 +60,7 @@ class RetryMiddleware(
                 )
 
                 if delay > 0:
-                    await asyncio.sleep(
-                        delay,
-                    )
+                    await asyncio.sleep(delay)
 
         raise RuntimeError(
             "RetryMiddleware exited without a result."

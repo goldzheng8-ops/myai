@@ -1,5 +1,7 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
+from collections.abc import Sequence
+import json
+from core.request.response.model import RequestResponse
 from jsonpath_ng.ext import parse
 import jmespath
 import re
@@ -9,22 +11,105 @@ from core.extraction.response.base import ResponseAdapter
 from core.extraction.response.node import NodeAdapter
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
+from parsel import Selector
 
+class StaticNodeAdapter(
+    NodeAdapter,
+):
+
+    def __init__(
+        self,
+        selector: Selector,
+    ) -> None:
+
+        super().__init__()
+
+        self._selector = selector
+
+        self._node_dispatch.register(
+            SelectorType.CSS,
+            self._css_nodes,
+        )
+
+        self._node_dispatch.register(
+            SelectorType.XPATH,
+            self._xpath_nodes,
+        )
+
+    @property
+    def selector(
+        self,
+    ) -> Selector:
+        return self._selector
+
+    async def text(
+        self,
+    ) -> str | None:
+
+        return self._selector.xpath(
+            "string(.)",
+        ).get()
+
+    async def html(
+        self,
+    ) -> str:
+
+        return self._selector.get()
+
+    async def attribute(
+        self,
+        name: str,
+    ) -> str | None:
+
+        return self._selector.attrib.get(
+            name,
+        )
+
+    async def _css_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+
+        return [
+            StaticNodeAdapter(node)
+            for node in self._selector.css(
+                selector.selector,
+            )
+        ]
+
+    async def _xpath_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+
+        return [
+            StaticNodeAdapter(node)
+            for node in self._selector.xpath(
+                selector.selector,
+            )
+        ]
 
 class StaticResponseAdapter(
     ResponseAdapter,
-    ABC,
 ):
     """
-    Base adapter for static responses.
+    Base adapter for static response snapshots.
 
-    Provides selector capabilities that do not depend
-    on a browser runtime.
+    The adapter operates on RequestResponse rather than
+    downloader-specific runtime response objects.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        response: RequestResponse,
+    ) -> None:
 
         super().__init__()
+
+        self._response = response
+
+        self._selector_cache: Selector | None = None
+        self._json_cache: Any | None = None
 
         self._selector_dispatch.register(
             SelectorType.REGEX,
@@ -41,23 +126,46 @@ class StaticResponseAdapter(
             self._select_jsonpath,
         )
 
-    @abstractmethod
+    @property
+    def response(
+        self,
+    ) -> RequestResponse:
+        return self._response
+
     async def content(
         self,
     ) -> str:
-        raise NotImplementedError
+        return self._response.text
 
-    @abstractmethod
     async def json(
         self,
     ) -> Any:
-        raise NotImplementedError
 
-    @abstractmethod
+        if self._json_cache is None:
+            self._json_cache = json.loads(
+                self._response.text,
+            )
+
+        return self._json_cache
+
     async def root(
         self,
     ) -> NodeAdapter:
-        raise NotImplementedError
+
+        return StaticNodeAdapter(
+            self._selector(),
+        )
+
+    def _selector(
+        self,
+    ) -> Selector:
+
+        if self._selector_cache is None:
+            self._selector_cache = Selector(
+                text=self._response.text,
+            )
+
+        return self._selector_cache
 
     async def _select_regex(
         self,

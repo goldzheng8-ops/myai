@@ -10,14 +10,8 @@ from scrapy.http import Response
 
 
 
-@dataclass(frozen=True, slots=True,kw_only= True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class RequestResponse:
-    """
-    Raw response produced by request execution.
-
-    This model belongs to the request layer and contains
-    only transport-level response data.
-    """
 
     url: str
 
@@ -36,6 +30,17 @@ class RequestResponse:
     encoding: str | None = None
 
     reason: str | None = None
+
+    content_type: str | None = None
+
+    @property
+    def text(self) -> str:
+        encoding = self.encoding or "utf-8"
+
+        return self.body.decode(
+            encoding,
+            errors="replace",
+        )
 
 
 @dataclass(frozen=True, slots=True)
