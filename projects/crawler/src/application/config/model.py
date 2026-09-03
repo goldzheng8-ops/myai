@@ -3,7 +3,8 @@ from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
-from core.request.discovery.config import DiscoveryConfigUnion, RequestProfile
+from core.request.discovery.config import DiscoveryConfigUnion
+from core.request.profile import RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
 from core.typing.config import BaseConfig
 from pydantic import  Field, model_validator

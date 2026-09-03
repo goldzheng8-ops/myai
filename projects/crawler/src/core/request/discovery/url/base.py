@@ -18,6 +18,7 @@ UrlConfigT = TypeVar(
     bound=UrlDiscoveryConfig,
 )
 
+
 class UrlDiscoveryPlugin(
     DiscoveryPlugin[UrlConfigT],
     ABC,
@@ -52,7 +53,7 @@ class UrlDiscoveryPlugin(
         descriptors = [
             self.build_descriptor(
                 url=url,
-                profile=config.profile,
+                profile=context.descriptor.profile,
             )
             for url in urls
         ]
@@ -75,6 +76,7 @@ class UrlDiscoveryPlugin(
             for item in value
             if item is not None
         ]
+
     def build_descriptor(
         self,
         *,

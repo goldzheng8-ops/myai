@@ -42,7 +42,7 @@ class MiddlewareChainBuilder:
 
         entries.sort(
             key=lambda item: (
-                item[0],
+                -item[0],
                 item[1],
             )
         )

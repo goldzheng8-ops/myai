@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Annotated, Literal
+from typing import Annotated, ClassVar, Literal
 
 from core.request.typing import HttpMethod
 from core.request.middleware.typing import MiddlewareType
@@ -95,52 +95,61 @@ class ThrottleMiddlewareConfig(
 
 class MiddlewareSpec(BaseConfig):
     enabled: bool = True
-    priority: int = 0
+    priority: ClassVar[int]
 
 
 class RetryMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.RETRY] = (MiddlewareType.RETRY)
+    priority: ClassVar[int] = 30
     config: RetryMiddlewareConfig = Field(
         default_factory=RetryMiddlewareConfig,
     ) 
 
 class AuthMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.AUTH] = MiddlewareType.AUTH
+    priority: ClassVar[int] = 50
     config: AuthMiddlewareConfig = Field(
         default_factory=AuthMiddlewareConfig,
     )
 class CacheMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.CACHE] = (MiddlewareType.CACHE)
+    priority: ClassVar[int] = 80
     config: CacheMiddlewareConfig = Field(
         default_factory=CacheMiddlewareConfig,
     ) 
 class CookieMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.COOKIE] = (MiddlewareType.COOKIE)
+    priority: ClassVar[int] = 60
     config: CookieMiddlewareConfig = Field(
         default_factory=CookieMiddlewareConfig,
     ) 
 class DeduplicateMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.DEDUPLICATE] = (MiddlewareType.DEDUPLICATE)
+    priority: ClassVar[int] = 90
     config: DeduplicateMiddlewareConfig = Field(
         default_factory=DeduplicateMiddlewareConfig,
     ) 
 class FingerprintMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.FINGERPRINT] = (MiddlewareType.FINGERPRINT)
+    priority: ClassVar[int] = 100
     config: FingerprintMiddlewareConfig = Field(
         default_factory=FingerprintMiddlewareConfig,
     ) 
 class ProxyMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.PROXY] = (MiddlewareType.PROXY)
+    priority: ClassVar[int] = 40
     config: ProxyMiddlewareConfig = Field(
         default_factory=ProxyMiddlewareConfig,
     ) 
 class SessionMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.SESSION] = (MiddlewareType.SESSION)
+    priority: ClassVar[int] = 70
     config: SessionMiddlewareConfig = Field(
         default_factory=SessionMiddlewareConfig,
     ) 
 class ThrottleMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.THROTTLE] = (MiddlewareType.THROTTLE)
+    priority: ClassVar[int] = 20
     config: ThrottleMiddlewareConfig = Field(
         default_factory=ThrottleMiddlewareConfig,
     ) 

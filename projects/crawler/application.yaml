@@ -34,13 +34,54 @@ spiders:
       - url: https://example.com/news
 
     middlewares:
+
       - type: retry
-        enabled: true
-        priority: 200
+        priority: 100
         config:
           max_retries: 3
-          backoff: 1.0
+          retry_delay: 1.0
+          backoff_factor: 2.0
+          max_delay: 30.0
 
+      - type: auth
+        priority: 90
+        config:
+          override_headers: false
+          override_cookies: false
+          override_params: false
+
+      - type: cache
+        priority: 80
+        config:
+          read: true
+          write: true
+          methods:
+            - GET
+            - HEAD
+
+      - type: cookie
+        priority: 70
+
+      - type: deduplicate
+        priority: 60
+
+      - type: fingerprint
+        priority: 50
+
+      - type: proxy
+        priority: 40
+        config:
+          override: false
+
+      - type: session
+        priority: 30
+        config:
+          default_session_id: null
+          create_if_missing: true
+          save_after_request: true
+
+      - type: throttle
+        priority: 20
     extraction:
 
       type: object

@@ -18,20 +18,18 @@ from core.typing.config import BaseConfig
 
 
 class SpiderConfig(BaseConfig):
-    """
-    Common static configuration of a spider.
-    """
-
     name: str
 
     kind: RequestKind
 
     profile: RequestProfile
 
+    extraction: ExtractConfigUnion
     start_requests: tuple[
         RequestConfig,
-        ...,
+        ...
     ] = ()
+
     middlewares: tuple[
         MiddlewareSpecUnion,
         ...
@@ -40,15 +38,19 @@ class SpiderConfig(BaseConfig):
         default_factory=dict,
     )
 
-class ListSpiderConfig(SpiderConfig):
-    template: Literal[SpiderTemplate.LIST] = SpiderTemplate.LIST
 
-    extraction: ExtractConfigUnion
-
+class DiscoverySpiderConfig(SpiderConfig):
     discovery: tuple[
         DiscoveryConfigUnion,
         ...
     ] = ()
+
+
+class ListSpiderConfig(DiscoverySpiderConfig):
+    template: Literal[SpiderTemplate.LIST] = SpiderTemplate.LIST
+
+    extraction: ExtractConfigUnion
+
 
 class DetailSpiderConfig(SpiderConfig):
     template: Literal[SpiderTemplate.DETAIL] = (
@@ -57,27 +59,19 @@ class DetailSpiderConfig(SpiderConfig):
 
     extraction: ExtractConfigUnion
 
-class ApiSpiderConfig(SpiderConfig):
+
+class ApiSpiderConfig(DiscoverySpiderConfig):
     template: Literal[SpiderTemplate.API] = SpiderTemplate.API
 
     extraction: ExtractConfigUnion
 
-    discovery: tuple[
-        DiscoveryConfigUnion,
-        ...
-    ] = ()
 
-class BrowserSpiderConfig(SpiderConfig):
+class BrowserSpiderConfig(DiscoverySpiderConfig):
     template: Literal[SpiderTemplate.BROWSER] = (
         SpiderTemplate.BROWSER
     )
 
     extraction: ExtractConfigUnion
-
-    discovery: tuple[
-        DiscoveryConfigUnion,
-        ...
-    ] = ()
 
 
 SpiderConfigUnion = Annotated[
@@ -102,5 +96,3 @@ WaitUntil = Literal[
     "load",
     "networkidle",
 ]
-
-
