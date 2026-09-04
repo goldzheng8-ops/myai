@@ -1,4 +1,4 @@
-from core.extraction.response.factory import ResponseAdapterFactory
+from core.extraction.response.resolver import ResponseAdapterResolver
 from core.provider import ProviderBuilder
 
 
@@ -7,5 +7,5 @@ def register_adapters(
 ) -> None:
 
     builder.add_type(
-        ResponseAdapterFactory,
+        ResponseAdapterResolver,
     )

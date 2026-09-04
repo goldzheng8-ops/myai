@@ -1,87 +1,19 @@
 import asyncio
 from core.extraction.response.browser import BrowserResponseAdapter
-from core.request.response.model import BrowserResponse
-from playwright.async_api import BrowserContext, Locator, Page
+
+
+from core.request.response.model import BrowserResponse,RequestResponse
+from playwright.async_api import BrowserContext, Page
 import json
 from typing import Any
 from collections.abc import Sequence
 
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
-from core.extraction.response.node import NodeAdapter
+from core.extraction.response.node import NodeAdapter, PlaywrightNodeAdapter, StaticNodeAdapter
 
 
-class PlaywrightNodeAdapter(NodeAdapter):
 
-    def __init__(self, locator: Locator):
-
-        super().__init__()
-
-        self._locator = locator
-
-        self._node_dispatch.register(
-            SelectorType.CSS,
-            self._css_nodes,
-        )
-        self._node_dispatch.register(
-            SelectorType.XPATH,
-            self._xpath_nodes,
-        )
-
-    async def attribute(
-        self,
-        name: str,
-    ) -> str | None:
-
-        return await self._locator.get_attribute(name)
-
-    async def text(self) -> str | None:
-
-        return await self._locator.text_content()
-
-    async def html(
-        self,
-    ) -> str:
-
-        return await self._locator.evaluate(
-            "(element) => element.outerHTML",
-        )
-
-    async def _css_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-
-        locator = self._locator.locator(
-            selector.selector,
-        )
-
-        count = await locator.count()
-
-        return [
-            PlaywrightNodeAdapter(
-                locator.nth(index),
-            )
-            for index in range(count)
-        ]
-
-    async def _xpath_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-
-        locator = self._locator.locator(
-            f"xpath={selector.selector}",
-        )
-
-        count = await locator.count()
-
-        return [
-            PlaywrightNodeAdapter(
-                locator.nth(index),
-            )
-            for index in range(count)
-        ]
 
 class PlaywrightResponseAdapter(
     BrowserResponseAdapter,
@@ -89,58 +21,85 @@ class PlaywrightResponseAdapter(
 
     def __init__(
         self,
-        response: BrowserResponse,
+        response: RequestResponse,
     ) -> None:
-        super().__init__()
+        super().__init__(response)
 
-        if response.page is None:
-            raise ValueError(
-                "BrowserResponse.page is required.",
-            )
+        if isinstance(response, BrowserResponse):
+            if response.page is None:
+                raise ValueError(
+                    "BrowserResponse.page is required."
+                )
 
-        if response.browser_context is None:
-            raise ValueError(
-                "BrowserResponse.browser_context "
-                "is required.",
-            )
+            if response.browser_context is None:
+                raise ValueError(
+                    "BrowserResponse.browser_context is required."
+                )
 
-        self._response = response
-        self._page = response.page
-        self._browser_context = (
-            response.browser_context
-        )
+            self._page = response.page
+            self._browser_context = response.browser_context
 
-        self._json_cache: Any | None = None
+        else:
+            self._page = None
+            self._browser_context = None
 
-
-        self._node_dispatch.register(
+        self._runtime_dispatch.register(
             SelectorType.CSS,
             self._css_nodes,
         )
-        self._node_dispatch.register(
+        self._runtime_dispatch.register(
             SelectorType.XPATH,
             self._xpath_nodes,
         )
-
+        
     @property
-    def page(
-        self,
-    ) -> Page:
-
+    def page(self) -> Page:
+        if self._page is None:
+            raise RuntimeError(
+                "Browser page is unavailable for "
+                "a cached response.",
+            )
         return self._page
 
     @property
-    def browser_context(
-        self,
-    ) -> BrowserContext:
+    def browser_context(self) -> BrowserContext:
+        if self._browser_context is None:
+            raise RuntimeError(
+                "Browser context is unavailable for "
+                "a cached response.",
+            )
         return self._browser_context
 
-    async def content(
+    async def select_nodes(
         self,
-    ) -> str:
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+        if self._page is not None:
+            return await self.select_runtime_nodes(
+                selector,
+            )
+        return await self.select_static_nodes(
+            selector,
+        )
 
-        return await self._page.content()
+    async def select_runtime_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+        handler = (
+            self._runtime_dispatch.dispatch(
+                selector.type
+            )
+        )
 
+        return await handler(
+            selector,
+        )
+
+    async def content(self) -> str:
+        if self._page is not None:
+            return await self._page.content()
+        return self._response.text
 
 
     async def json(
@@ -155,24 +114,26 @@ class PlaywrightResponseAdapter(
 
         return self._json_cache
     
-    async def root(
-        self,
-    ) -> NodeAdapter:
+    async def root(self) -> NodeAdapter:
 
-        return PlaywrightNodeAdapter(
-            self._page.locator("html"),
+        if self._page is not None:
+            return PlaywrightNodeAdapter(
+                self._page.locator("html"),
+            )
+
+        return StaticNodeAdapter(
+            self._selector(),
         )
-
     async def scroll(
         self,
         *,
         count: int = 1,
         delay: float = 0.5,
-    ):
+    ) -> None:
 
         for _ in range(count):
 
-            await self._page.mouse.wheel(
+            await self.page.mouse.wheel(
                 0,
                 5000,
             )
@@ -183,16 +144,19 @@ class PlaywrightResponseAdapter(
     async def close(
         self,
     ) -> None:
-        await self._browser_context.close()
+        if self._browser_context is not None:
+            await self._browser_context.close()
 
     async def _css_nodes(
         self,
         selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
-        locator = self._page.locator(
+
+        locator = self.page.locator(
             selector.selector,
         )
+
 
         count = await locator.count()
 
@@ -211,7 +175,7 @@ class PlaywrightResponseAdapter(
         selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
 
-        locator = self._page.locator(
+        locator = self.page.locator(
             f"xpath={selector.selector}",
         )
 

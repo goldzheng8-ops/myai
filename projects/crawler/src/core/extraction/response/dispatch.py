@@ -12,7 +12,15 @@ class SelectorDispatchTable(
 ):
     ...
 
-class NodeDispatchTable(
+class StaticDispatchTable(
+    DispatchTable[
+        SelectorType,
+        SelectorHandler,
+    ],
+):
+    ...
+
+class RuntimeDispatchTable(
     DispatchTable[
         SelectorType,
         SelectorHandler,

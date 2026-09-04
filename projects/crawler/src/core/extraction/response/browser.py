@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from core.extraction.response.static import (
     StaticResponseAdapter,
@@ -9,7 +9,6 @@ from core.extraction.response.static import (
 
 class BrowserResponseAdapter(
     StaticResponseAdapter,
-    ABC,
 ):
     """
     Response adapter for browser-based responses.

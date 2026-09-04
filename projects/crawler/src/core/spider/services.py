@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from core.request.discovery.engine import DiscoveryEngine
 from core.extraction.extractor.executor import ExtractExecutor
-from core.extraction.response.factory import (
-    ResponseAdapterFactory,
+from core.extraction.response.resolver import (
+    ResponseAdapterResolver,
 )
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
@@ -25,4 +25,4 @@ class SpiderServices:
 
     fingerprint_provider: FingerprintProvider
 
-    response_adapter_factory: ResponseAdapterFactory
+    response_adapter_resolver: ResponseAdapterResolver

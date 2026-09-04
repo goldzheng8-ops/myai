@@ -187,8 +187,11 @@ class SpiderExecutor:
 
         adapter = (
             self._services
-            .response_adapter_factory
-            .create(response)
+            .response_adapter_resolver
+            .resolve(
+                profile=request_context.descriptor.profile,
+                response=response,
+            )
         )
 
         return ExtractContext(

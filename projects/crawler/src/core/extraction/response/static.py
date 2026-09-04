@@ -1,6 +1,7 @@
 from __future__ import annotations
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import json
+
 from core.request.response.model import RequestResponse
 from jsonpath_ng.ext import parse
 import jmespath
@@ -8,86 +9,12 @@ import re
 from typing import Any
 
 from core.extraction.response.base import ResponseAdapter
-from core.extraction.response.node import NodeAdapter
+from core.extraction.response.node import NodeAdapter, StaticNodeAdapter
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from parsel import Selector
 
-class StaticNodeAdapter(
-    NodeAdapter,
-):
 
-    def __init__(
-        self,
-        selector: Selector,
-    ) -> None:
-
-        super().__init__()
-
-        self._selector = selector
-
-        self._node_dispatch.register(
-            SelectorType.CSS,
-            self._css_nodes,
-        )
-
-        self._node_dispatch.register(
-            SelectorType.XPATH,
-            self._xpath_nodes,
-        )
-
-    @property
-    def selector(
-        self,
-    ) -> Selector:
-        return self._selector
-
-    async def text(
-        self,
-    ) -> str | None:
-
-        return self._selector.xpath(
-            "string(.)",
-        ).get()
-
-    async def html(
-        self,
-    ) -> str:
-
-        return self._selector.get()
-
-    async def attribute(
-        self,
-        name: str,
-    ) -> str | None:
-
-        return self._selector.attrib.get(
-            name,
-        )
-
-    async def _css_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-
-        return [
-            StaticNodeAdapter(node)
-            for node in self._selector.css(
-                selector.selector,
-            )
-        ]
-
-    async def _xpath_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-
-        return [
-            StaticNodeAdapter(node)
-            for node in self._selector.xpath(
-                selector.selector,
-            )
-        ]
 
 class StaticResponseAdapter(
     ResponseAdapter,
@@ -125,13 +52,39 @@ class StaticResponseAdapter(
             SelectorType.JSONPATH,
             self._select_jsonpath,
         )
-
+        self._static_dispatch.register(
+            SelectorType.CSS,
+            self._css_nodes,
+        )
+        self._static_dispatch.register(
+            SelectorType.XPATH,
+            self._xpath_nodes,
+        )
     @property
     def response(
         self,
     ) -> RequestResponse:
         return self._response
+    @property
+    def url(self) -> str:
+        return self._response.url
 
+    @property
+    def status_code(self) -> int:
+        return self._response.status_code
+
+    @property
+    def headers(self) -> Mapping[str, str]:
+        return self._response.headers
+
+    @property
+    def body(self) -> bytes:
+        return self._response.body
+
+    @property
+    def encoding(self) -> str | None:
+        return self._response.encoding
+    
     async def content(
         self,
     ) -> str:
@@ -156,6 +109,28 @@ class StaticResponseAdapter(
             self._selector(),
         )
 
+    async def select_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+        return await self.select_static_nodes(
+            selector,
+        )
+
+    async def select_static_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+        handler = (
+            self._static_dispatch.dispatch(
+                selector.type
+            )
+        )
+
+        return await handler(
+            selector,
+        )
+    
     def _selector(
         self,
     ) -> Selector:
@@ -228,6 +203,30 @@ class StaticResponseAdapter(
         return [
             match.value
             for match in matches
+        ]
+
+    async def _css_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+
+        return [
+            StaticNodeAdapter(node)
+            for node in self._selector().css(
+                selector.selector,
+            )
+        ]
+
+    async def _xpath_nodes(
+        self,
+        selector: SelectorConfigUnion,
+    ) -> Sequence[NodeAdapter]:
+
+        return [
+            StaticNodeAdapter(node)
+            for node in self._selector().xpath(
+                selector.selector,
+            )
         ]
 
     async def close(

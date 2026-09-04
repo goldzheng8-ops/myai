@@ -12,9 +12,17 @@ from scrapy.http import Response
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class RequestResponse:
+    """
+    Immutable transport-level response snapshot.
+
+    Contains all response data required to reconstruct
+    a ResponseAdapter after the original transport runtime
+    has been released.
+
+    This object is safe to store in response caches.
+    """
 
     url: str
-
     status_code: int
 
     headers: Mapping[str, str] = field(
@@ -28,10 +36,7 @@ class RequestResponse:
     )
 
     encoding: str | None = None
-
     reason: str | None = None
-
-    content_type: str | None = None
 
     @property
     def text(self) -> str:
@@ -41,7 +46,6 @@ class RequestResponse:
             encoding,
             errors="replace",
         )
-
 
 @dataclass(frozen=True, slots=True)
 class BrowserResponse(RequestResponse):
@@ -55,16 +59,9 @@ class BrowserResponse(RequestResponse):
 
 @dataclass(frozen=True, slots=True)
 class HttpxResponse(RequestResponse):
-    """
-    HTTPX-specific response produced by HTTPX downloader.
-    """
+    raw: httpx.Response | None = None
 
-    raw: httpx.Response
 
 @dataclass(frozen=True, slots=True)
 class ScrapyResponse(RequestResponse):
-    """
-    Scrapy-specific response produced by Scrapy downloader.
-    """
-
-    raw: Response
+    raw: Response | None = None

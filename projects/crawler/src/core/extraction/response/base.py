@@ -1,10 +1,10 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any
 from collections.abc import Sequence
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter
-from core.extraction.response.dispatch import SelectorDispatchTable, NodeDispatchTable
+from core.extraction.response.dispatch import SelectorDispatchTable, StaticDispatchTable, RuntimeDispatchTable
 
 class ResponseAdapter(ABC):
 
@@ -14,8 +14,11 @@ class ResponseAdapter(ABC):
         self._selector_dispatch = (
             SelectorDispatchTable()
         )
-        self._node_dispatch = (
-            NodeDispatchTable()
+        self._static_dispatch = (
+            StaticDispatchTable()
+        )
+        self._runtime_dispatch = (
+            RuntimeDispatchTable()
         )
 
     async def select(
@@ -32,20 +35,13 @@ class ResponseAdapter(ABC):
         return await handler(
             selector,
         )
-
+    
+    @abstractmethod
     async def select_nodes(
         self,
         selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
-        handler = (
-            self._node_dispatch.dispatch(
-                selector.type
-            )
-        )
-
-        return await handler(
-            selector,
-        )
+        raise NotImplementedError
 
 
     async def content(
@@ -82,7 +78,7 @@ class ResponseAdapter(ABC):
         self,
         selector_type: SelectorType,
     ) -> bool:
-        return self._node_dispatch.contains(selector_type)
+        return self._static_dispatch.contains(selector_type) or self._runtime_dispatch.contains(selector_type)
 
     async def close(
         self,

@@ -1,6 +1,6 @@
 from typing import Any
 from core.extraction.extractor.executor import ExtractExecutor
-from core.extraction.response.factory import ResponseAdapterFactory
+from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.discovery.engine import DiscoveryEngine
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
@@ -37,7 +37,7 @@ def register_spider_components(
             extract_engine=resolver.resolve(ExtractExecutor),
             discovery_engine=resolver.resolve(DiscoveryEngine),
             fingerprint_provider=resolver.resolve(FingerprintProvider),
-            response_adapter_factory=resolver.resolve(ResponseAdapterFactory),
+            response_adapter_resolver=resolver.resolve(ResponseAdapterResolver),
         ),
     )
 
