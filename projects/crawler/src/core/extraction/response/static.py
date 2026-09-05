@@ -113,23 +113,12 @@ class StaticResponseAdapter(
         self,
         selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
-        return await self.select_static_nodes(
-            selector,
+
+        handler = self._static_dispatch.dispatch(
+            selector.type,
         )
 
-    async def select_static_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-        handler = (
-            self._static_dispatch.dispatch(
-                selector.type
-            )
-        )
-
-        return await handler(
-            selector,
-        )
+        return await handler(selector)
     
     def _selector(
         self,

@@ -1,14 +1,41 @@
-from typing import Protocol
-
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from typing import Any, Generic, TypeVar
 from core.request.context import RequestContext
+from .model import Proxy
 
-from .model import ProxyConfig
+
+ConfigT = TypeVar(
+    "ConfigT",
+)
 
 
-class ProxyProvider(Protocol):
+class ProxyProvider(
+    ABC,
+    Generic[ConfigT],
+):
 
-    async def provide(
+    def __init__(
+        self,
+        config: ConfigT,
+    ) -> None:
+        self._config = config
+
+    @property
+    def config(self) -> ConfigT:
+        return self._config
+
+    @abstractmethod
+    async def get(
         self,
         context: RequestContext,
-    ) -> ProxyConfig | None:
-        ...
+    ) -> Proxy | None:
+        raise NotImplementedError
+
+
+
+type ProxyProviderMap = dict[
+    str,
+    ProxyProvider[Any],
+]
+

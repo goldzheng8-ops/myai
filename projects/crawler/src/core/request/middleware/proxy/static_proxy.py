@@ -1,17 +1,28 @@
-from core.request.middleware.proxy.model import ProxyConfig
 from core.request.context import RequestContext
 
-class StaticProxyProvider:
 
+
+from .config import StaticProxyProviderConfig
+from .model import Proxy
+from .provider import ProxyProvider
+
+
+class StaticProxyProvider(
+    ProxyProvider[StaticProxyProviderConfig],
+):
     def __init__(
         self,
-        proxy: ProxyConfig,
+        config: StaticProxyProviderConfig,
     ) -> None:
-        self._proxy = proxy
 
-    async def provide(
+        super().__init__(config)
+    async def get(
         self,
         context: RequestContext,
-    ) -> ProxyConfig | None:
+    ) -> Proxy:
 
-        return self._proxy
+        proxy = self.config.proxy
+
+        return Proxy(
+            url=proxy.as_url(),
+        )

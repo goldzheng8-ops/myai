@@ -74,27 +74,17 @@ class PlaywrightResponseAdapter(
         self,
         selector: SelectorConfigUnion,
     ) -> Sequence[NodeAdapter]:
+
         if self._page is not None:
-            return await self.select_runtime_nodes(
-                selector,
+            handler = self._runtime_dispatch.dispatch(
+                selector.type,
             )
-        return await self.select_static_nodes(
-            selector,
-        )
+            return await handler(selector)
 
-    async def select_runtime_nodes(
-        self,
-        selector: SelectorConfigUnion,
-    ) -> Sequence[NodeAdapter]:
-        handler = (
-            self._runtime_dispatch.dispatch(
-                selector.type
-            )
+        handler = self._static_dispatch.dispatch(
+            selector.type,
         )
-
-        return await handler(
-            selector,
-        )
+        return await handler(selector)
 
     async def content(self) -> str:
         if self._page is not None:

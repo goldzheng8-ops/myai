@@ -11,7 +11,27 @@ runtime:
   throttle:
     delay: 0.5
     concurrency: 2
+proxies:
+  - name: local
+    type: static
+    proxy:
+      url: socks5://127.0.0.1:1080
 
+  - name: france
+    type: country
+    country: FR
+    proxies:
+      - url: socks5://127.0.0.1:1081
+        country: FR
+      - url: socks5://127.0.0.1:1082
+        country: FR
+
+  - name: pool
+    type: pool
+    providers:
+      - local
+      - france
+    strategy: round_robin
 spiders:
 
   - name: news

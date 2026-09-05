@@ -8,15 +8,37 @@ from core.cache.memory import MemoryCache
 from core.request.middleware.auth.basic import BasicAuthProvider
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider, FingerprintCacheKeyProvider
-from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory, ProxyMiddlewareFactory, RetryMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory
+from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory,  RetryMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory
 from core.request.middleware.fingerprint.provider import DefaultFingerprintProvider, FingerprintProvider
 from core.request.middleware.manager import MiddlewareManager
+from core.request.middleware.proxy.resolver import ProxyProviderResolver
+from core.request.middleware.retry.policy import RetryPolicy
 from core.request.middleware.typing import MiddlewareType
 from core.request.middleware.proxy.provider import ProxyProvider
+from core.request.middleware.proxy.factory import ProxyProviderFactory
 from core.request.middleware.registry import MiddlewareRegistry
 from core.request.middleware.session.store import MemorySessionStore, SessionStore
 from core.request.middleware.throttle.limiter import InMemoryThrottleLimiter, ThrottleLimiter
 from core.request.middleware.throttle.resolver import HostThrottleKeyResolver, ThrottleKeyResolver
+
+def register_proxy_providers(
+    builder: ProviderBuilder,
+    config: ApplicationConfig,
+) -> None:
+    def build_proxy_provider_resolver(
+        config: ApplicationConfig,
+    ) -> ProxyProviderResolver:
+
+        providers = ProxyProviderFactory().create_all(
+            config.proxies,
+        )
+
+        return ProxyProviderResolver(providers)
+    builder.add_factory(
+        ProxyProviderResolver,
+        lambda resolver: build_proxy_provider_resolver(config),
+)
+    
 
 def register_middleware_dependencies(
     builder: ProviderBuilder,
@@ -31,6 +53,10 @@ def register_middleware_dependencies(
     builder.add_type(
         Cache,
         MemoryCache,
+    )
+
+    builder.add_type(
+        RetryPolicy,
     )
 
     builder.add_type(
@@ -128,14 +154,14 @@ def create_middleware_registry(
 
     registry.register(
         MiddlewareType.PROXY,
-        ProxyMiddlewareFactory(
+        build_proxy_middleware_factory(
             resolver,
         ),
     )
 
     registry.register(
         MiddlewareType.RETRY,
-        RetryMiddlewareFactory(),
+        RetryMiddlewareFactory(resolver),
     )
 
     registry.register(

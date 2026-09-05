@@ -77,6 +77,7 @@ class FingerprintMiddlewareConfig(
 class ProxyMiddlewareConfig(
     MiddlewareConfig,
 ):
+    provider: str = "local"
     override: bool = False
 
 class SessionMiddlewareConfig(
