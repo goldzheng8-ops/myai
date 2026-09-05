@@ -1,0 +1,4 @@
+EventDispatcher
+    ├── LoggingSubscriber
+    ├── MetricsSubscriber
+    └── TracingSubscriber

@@ -5,6 +5,7 @@ from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
+from core.request.middleware.user_agent.config import UserAgentProviderConfigUnion
 from core.request.profile import RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
 from core.typing.config import BaseConfig
@@ -54,6 +55,7 @@ class ApplicationConfig(BaseConfig):
     )
     default_spider: str = "news"
     proxies: tuple[ProxyProviderConfigUnion, ...] = ()
+    user_agents: tuple[UserAgentProviderConfigUnion, ...] = ()
     spiders: tuple[
         SpiderConfigUnion,
         ...

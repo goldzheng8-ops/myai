@@ -80,6 +80,10 @@ class ProxyMiddlewareConfig(
     provider: str = "local"
     override: bool = False
 
+class UserAgentMiddlewareConfig(MiddlewareConfig):
+    provider: str = "static"
+    override: bool = False
+    
 class SessionMiddlewareConfig(
     MiddlewareConfig,
 ):
@@ -141,6 +145,12 @@ class ProxyMiddlewareSpec(MiddlewareSpec):
     priority: ClassVar[int] = 40
     config: ProxyMiddlewareConfig = Field(
         default_factory=ProxyMiddlewareConfig,
+    ) 
+class UserAgentMiddlewareSpec(MiddlewareSpec):
+    type: Literal[MiddlewareType.USER_AGENT] = (MiddlewareType.USER_AGENT)
+    priority: ClassVar[int] = 55
+    config: UserAgentMiddlewareConfig = Field(
+        default_factory=UserAgentMiddlewareConfig,
     ) 
 class SessionMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.SESSION] = (MiddlewareType.SESSION)

@@ -16,12 +16,14 @@ from core.request.middleware.session.middleware import SessionMiddleware
 from core.request.middleware.throttle.middleware import ThrottleMiddleware
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider
-from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, ProxyMiddlewareConfig, RetryMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig
+from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, ProxyMiddlewareConfig, RetryMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig, UserAgentMiddlewareConfig
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 
 from core.request.middleware.session.store import SessionStore
 from core.request.middleware.throttle.limiter import ThrottleLimiter
 from core.request.middleware.throttle.resolver import ThrottleKeyResolver
+from core.request.middleware.user_agent.middleware import UserAgentMiddleware
+from core.request.middleware.user_agent.resolver import UserAgentProviderResolver
 from .base import MiddlewareConfigT
 
 class MiddlewareFactory(Protocol[MiddlewareConfigT]):
@@ -127,6 +129,29 @@ def build_proxy_middleware_factory(
         )
 
         return ProxyMiddleware(
+            provider=provider,
+            config=config,
+        )
+
+    return factory
+
+def build_user_agent_middleware_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> MiddlewareFactory[UserAgentMiddlewareConfig]:
+
+    user_agent_resolver:UserAgentProviderResolver = resolver.resolve(
+        UserAgentProviderResolver,
+    )
+
+    def factory(
+        config: UserAgentMiddlewareConfig,
+    ) -> UserAgentMiddleware:
+
+        provider = user_agent_resolver.resolve(
+            config.provider,
+        )
+
+        return UserAgentMiddleware(
             provider=provider,
             config=config,
         )

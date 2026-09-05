@@ -16,6 +16,7 @@ from .registration import (
     register_extractors,
     register_lifecycle,
     register_proxy_providers,
+    register_user_agent_providers,
     register_middleware_dependencies,
     register_middlewares,
     register_runtimes,
@@ -94,6 +95,11 @@ class ApplicationContainerFactory:
             builder,
             config,          
         )
+        register_user_agent_providers(
+            builder,
+            config,          
+        )
+
         register_middleware_dependencies(
             builder,
             config,

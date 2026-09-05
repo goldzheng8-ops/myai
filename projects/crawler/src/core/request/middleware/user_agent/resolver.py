@@ -1,15 +1,15 @@
 from typing import Any, Mapping
 
-from core.request.middleware.proxy.provider import ProxyProvider
+from core.request.middleware.user_agent.provider import UserAgentProvider
 
 
-class ProxyProviderResolver:
+class UserAgentProviderResolver:
 
     def __init__(
         self,
         providers: Mapping[
             str,
-            ProxyProvider[Any],
+            UserAgentProvider[Any],
         ],
     ) -> None:
         self._providers = providers
@@ -17,7 +17,7 @@ class ProxyProviderResolver:
     def resolve(
         self,
         name: str,
-    ) -> ProxyProvider[Any]:
+    ) -> UserAgentProvider[Any]:
 
         try:
             return self._providers[name]

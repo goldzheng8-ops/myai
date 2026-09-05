@@ -8,7 +8,7 @@ from core.request.middleware.proxy.provider import ProxyProvider, ProxyProviderM
 from core.request.middleware.proxy.proxy_pool import ProxyPoolProvider
 from core.request.middleware.proxy.random_proxy import RandomProxyProvider
 from core.request.middleware.proxy.rotating_proxy import RotatingProxyProvider
-from core.request.middleware.proxy.roundRobin_proxy import RoundRobinProxyProvider
+from core.request.middleware.proxy.round_robin_proxy import RoundRobinProxyProvider
 from core.request.middleware.proxy.static_proxy import StaticProxyProvider
 
 class ProxyProviderFactory:

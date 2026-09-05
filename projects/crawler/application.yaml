@@ -25,7 +25,13 @@ proxies:
         country: FR
       - url: socks5://127.0.0.1:1082
         country: FR
-
+user_agents:
+  - name: chrome
+    type: random
+    values:
+      - "Mozilla/5.0 (...) Chrome/140..."
+      - "Mozilla/5.0 (...) Chrome/141..."
+      - "Mozilla/5.0 (...) Chrome/142..."
   - name: pool
     type: pool
     providers:

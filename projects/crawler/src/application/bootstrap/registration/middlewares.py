@@ -8,7 +8,7 @@ from core.cache.memory import MemoryCache
 from core.request.middleware.auth.basic import BasicAuthProvider
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider, FingerprintCacheKeyProvider
-from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory,  RetryMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory
+from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory,  RetryMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory, build_user_agent_middleware_factory
 from core.request.middleware.fingerprint.provider import DefaultFingerprintProvider, FingerprintProvider
 from core.request.middleware.manager import MiddlewareManager
 from core.request.middleware.proxy.resolver import ProxyProviderResolver
@@ -20,6 +20,8 @@ from core.request.middleware.registry import MiddlewareRegistry
 from core.request.middleware.session.store import MemorySessionStore, SessionStore
 from core.request.middleware.throttle.limiter import InMemoryThrottleLimiter, ThrottleLimiter
 from core.request.middleware.throttle.resolver import HostThrottleKeyResolver, ThrottleKeyResolver
+from core.request.middleware.user_agent.factory import UserAgentProviderFactory
+from core.request.middleware.user_agent.resolver import UserAgentProviderResolver
 
 def register_proxy_providers(
     builder: ProviderBuilder,
@@ -37,6 +39,24 @@ def register_proxy_providers(
     builder.add_factory(
         ProxyProviderResolver,
         lambda resolver: build_proxy_provider_resolver(config),
+)
+
+def register_user_agent_providers(
+    builder: ProviderBuilder,
+    config: ApplicationConfig,
+) -> None:
+    def build_user_agent_provider_resolver(
+        config: ApplicationConfig,
+    ) -> UserAgentProviderResolver:
+
+        providers = UserAgentProviderFactory().create_all(
+            config.user_agents,
+        )
+
+        return UserAgentProviderResolver(providers)
+    builder.add_factory(
+        UserAgentProviderResolver,
+        lambda resolver: build_user_agent_provider_resolver(config),
 )
     
 
@@ -155,6 +175,13 @@ def create_middleware_registry(
     registry.register(
         MiddlewareType.PROXY,
         build_proxy_middleware_factory(
+            resolver,
+        ),
+    )
+
+    registry.register(
+        MiddlewareType.USER_AGENT,
+        build_user_agent_middleware_factory(
             resolver,
         ),
     )

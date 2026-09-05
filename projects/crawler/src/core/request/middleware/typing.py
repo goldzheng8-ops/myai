@@ -25,4 +25,5 @@ class MiddlewareType(str,Enum):
     SESSION = "session"
     COOKIE = "cookie"
     THROTTLE = "throttle"
+    USER_AGENT = "user_agent"
 
