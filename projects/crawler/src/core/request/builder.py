@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import replace
-from typing import Any, Mapping
+from typing import Any, Self
 
 
+from core.merger.mapping import MappingMerger
 from core.request.config import RequestConfig
 from core.request.meta import RequestMeta
 
@@ -24,6 +26,21 @@ class RequestBuilder:
     All shortcut methods delegate to `create()`.
     """
 
+    def __init__(
+        self,
+        descriptor: RequestDescriptor| None = None,
+    ) -> None:
+        self._descriptor = descriptor
+
+    @property
+    def descriptor(self) -> RequestDescriptor:
+        descriptor = self._descriptor
+
+        if descriptor is None:
+            raise ValueError("Descriptor is not set.")
+
+        return descriptor
+    
     @classmethod
     def create(
         cls,
@@ -217,6 +234,97 @@ class RequestBuilder:
         )
 
     @classmethod
+    def from_descriptor(
+        cls,
+        descriptor: RequestDescriptor,
+    ) -> Self:
+
+        return cls(
+            cls.clone(descriptor),
+        )
+
+    def merge_headers(
+        self,
+        headers: Mapping[str, str],
+        *,
+        override: bool = False,
+    ) -> Self:
+
+        if not headers:
+            return self
+
+        descriptor = self.descriptor
+
+        merger = MappingMerger(
+            override=override,
+            key_normalizer=str.lower,
+        )
+
+        self._descriptor = self.replace(
+            descriptor,
+            headers=merger.merge(
+                descriptor.headers,
+                dict(headers),
+            ),
+        )
+
+        return self
+
+
+    def merge_cookies(
+        self,
+        cookies: Mapping[str, str],
+        *,
+        override: bool = False,
+    ) -> Self:
+
+        if not cookies:
+            return self
+
+        descriptor = self.descriptor
+
+        merger = MappingMerger(
+            override=override,
+        )
+
+        self._descriptor = self.replace(
+            descriptor,
+            cookies=merger.merge(
+                descriptor.cookies,
+                dict(cookies),
+            ),
+        )
+
+        return self
+
+
+    def merge_params(
+        self,
+        params: Mapping[str, Any],
+        *,
+        override: bool = False,
+    ) -> Self:
+
+        if not params:
+            return self
+
+        descriptor = self.descriptor
+
+        merger = MappingMerger(
+            override=override,
+        )
+
+        self._descriptor = self.replace(
+            descriptor,
+            params=merger.merge(
+                descriptor.params,
+                dict(params),
+            ),
+        )
+
+        return self
+
+    @classmethod
     def from_patch(
         cls,
         *,
@@ -224,7 +332,21 @@ class RequestBuilder:
         patch: RequestPatch,
     ) -> RequestDescriptor:
 
-        return cls.create(
+        return (
+            cls
+            .from_descriptor(descriptor)
+            .apply_patch(patch)
+            .build()
+        )
+
+    def apply_patch(
+        self,
+        patch: RequestPatch,
+    ) -> Self:
+
+        descriptor = self.descriptor
+
+        self._descriptor = self.create(
             url=(
                 patch.url
                 if patch.url is not None
@@ -258,6 +380,7 @@ class RequestBuilder:
             ),
         )
 
+        return self
     # ---------------------------------------------------------
     # utilities
     # ---------------------------------------------------------
@@ -380,3 +503,7 @@ class RequestBuilder:
             descriptor,
             extras=extras,
         )
+
+    def build(self) -> RequestDescriptor:
+
+        return self.descriptor

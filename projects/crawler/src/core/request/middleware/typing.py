@@ -26,4 +26,6 @@ class MiddlewareType(str,Enum):
     COOKIE = "cookie"
     THROTTLE = "throttle"
     USER_AGENT = "user_agent"
+    HEADER = "header"
+    Robot = "robot"
 

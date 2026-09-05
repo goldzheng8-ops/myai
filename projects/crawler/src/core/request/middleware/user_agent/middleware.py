@@ -6,7 +6,7 @@ from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import UserAgentMiddlewareConfig
 from core.request.middleware.typing import RequestMiddlewareNext
-from core.request.patch import RequestPatch
+
 
 from .provider import UserAgentProvider
 
@@ -43,14 +43,15 @@ class UserAgentMiddleware(
             return await next_(context)
 
         context.descriptor = (
-            RequestBuilder.from_patch(
-                descriptor=descriptor,
-                patch=RequestPatch(
-                    headers={
-                        "User-Agent": user_agent,
-                    },
-                ),
+            RequestBuilder
+            .from_descriptor(
+                context.descriptor,
             )
+            .merge_headers(
+                {"User-Agent": user_agent},
+                override=self._config.override,
+            )
+            .build()
         )
 
         return await next_(context)

@@ -83,7 +83,13 @@ class ProxyMiddlewareConfig(
 class UserAgentMiddlewareConfig(MiddlewareConfig):
     provider: str = "static"
     override: bool = False
-    
+
+class HeaderMiddlewareConfig(MiddlewareConfig):
+    headers: dict[str, str] = Field(
+        default_factory=dict,
+    )
+    override: bool = False
+
 class SessionMiddlewareConfig(
     MiddlewareConfig,
 ):
@@ -112,7 +118,7 @@ class RetryMiddlewareSpec(MiddlewareSpec):
 
 class AuthMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.AUTH] = MiddlewareType.AUTH
-    priority: ClassVar[int] = 50
+    priority: ClassVar[int] = 45
     config: AuthMiddlewareConfig = Field(
         default_factory=AuthMiddlewareConfig,
     )
@@ -148,10 +154,17 @@ class ProxyMiddlewareSpec(MiddlewareSpec):
     ) 
 class UserAgentMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.USER_AGENT] = (MiddlewareType.USER_AGENT)
-    priority: ClassVar[int] = 55
+    priority: ClassVar[int] = 50
     config: UserAgentMiddlewareConfig = Field(
         default_factory=UserAgentMiddlewareConfig,
     ) 
+class HeaderMiddlewareSpec(MiddlewareSpec):
+    type: Literal[MiddlewareType.HEADER] = (MiddlewareType.HEADER)
+    priority: ClassVar[int] = 55
+    config: HeaderMiddlewareConfig = Field(
+        default_factory=HeaderMiddlewareConfig,
+    ) 
+    
 class SessionMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.SESSION] = (MiddlewareType.SESSION)
     priority: ClassVar[int] = 70
@@ -176,6 +189,8 @@ MiddlewareSpecUnion = Annotated[
         | ProxyMiddlewareSpec
         | SessionMiddlewareSpec
         | ThrottleMiddlewareSpec
+        | UserAgentMiddlewareSpec
+        | HeaderMiddlewareSpec
     ),
     Field(discriminator="type"),
 ]
@@ -190,4 +205,6 @@ MiddlewareConfigUnion = (
     | ProxyMiddlewareConfig
     | SessionMiddlewareConfig
     | ThrottleMiddlewareConfig
+    | UserAgentMiddlewareConfig
+    | HeaderMiddlewareConfig
 )

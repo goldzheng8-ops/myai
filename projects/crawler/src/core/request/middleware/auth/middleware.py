@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+
 from typing import TypeVar
 
 from core.request.builder import RequestBuilder
@@ -8,7 +8,6 @@ from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import AuthMiddlewareConfig
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
-from core.request.patch import RequestPatch
 from .provider import AuthCredentials, AuthProvider
 
 T = TypeVar("T")
@@ -17,26 +16,24 @@ class AuthMiddleware(
     RequestMiddleware[AuthMiddlewareConfig],
 ):
     plugin_type = MiddlewareType.AUTH
+
     def __init__(
         self,
         provider: AuthProvider,
         config: AuthMiddlewareConfig,
     ) -> None:
-        super().__init__(
-            config
-        )
+        super().__init__(config)
 
         self._provider = provider
-    @property
-    def provider(
-        self,
-    ) -> AuthProvider:
 
+    @property
+    def provider(self) -> AuthProvider:
         return self._provider
+
     @property
     def config(self) -> AuthMiddlewareConfig:
         return self._config
-    
+
     async def process(
         self,
         context: RequestContext,
@@ -48,15 +45,12 @@ class AuthMiddleware(
         )
 
         if credentials is not None:
-
             self._apply_credentials(
                 context,
                 credentials,
             )
 
-        return await next_(
-            context,
-        )
+        return await next_(context)
 
     def _apply_credentials(
         self,
@@ -64,58 +58,28 @@ class AuthMiddleware(
         credentials: AuthCredentials,
     ) -> None:
 
-        descriptor = context.descriptor
+        builder = RequestBuilder.from_descriptor(
+            context.descriptor,
+        )
+
         config = self.config
 
-        headers = self._merge_mapping(
-            descriptor.headers,
-            credentials.headers,
-            override=config.override_headers,
-        )
-
-        cookies = self._merge_mapping(
-            descriptor.cookies,
-            credentials.cookies,
-            override=config.override_cookies,
-        )
-
-        params = self._merge_mapping(
-            descriptor.params,
-            credentials.params,
-            override=config.override_params,
-        )
-
-        patch = RequestPatch(
-            headers=headers,
-            cookies=cookies,
-            params=params,
-        )
-
-        context.descriptor = (
-            RequestBuilder.from_patch(
-                descriptor=descriptor,
-                patch=patch,
+        if credentials.headers:
+            builder.merge_headers(
+                credentials.headers,
+                override=config.override_headers,
             )
-        )
 
-    @staticmethod
-    def _merge_mapping(
-        existing: Mapping[str, T],
-        credentials: Mapping[str, T],
-        *,
-        override: bool,
-    ) -> dict[str, T]:
+        if credentials.cookies:
+            builder.merge_cookies(
+                credentials.cookies,
+                override=config.override_cookies,
+            )
 
-        result = dict(existing)
+        if credentials.params:
+            builder.merge_params(
+                credentials.params,
+                override=config.override_params,
+            )
 
-        if override:
-            result.update(credentials)
-
-        else:
-            for name, value in credentials.items():
-                result.setdefault(
-                    name,
-                    value,
-                )
-
-        return result
+        context.descriptor = builder.build()

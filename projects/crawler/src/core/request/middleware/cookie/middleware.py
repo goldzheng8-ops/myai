@@ -5,7 +5,7 @@ from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import CookieMiddlewareConfig
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
-from core.request.patch import RequestPatch
+
 
 from ..session.middleware import SESSION_RUNTIME_KEY
 from ..session.model import Session
@@ -62,9 +62,7 @@ class CookieMiddleware(
         context: RequestContext,
     ) -> None:
 
-        session = self._get_session(
-            context,
-        )
+        session = self._get_session(context)
 
         if session is None:
             return
@@ -74,29 +72,17 @@ class CookieMiddleware(
         if not session_cookies:
             return
 
-        request_cookies = (
-            context.descriptor.cookies
-        )
-
-        merged = dict(
-            session_cookies,
-        )
-
-        # Explicit request cookies have priority
-        # over session cookies.
-        merged.update(
-            request_cookies,
-        )
-        patch = RequestPatch(
-            cookies=merged,
-        )
         context.descriptor = (
-            RequestBuilder.from_patch(
-                descriptor=context.descriptor,
-                patch=patch,
+            RequestBuilder
+            .from_descriptor(
+                context.descriptor,
             )
+            .merge_cookies(
+                session_cookies,
+                override=False,
+            )
+            .build()
         )
-
     # ---------------------------------------------------------
     # response
     # ---------------------------------------------------------

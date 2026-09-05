@@ -24,7 +24,7 @@ class MappingMerger(
     ) -> None:
 
         self._override = override
-        self._key_normalizer = (
+        self._key_normalizer: KeyNormalizer = (
             key_normalizer
             or (lambda key: key)
         )
