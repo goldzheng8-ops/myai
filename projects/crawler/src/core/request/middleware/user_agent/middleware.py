@@ -5,7 +5,7 @@ from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import UserAgentMiddlewareConfig
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 
 
 from .provider import UserAgentProvider
@@ -13,6 +13,7 @@ from .provider import UserAgentProvider
 class UserAgentMiddleware(
     RequestMiddleware[UserAgentMiddlewareConfig],
 ):
+    plugin_type = MiddlewareType.USER_AGENT
     def __init__(
         self,
         provider: UserAgentProvider[Any],

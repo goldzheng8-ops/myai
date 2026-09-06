@@ -8,11 +8,11 @@ from core.cache.memory import MemoryCache
 from core.request.middleware.auth.basic import BasicAuthProvider
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider, FingerprintCacheKeyProvider
-from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory, HeaderMiddlewareFactory,  RetryMiddlewareFactory, RobotMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory, build_user_agent_middleware_factory
+from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory, HeaderMiddlewareFactory, ResponseValidationMiddlewareFactory,  RetryMiddlewareFactory, RobotMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory, build_user_agent_middleware_factory
 from core.request.middleware.fingerprint.provider import DefaultFingerprintProvider, FingerprintProvider
 from core.request.middleware.manager import MiddlewareManager
 from core.request.middleware.proxy.resolver import ProxyProviderResolver
-from core.request.middleware.retry.policy import RetryPolicy
+from core.request.middleware.retry.policy import DefaultRetryPolicy, RetryPolicy
 from core.request.middleware.robot.default_policy import DefaultRobotsPolicy
 from core.request.middleware.robot.policy import RobotsPolicy
 from core.request.middleware.typing import MiddlewareType
@@ -68,6 +68,7 @@ def register_middleware_dependencies(
 ) -> None:
     throttle = config.runtime.throttle
     robot=config.runtime.robot
+    retry_policy=config.runtime.retry_policy
     builder.add_type(
         AuthProvider,
         BasicAuthProvider,
@@ -78,9 +79,6 @@ def register_middleware_dependencies(
         MemoryCache,
     )
 
-    builder.add_type(
-        RetryPolicy,
-    )
 
     builder.add_type(
         CacheKeyProvider,
@@ -118,6 +116,13 @@ def register_middleware_dependencies(
             ttl=robot.ttl,
             failure_strategy=robot.failure_strategy,
             failure_ttl=robot.failure_ttl,
+        ),
+    )
+
+    builder.add_factory(
+        RetryPolicy,
+        lambda resolver: DefaultRetryPolicy(
+            config=retry_policy,
         ),
     )
 
@@ -181,6 +186,11 @@ def create_middleware_registry(
     registry.register(
         MiddlewareType.HEADER,
         HeaderMiddlewareFactory(),
+    )
+
+    registry.register(
+        MiddlewareType.RESPONSE_VALIDATION,
+        ResponseValidationMiddlewareFactory(),
     )
 
     registry.register(

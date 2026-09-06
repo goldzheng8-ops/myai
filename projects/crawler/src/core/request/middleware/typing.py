@@ -28,4 +28,5 @@ class MiddlewareType(str,Enum):
     USER_AGENT = "user_agent"
     HEADER = "header"
     ROBOT = "robot"
+    RESPONSE_VALIDATION="response_validation"
 

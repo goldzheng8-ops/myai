@@ -107,7 +107,13 @@ class ThrottleMiddlewareConfig(
 ):
     pass
 
-
+class ResponseValidationMiddlewareConfig(
+    MiddlewareConfig,
+):
+    status_codes: frozenset[int] | None = None
+    content_types: frozenset[str] | None = None
+    min_body_size: int | None = None
+    max_body_size: int | None = None
 
 class MiddlewareSpec(BaseConfig):
     enabled: bool = True
@@ -116,7 +122,7 @@ class MiddlewareSpec(BaseConfig):
 
 class RetryMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.RETRY] = (MiddlewareType.RETRY)
-    priority: ClassVar[int] = 30
+    priority: ClassVar[int] = 25
     config: RetryMiddlewareConfig = Field(
         default_factory=RetryMiddlewareConfig,
     ) 
@@ -171,7 +177,7 @@ class HeaderMiddlewareSpec(MiddlewareSpec):
     ) 
 class RobotMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.ROBOT] = (MiddlewareType.ROBOT)
-    priority: ClassVar[int] = 35
+    priority: ClassVar[int] = 30
     config: RobotMiddlewareConfig = Field(
         default_factory=RobotMiddlewareConfig,
     ) 
@@ -188,6 +194,12 @@ class ThrottleMiddlewareSpec(MiddlewareSpec):
     config: ThrottleMiddlewareConfig = Field(
         default_factory=ThrottleMiddlewareConfig,
     ) 
+class ResponseValidationMiddlewareSpec(MiddlewareSpec):
+    type: Literal[MiddlewareType.THROTTLE] = (MiddlewareType.THROTTLE)
+    priority: ClassVar[int] = 35
+    config: ResponseValidationMiddlewareConfig = Field(
+        default_factory=ResponseValidationMiddlewareConfig,
+    ) 
 
 MiddlewareSpecUnion = Annotated[
     (
@@ -203,6 +215,7 @@ MiddlewareSpecUnion = Annotated[
         | ThrottleMiddlewareSpec
         | UserAgentMiddlewareSpec
         | HeaderMiddlewareSpec
+        | ResponseValidationMiddlewareSpec
     ),
     Field(discriminator="type"),
 ]
@@ -220,4 +233,5 @@ MiddlewareConfigUnion = (
     | ThrottleMiddlewareConfig
     | UserAgentMiddlewareConfig
     | HeaderMiddlewareConfig
+    | ResponseValidationMiddlewareConfig
 )

@@ -5,6 +5,7 @@ from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
+from core.request.middleware.retry.config import RetryPolicyConfig
 from core.request.middleware.robot.typing import RobotsFailureStrategy
 from core.request.middleware.user_agent.config import UserAgentProviderConfigUnion
 from core.request.profile import RequestProfile
@@ -61,6 +62,10 @@ class RuntimeConfig(BaseConfig):
 
     robot: RobotRuntimeConfig = Field(
         default_factory=RobotRuntimeConfig,
+    )
+
+    retry_policy: RetryPolicyConfig = Field(
+        default_factory=RetryPolicyConfig,
     )
 
 

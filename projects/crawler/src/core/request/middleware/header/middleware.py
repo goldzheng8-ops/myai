@@ -3,10 +3,11 @@ from core.request.context import RequestContext
 from core.request.middleware.config import HeaderMiddlewareConfig
 
 from core.request.middleware.base import RequestMiddleware
-from core.request.middleware.typing import RequestMiddlewareNext
+from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
 class HeaderMiddleware(
     RequestMiddleware[HeaderMiddlewareConfig],
 ):
+    plugin_type = MiddlewareType.HEADER
     async def process(
         self,
         context: RequestContext,
