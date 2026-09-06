@@ -5,6 +5,7 @@ from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
+from core.request.middleware.robot.typing import RobotsFailureStrategy
 from core.request.middleware.user_agent.config import UserAgentProviderConfigUnion
 from core.request.profile import RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
@@ -32,6 +33,18 @@ class ThrottleRuntimeConfig(BaseConfig):
 
     concurrency: int | None = None
 
+class RobotRuntimeConfig(BaseConfig):
+    """
+    Runtime configuration of throttling.
+    """
+
+    timeout: float = 10.0
+    ttl: float = 3600.0
+    failure_strategy: RobotsFailureStrategy = (
+        RobotsFailureStrategy.ALLOW
+    )
+    failure_ttl: float = 60.0
+
 
 class RuntimeConfig(BaseConfig):
     """
@@ -45,6 +58,12 @@ class RuntimeConfig(BaseConfig):
     throttle: ThrottleRuntimeConfig = Field(
         default_factory=ThrottleRuntimeConfig,
     )
+
+    robot: RobotRuntimeConfig = Field(
+        default_factory=RobotRuntimeConfig,
+    )
+
+
 
 class ApplicationConfig(BaseConfig):
     name: str = "ai-space"

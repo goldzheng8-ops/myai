@@ -94,12 +94,13 @@ class SpiderExecutor:
                 )
             )
 
+            if request_context.state.is_skipped:
+                continue
             extract_context = (
                 self._build_extract_context(
                     request_context,
                 )
             )
-
             try:
 
                 step = await spider.process(

@@ -1,8 +1,11 @@
 from __future__ import annotations
+import asyncio
 import logging
 
 from core.event import Event, EventDispatcher
+from core.request.events.skipped import RequestSkipped
 from core.request.middleware.chain_builder import MiddlewareChainBuilder
+from core.request.middleware.robot.exceptions import RobotsDenied
 from core.request.result import RequestResult
 
 from .context import RequestContext
@@ -56,7 +59,27 @@ class RequestRunner:
             result = self._require_result(
                 context,
             )
+        except RobotsDenied as exc:
 
+            context.state.skip(
+                reason=str(exc),
+            )
+
+            await self._notify(
+                RequestSkipped(
+                    request=context.descriptor,
+                    reason=str(exc),
+                ),
+            )
+
+            return context
+
+        except asyncio.CancelledError:
+
+            context.state.cancel()
+
+            raise
+        
         except Exception as exc:
 
             context.state.fail(

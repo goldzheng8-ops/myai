@@ -90,6 +90,11 @@ class HeaderMiddlewareConfig(MiddlewareConfig):
     )
     override: bool = False
 
+class RobotMiddlewareConfig(
+    MiddlewareConfig,
+):
+    user_agent: str | None = None
+
 class SessionMiddlewareConfig(
     MiddlewareConfig,
 ):
@@ -164,6 +169,12 @@ class HeaderMiddlewareSpec(MiddlewareSpec):
     config: HeaderMiddlewareConfig = Field(
         default_factory=HeaderMiddlewareConfig,
     ) 
+class RobotMiddlewareSpec(MiddlewareSpec):
+    type: Literal[MiddlewareType.ROBOT] = (MiddlewareType.ROBOT)
+    priority: ClassVar[int] = 35
+    config: RobotMiddlewareConfig = Field(
+        default_factory=RobotMiddlewareConfig,
+    ) 
     
 class SessionMiddlewareSpec(MiddlewareSpec):
     type: Literal[MiddlewareType.SESSION] = (MiddlewareType.SESSION)
@@ -187,6 +198,7 @@ MiddlewareSpecUnion = Annotated[
         | DeduplicateMiddlewareSpec
         | FingerprintMiddlewareSpec
         | ProxyMiddlewareSpec
+        | RobotMiddlewareSpec
         | SessionMiddlewareSpec
         | ThrottleMiddlewareSpec
         | UserAgentMiddlewareSpec
@@ -203,6 +215,7 @@ MiddlewareConfigUnion = (
     | DeduplicateMiddlewareConfig
     | FingerprintMiddlewareConfig
     | ProxyMiddlewareConfig
+    | RobotMiddlewareConfig
     | SessionMiddlewareConfig
     | ThrottleMiddlewareConfig
     | UserAgentMiddlewareConfig

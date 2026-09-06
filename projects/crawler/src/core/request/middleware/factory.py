@@ -7,16 +7,19 @@ from core.request.middleware.cache.middleware import CacheMiddleware
 from core.request.middleware.cookie.middleware import CookieMiddleware
 from core.request.middleware.deduplicate.middleware import DeduplicateMiddleware
 from core.request.middleware.fingerprint.middleware import FingerprintMiddleware
+from core.request.middleware.header.middleware import HeaderMiddleware
 from core.request.middleware.proxy.middleware import ProxyMiddleware
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.proxy.resolver import ProxyProviderResolver
 from core.request.middleware.retry.middleware import RetryMiddleware
 from core.request.middleware.retry.policy import RetryPolicy
+from core.request.middleware.robot.middleware import RobotMiddleware
+from core.request.middleware.robot.policy import RobotsPolicy
 from core.request.middleware.session.middleware import SessionMiddleware
 from core.request.middleware.throttle.middleware import ThrottleMiddleware
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider
-from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, ProxyMiddlewareConfig, RetryMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig, UserAgentMiddlewareConfig
+from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, HeaderMiddlewareConfig, ProxyMiddlewareConfig, RetryMiddlewareConfig, RobotMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig, UserAgentMiddlewareConfig
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 
 from core.request.middleware.session.store import SessionStore
@@ -93,6 +96,16 @@ class DeduplicateMiddlewareFactory:
             config=config,
         )
 
+class HeaderMiddlewareFactory:
+    def __call__(
+        self,
+        config: HeaderMiddlewareConfig,
+    ) -> HeaderMiddleware:
+
+        return HeaderMiddleware(
+            config=config,
+        )
+
 class FingerprintMiddlewareFactory:
     def __init__(
         self,
@@ -158,6 +171,25 @@ def build_user_agent_middleware_factory(
 
     return factory
 
+
+class RobotMiddlewareFactory:
+    def __init__(
+        self,
+        resolver: ProviderResolver[Any, Any],
+    ) -> None:
+        self._resolver = resolver   
+
+    def __call__(
+        self,
+        config: RobotMiddlewareConfig,
+    ) -> RobotMiddleware:
+
+        return RobotMiddleware(
+            policy=self._resolver.resolve(
+                RobotsPolicy,
+            ),
+            config=config,
+        )
 
 class RetryMiddlewareFactory:
     def __init__(

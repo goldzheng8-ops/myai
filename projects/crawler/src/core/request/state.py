@@ -1,77 +1,123 @@
 from __future__ import annotations
-
-from dataclasses import dataclass
-from datetime import datetime
-from enum import StrEnum
+from enum import Enum
 
 
-class RequestStatus(StrEnum):
+class RequestStatus(str, Enum):
 
     PENDING = "pending"
-
     RUNNING = "running"
-
     COMPLETED = "completed"
-
     FAILED = "failed"
-
     CANCELLED = "cancelled"
+    SKIPPED = "skipped"
+
+    def start(self) -> "RequestStatus":
+        if self is not RequestStatus.PENDING:
+            raise RuntimeError(
+                f"Cannot start request from state {self.value!r}.",
+            )
+
+        return RequestStatus.RUNNING
+
+    def complete(self) -> "RequestStatus":
+        if self is not RequestStatus.RUNNING:
+            raise RuntimeError(
+                "Cannot complete request from state "
+                f"{self.value!r}.",
+            )
+
+        return RequestStatus.COMPLETED
+
+    def fail(self) -> "RequestStatus":
+        if self is not RequestStatus.RUNNING:
+            raise RuntimeError(
+                "Cannot fail request from state "
+                f"{self.value!r}.",
+            )
+
+        return RequestStatus.FAILED
+
+    def skip(self) -> "RequestStatus":
+        if self is not RequestStatus.RUNNING:
+            raise RuntimeError(
+                "Cannot skip request from state "
+                f"{self.value!r}.",
+            )
+
+        return RequestStatus.SKIPPED
+
+    def cancel(self) -> "RequestStatus":
+        if self is not RequestStatus.RUNNING:
+            raise RuntimeError(
+                "Cannot cancel request from state "
+                f"{self.value!r}.",
+            )
+
+        return RequestStatus.CANCELLED
 
 
-@dataclass(slots=True)
 class RequestState:
-    """
-    Runtime execution state of a request.
-    """
 
-    status: RequestStatus = RequestStatus.PENDING
+    def __init__(self) -> None:
+        self._status = RequestStatus.PENDING
+        self._error: BaseException | None = None
+        self._reason: str | None = None
 
-    started_at: datetime | None = None
+    @property
+    def status(self) -> RequestStatus:
+        return self._status
 
-    completed_at: datetime | None = None
+    @property
+    def error(self) -> BaseException | None:
+        return self._error
 
-    error: Exception | None = None
+    @property
+    def reason(self) -> str | None:
+        return self._reason
 
-    def start(
-        self,
-        *,
-        now: datetime | None = None,
-    ) -> None:
+    @property
+    def is_pending(self) -> bool:
+        return self._status is RequestStatus.PENDING
 
-        self.status = RequestStatus.RUNNING
-        self.started_at = (
-            now
-            if now is not None
-            else datetime.now()
-        )
+    @property
+    def is_running(self) -> bool:
+        return self._status is RequestStatus.RUNNING
 
-    def complete(
-        self,
-        *,
-        now: datetime | None = None,
-    ) -> None:
+    @property
+    def is_completed(self) -> bool:
+        return self._status is RequestStatus.COMPLETED
 
-        self.status = RequestStatus.COMPLETED
-        self.completed_at = (
-            now
-            if now is not None
-            else datetime.now()
-        )
+    @property
+    def is_failed(self) -> bool:
+        return self._status is RequestStatus.FAILED
 
-        self.error = None
+    @property
+    def is_skipped(self) -> bool:
+        return self._status is RequestStatus.SKIPPED
+
+    @property
+    def is_cancelled(self) -> bool:
+        return self._status is RequestStatus.CANCELLED
+
+    def start(self) -> None:
+        self._status = self._status.start()
+
+    def complete(self) -> None:
+        self._status = self._status.complete()
 
     def fail(
         self,
-        error: Exception,
-        *,
-        now: datetime | None = None,
+        error: BaseException,
     ) -> None:
+        self._status = self._status.fail()
+        self._error = error
 
-        self.status = RequestStatus.FAILED
-        self.completed_at = (
-            now
-            if now is not None
-            else datetime.now()
-        )
+    def skip(
+        self,
+        reason: str | None = None,
+    ) -> None:
+        self._status = self._status.skip()
+        self._reason = reason
 
-        self.error = error
+    def cancel(self) -> None:
+        self._status = self._status.cancel()

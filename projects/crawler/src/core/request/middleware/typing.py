@@ -27,5 +27,5 @@ class MiddlewareType(str,Enum):
     THROTTLE = "throttle"
     USER_AGENT = "user_agent"
     HEADER = "header"
-    Robot = "robot"
+    ROBOT = "robot"
 
