@@ -195,7 +195,7 @@ class ThrottleMiddlewareSpec(MiddlewareSpec):
         default_factory=ThrottleMiddlewareConfig,
     ) 
 class ResponseValidationMiddlewareSpec(MiddlewareSpec):
-    type: Literal[MiddlewareType.THROTTLE] = (MiddlewareType.THROTTLE)
+    type: Literal[MiddlewareType.RESPONSE_VALIDATION] = (MiddlewareType.RESPONSE_VALIDATION)
     priority: ClassVar[int] = 35
     config: ResponseValidationMiddlewareConfig = Field(
         default_factory=ResponseValidationMiddlewareConfig,

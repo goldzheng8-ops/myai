@@ -4,21 +4,20 @@ from typing import Any
 from collections.abc import Mapping
 
 from core.request.context import RequestContext
-from core.request.middleware.proxy.config import ProxyPoolProviderConfig
-from core.request.middleware.proxy.model import Proxy
-from core.request.middleware.proxy.provider import ProxyProvider
-
-
-class ProxyPoolProvider(
-    ProxyProvider[ProxyPoolProviderConfig],
+from core.request.middleware.user_agent.config import PoolUserAgentProviderConfig
+from core.request.middleware.user_agent.provider import UserAgentProvider
+class PoolUserAgentProvider(
+    UserAgentProvider[
+        PoolUserAgentProviderConfig
+    ],
 ):
 
     def __init__(
         self,
-        config: ProxyPoolProviderConfig,
+        config: PoolUserAgentProviderConfig,
         providers: Mapping[
             str,
-            ProxyProvider[Any],
+            UserAgentProvider[Any],
         ],
     ) -> None:
         super().__init__(config)
@@ -30,7 +29,7 @@ class ProxyPoolProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> str | None:
 
         names = self.config.providers
 
@@ -59,7 +58,10 @@ class ProxyPoolProvider(
             provider = self._providers[name]
         except KeyError as exc:
             raise RuntimeError(
-                f"Proxy provider not found: {name!r}",
+                f"User-Agent provider not found: "
+                f"{name!r}",
             ) from exc
 
-        return await provider.get(context)
+        return await provider.get(
+            context,
+        )

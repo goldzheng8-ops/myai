@@ -1,7 +1,7 @@
 import asyncio
 
 from core.request.context import RequestContext
-from core.request.middleware.proxy.middleware import ProxyConfig
+from core.request.middleware.proxy.config import ProxyConfig
 from core.request.response.model import HttpxResponse
 import httpx
 

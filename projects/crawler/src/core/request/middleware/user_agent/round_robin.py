@@ -24,7 +24,7 @@ class RoundRobinUserAgentProvider(
         context: RequestContext,
     ) -> str | None:
 
-        values = self.config.values
+        values = self.config.user_agents
 
         if not values:
             return None

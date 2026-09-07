@@ -12,4 +12,4 @@ class StaticUserAgentProvider(
         self,
         context: RequestContext,
     ) -> str:
-        return self.config.value
+        return self.config.user_agent

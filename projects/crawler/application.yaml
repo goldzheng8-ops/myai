@@ -27,17 +27,23 @@ proxies:
         country: FR
 user_agents:
   - name: chrome
-    type: random
-    values:
-      - "Mozilla/5.0 (...) Chrome/140..."
-      - "Mozilla/5.0 (...) Chrome/141..."
-      - "Mozilla/5.0 (...) Chrome/142..."
+    type: static
+    user_agent: "Mozilla/5.0 ..."
+
+  - name: firefox
+    type: static
+    user_agent: "Mozilla/5.0 ..."
+
+  - name: fake
+    type: fake
+
   - name: pool
     type: pool
+    strategy: random
     providers:
-      - local
-      - france
-    strategy: round_robin
+      - chrome
+      - firefox
+      - fake
 spiders:
 
   - name: news
@@ -60,54 +66,19 @@ spiders:
       - url: https://example.com/news
 
     middlewares:
-
-      - type: retry
-        priority: 100
-        config:
-          max_retries: 3
-          retry_delay: 1.0
-          backoff_factor: 2.0
-          max_delay: 30.0
-
-      - type: auth
-        priority: 90
-        config:
-          override_headers: false
-          override_cookies: false
-          override_params: false
-
-      - type: cache
-        priority: 80
-        config:
-          read: true
-          write: true
-          methods:
-            - GET
-            - HEAD
-
-      - type: cookie
-        priority: 70
-
-      - type: deduplicate
-        priority: 60
-
       - type: fingerprint
-        priority: 50
-
-      - type: proxy
-        priority: 40
-        config:
-          override: false
-
+      - type: deduplicate
+      - type: cache
       - type: session
-        priority: 30
-        config:
-          default_session_id: null
-          create_if_missing: true
-          save_after_request: true
-
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
       - type: throttle
-        priority: 20
     extraction:
 
       type: object

@@ -13,9 +13,9 @@ class RandomUserAgentProvider(
         context: RequestContext,
     ) -> str | None:
 
-        if not self.config.values:
+        if not self.config.user_agents:
             return None
 
         return random.choice(
-            self.config.values,
+            self.config.user_agents,
         )

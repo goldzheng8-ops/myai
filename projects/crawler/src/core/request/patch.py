@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from core.request.middleware.proxy.model import ProxyConfig
+from core.request.middleware.proxy.config import ProxyConfig
 
 from .typing import (
     RequestBody,

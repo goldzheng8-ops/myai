@@ -12,21 +12,21 @@ class StaticUserAgentProviderConfig(
     UserAgentProviderConfig,
 ):
     type: Literal["static"] = "static"
-    value: str
+    user_agent: str
 
 
 class RandomUserAgentProviderConfig(
     UserAgentProviderConfig,
 ):
     type: Literal["random"] = "random"
-    values: tuple[str, ...]
+    user_agents: tuple[str, ...]
 
 
 class RoundRobinUserAgentProviderConfig(
     UserAgentProviderConfig,
 ):
     type: Literal["round_robin"] = "round_robin"
-    values: tuple[str, ...]
+    user_agents: tuple[str, ...]
 
 
 class FakeUserAgentProviderConfig(
@@ -37,7 +37,13 @@ class FakeUserAgentProviderConfig(
     min_version: int | None = None
     max_version: int | None = None
 
-
+class PoolUserAgentProviderConfig(UserAgentProviderConfig):
+    type: Literal["pool"] = "pool"
+    providers: tuple[str, ...]
+    strategy: Literal[
+        "random",
+        "round_robin",
+    ] = "random"
 
 
 UserAgentProviderConfigUnion = Annotated[
@@ -46,6 +52,8 @@ UserAgentProviderConfigUnion = Annotated[
         | RandomUserAgentProviderConfig
         | RoundRobinUserAgentProviderConfig
         | FakeUserAgentProviderConfig
+        | PoolUserAgentProviderConfig
     ),
     Field(discriminator="type"),
 ]
+

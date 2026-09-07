@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from core.request.middleware.proxy.model import ProxyConfig
+from core.request.middleware.proxy.config import ProxyConfig
 
 from .meta import RequestMeta
 from .profile import RequestProfile
