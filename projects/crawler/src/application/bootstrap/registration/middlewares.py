@@ -8,6 +8,7 @@ from core.cache.memory import MemoryCache
 from core.request.middleware.auth.basic import BasicAuthProvider
 from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider, FingerprintCacheKeyProvider
+from core.request.middleware.chain_builder import MiddlewareChainBuilder
 from core.request.middleware.factory import AuthMiddlewareFactory, CacheMiddlewareFactory, CookieMiddlewareFactory, DeduplicateMiddlewareFactory, FingerprintMiddlewareFactory, HeaderMiddlewareFactory, ResponseValidationMiddlewareFactory,  RetryMiddlewareFactory, RobotMiddlewareFactory, SessionMiddlewareFactory, ThrottleMiddlewareFactory, build_proxy_middleware_factory, build_user_agent_middleware_factory
 from core.request.middleware.fingerprint.provider import DefaultFingerprintProvider, FingerprintProvider
 from core.request.middleware.manager import MiddlewareManager
@@ -149,6 +150,14 @@ def register_middlewares(
             ),
             lifecycle=resolver.resolve(
                 LifecycleManager,
+            ),
+        ),
+    )
+    builder.add_factory(
+        MiddlewareChainBuilder,
+        lambda resolver: MiddlewareChainBuilder(
+            manager=resolver.resolve(
+                MiddlewareManager,
             ),
         ),
     )

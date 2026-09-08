@@ -92,7 +92,7 @@ class EventDispatcher:
         event: Event,
     ) -> tuple[EventHandler[Any], ...]:
 
-        return self._registry.get(
+        return self._registry.get_or_empty(
             type(event),
         )
 

@@ -23,5 +23,5 @@ class UserAgentProviderResolver:
             return self._providers[name]
         except KeyError as exc:
             raise LookupError(
-                f"Proxy provider not found: {name!r}",
+                f"User-Agent provider not found: {name!r}",
             ) from exc

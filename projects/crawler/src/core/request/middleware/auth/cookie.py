@@ -1,22 +1,20 @@
+from collections.abc import Mapping
 from core.request.context import RequestContext
+
 from .provider import AuthCredentials, AuthProvider
 
-class ApiKeyAuthProvider(AuthProvider):
+class CookieAuthProvider(AuthProvider):
 
     def __init__(
         self,
-        key: str,
-        header: str = "X-API-Key",
+        cookies: Mapping[str, str],
     ) -> None:
-        self._key = key
-        self._header = header
+        self._cookies = dict(cookies)
 
     async def provide(
         self,
         context: RequestContext,
     ) -> AuthCredentials:
         return AuthCredentials(
-            headers={
-                self._header: self._key,
-            },
+            cookies=self._cookies,
         )

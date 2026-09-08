@@ -1,35 +1,30 @@
 import base64
-from dataclasses import dataclass
 
 from core.request.context import RequestContext
-
 from .provider import AuthCredentials, AuthProvider
-
-
-@dataclass(slots=True)
 class BasicAuthProvider(AuthProvider):
 
-    username: str
-
-    password: str
+    def __init__(
+        self,
+        username: str,
+        password: str,
+    ) -> None:
+        self._username = username
+        self._password = password
 
     async def provide(
         self,
         context: RequestContext,
     ) -> AuthCredentials:
-
         raw = (
-            f"{self.username}:{self.password}"
+            f"{self._username}:{self._password}"
             .encode()
         )
 
-        encoded = base64.b64encode(
-            raw,
-        ).decode()
+        encoded = base64.b64encode(raw).decode()
 
         return AuthCredentials(
             headers={
-                "Authorization":
-                    f"Basic {encoded}",
+                "Authorization": f"Basic {encoded}",
             },
         )

@@ -77,11 +77,11 @@ class FingerprintMiddlewareConfig(
 class ProxyMiddlewareConfig(
     MiddlewareConfig,
 ):
-    provider: str = "local"
+    provider: str = "default"
     override: bool = False
 
 class UserAgentMiddlewareConfig(MiddlewareConfig):
-    provider: str = "static"
+    provider: str = "default"
     override: bool = False
 
 class HeaderMiddlewareConfig(MiddlewareConfig):

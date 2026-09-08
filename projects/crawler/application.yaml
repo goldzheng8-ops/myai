@@ -12,7 +12,7 @@ runtime:
     delay: 0.5
     concurrency: 2
 proxies:
-  - name: local
+  - name: default
     type: static
     proxy:
       url: socks5://127.0.0.1:1080
@@ -34,7 +34,7 @@ user_agents:
     type: static
     user_agent: "Mozilla/5.0 ..."
 
-  - name: fake
+  - name: default
     type: fake
 
   - name: pool
@@ -43,7 +43,7 @@ user_agents:
     providers:
       - chrome
       - firefox
-      - fake
+      - default
 spiders:
 
   - name: news

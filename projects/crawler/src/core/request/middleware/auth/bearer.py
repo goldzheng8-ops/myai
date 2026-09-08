@@ -1,15 +1,13 @@
 from core.request.context import RequestContext
 from .provider import AuthCredentials, AuthProvider
 
-class ApiKeyAuthProvider(AuthProvider):
+class BearerAuthProvider(AuthProvider):
 
     def __init__(
         self,
-        key: str,
-        header: str = "X-API-Key",
+        token: str,
     ) -> None:
-        self._key = key
-        self._header = header
+        self._token = token
 
     async def provide(
         self,
@@ -17,6 +15,7 @@ class ApiKeyAuthProvider(AuthProvider):
     ) -> AuthCredentials:
         return AuthCredentials(
             headers={
-                self._header: self._key,
+                "Authorization":
+                    f"Bearer {self._token}",
             },
         )
