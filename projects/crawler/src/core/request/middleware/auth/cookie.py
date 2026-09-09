@@ -1,9 +1,9 @@
 from collections.abc import Mapping
 from core.request.context import RequestContext
 
-from .provider import AuthCredentials, AuthProvider
+from .provider import AuthCredentials, BaseAuthProvider
 
-class CookieAuthProvider(AuthProvider):
+class CookieAuthProvider(BaseAuthProvider):
 
     def __init__(
         self,
@@ -11,7 +11,7 @@ class CookieAuthProvider(AuthProvider):
     ) -> None:
         self._cookies = dict(cookies)
 
-    async def provide(
+    async def get(
         self,
         context: RequestContext,
     ) -> AuthCredentials:

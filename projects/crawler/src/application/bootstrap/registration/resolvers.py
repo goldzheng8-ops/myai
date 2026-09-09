@@ -1,5 +1,7 @@
 from typing import Any
 
+from core.extraction.resolver.engine import ResolverEngine
+from core.extraction.resolver.executor import ResolverExecutor
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator
 from core.extraction.resolver.registry import ResolverRegistry
 from core.extraction.selector.base import SelectorPipeline
@@ -36,7 +38,14 @@ def register_resolvers(
             ),
         ),
     )
-
+    builder.add_factory(
+        ResolverExecutor,
+        lambda resolver: ResolverEngine(
+            registry=resolver.resolve(
+                ResolverRegistry,
+            ),
+        ),
+    )
     # Resolver registry
     builder.add_factory(
         ResolverRegistry,

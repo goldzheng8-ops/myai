@@ -40,10 +40,6 @@ class RetryMiddlewareConfig(
             )
 
 
-class AuthMiddlewareConfig(MiddlewareConfig):
-    override_headers: bool = False
-    override_cookies: bool = False
-    override_params: bool = False
 
 
 class CacheMiddlewareConfig(
@@ -73,6 +69,11 @@ class FingerprintMiddlewareConfig(
     MiddlewareConfig,
 ):
     pass
+class AuthMiddlewareConfig(MiddlewareConfig):
+    provider: str = "default"
+    override_headers: bool = False
+    override_cookies: bool = False
+    override_params: bool = False
 
 class ProxyMiddlewareConfig(
     MiddlewareConfig,

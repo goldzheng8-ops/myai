@@ -1,7 +1,7 @@
 from typing import Any, cast
 from collections.abc import Sequence
 from core.extraction.transform.config import TransformConfigUnion
-from core.extraction.transform.evaluator import TransformExecutor
+from core.extraction.transform.executor import TransformExecutor
 
 
 from .registry import TransformRegistry
@@ -14,9 +14,9 @@ class TransformEngine(
 ):
 
     def __init__(self, registry: TransformRegistry):
-        self.registry = registry
+        self._registry = registry
 
-    def transform(
+    async def transform(
         self,
         value: Any,
         configs: Sequence[TransformConfigUnion],
@@ -25,7 +25,9 @@ class TransformEngine(
         result = value
 
         for config in configs:
-            plugin = self.registry.create(config.type)
+            if result is None:
+                return None
+            plugin = self._registry.create(config.type)
 
             if isinstance(result, list):
                 result = plugin.transform_many(

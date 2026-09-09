@@ -3,12 +3,12 @@ from __future__ import annotations
 from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import RobotMiddlewareConfig
-from core.request.middleware.robot.policy import RobotsPolicy
+from core.request.middleware.robots.policy import RobotsPolicy
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
-from core.request.middleware.robot.exceptions import RobotsDenied
+from core.request.middleware.robots.exceptions import RobotsDenied
 
         
-class RobotMiddleware(
+class RobotsMiddleware(
     RequestMiddleware[
         RobotMiddlewareConfig,
     ],

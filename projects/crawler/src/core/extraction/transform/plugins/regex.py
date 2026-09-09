@@ -4,7 +4,7 @@ from core.extraction.transform.base import TransformPlugin
 from core.extraction.transform.typing import TransformType
 
 class RegexTransform(TransformPlugin[str, str | None, RegexTransformConfig]):
-    plugin_type = TransformType.DATETIME
+    plugin_type = TransformType.REGEX
 
     def transform_one(
         self,

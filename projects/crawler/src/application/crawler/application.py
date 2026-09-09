@@ -18,11 +18,14 @@ class CrawlerApplication:
         self._lifecycle = lifecycle
         self._default_spider = default_spider
 
+    async def start(self) -> None:
+        await self._lifecycle.start()
+
     async def run(
         self,
         request: CrawlRequest | None = None,
     ) -> SpiderResult:
-
+        await self.start()
         if request is None:
             request = CrawlRequest(
                 spider=self._default_spider,

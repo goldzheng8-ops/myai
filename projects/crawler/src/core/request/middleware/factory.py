@@ -3,6 +3,7 @@ from typing import Any, Protocol
 from core.cache.protocol import Cache
 from core.provider import ProviderResolver
 from core.request.middleware.auth.middleware import AuthMiddleware
+from core.request.middleware.auth.resolver import AuthProviderResolver
 from core.request.middleware.cache.middleware import CacheMiddleware
 from core.request.middleware.cookie.middleware import CookieMiddleware
 from core.request.middleware.deduplicate.middleware import DeduplicateMiddleware
@@ -15,11 +16,10 @@ from core.request.middleware.response_validation.default_validator import Defaul
 from core.request.middleware.response_validation.middleware import ResponseValidationMiddleware
 from core.request.middleware.retry.middleware import RetryMiddleware
 from core.request.middleware.retry.policy import RetryPolicy
-from core.request.middleware.robot.middleware import RobotMiddleware
-from core.request.middleware.robot.policy import RobotsPolicy
+from core.request.middleware.robots.middleware import RobotsMiddleware
+from core.request.middleware.robots.policy import RobotsPolicy
 from core.request.middleware.session.middleware import SessionMiddleware
 from core.request.middleware.throttle.middleware import ThrottleMiddleware
-from core.request.middleware.auth.provider import AuthProvider
 from core.request.middleware.cache.key import CacheKeyProvider
 from core.request.middleware.config import AuthMiddlewareConfig, CacheMiddlewareConfig, CookieMiddlewareConfig, DeduplicateMiddlewareConfig, FingerprintMiddlewareConfig, HeaderMiddlewareConfig, ProxyMiddlewareConfig, ResponseValidationMiddlewareConfig, RetryMiddlewareConfig, RobotMiddlewareConfig, SessionMiddlewareConfig, ThrottleMiddlewareConfig, UserAgentMiddlewareConfig
 from core.request.middleware.fingerprint.provider import FingerprintProvider
@@ -38,25 +38,6 @@ class MiddlewareFactory(Protocol[MiddlewareConfigT]):
     ) -> RequestMiddleware[Any]:
         ...
 
-class AuthMiddlewareFactory:
-
-    def __init__(
-        self,
-        resolver: ProviderResolver[Any, Any],
-    ) -> None:
-        self._resolver = resolver
-
-    def __call__(
-        self,
-        config: AuthMiddlewareConfig,
-    ) -> AuthMiddleware:
-
-        return AuthMiddleware(
-            provider=self._resolver.resolve(
-                AuthProvider,
-            ),
-            config=config,
-        )
 class CacheMiddlewareFactory:
     def __init__(
         self,
@@ -187,6 +168,29 @@ def build_user_agent_middleware_factory(
 
     return factory
 
+def build_auth_middleware_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> MiddlewareFactory[AuthMiddlewareConfig]:
+
+    user_agent_resolver:AuthProviderResolver = resolver.resolve(
+        AuthProviderResolver,
+    )
+
+    def factory(
+        config: AuthMiddlewareConfig,
+    ) -> AuthMiddleware:
+
+        provider = user_agent_resolver.resolve(
+            config.provider,
+        )
+
+        return AuthMiddleware(
+            provider=provider,
+            config=config,
+        )
+
+    return factory
+
 
 class RobotMiddlewareFactory:
     def __init__(
@@ -198,9 +202,9 @@ class RobotMiddlewareFactory:
     def __call__(
         self,
         config: RobotMiddlewareConfig,
-    ) -> RobotMiddleware:
+    ) -> RobotsMiddleware:
 
-        return RobotMiddleware(
+        return RobotsMiddleware(
             policy=self._resolver.resolve(
                 RobotsPolicy,
             ),

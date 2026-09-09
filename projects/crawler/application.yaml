@@ -44,6 +44,36 @@ user_agents:
       - chrome
       - firefox
       - default
+
+auth_providers:
+  - name: default
+    type: basic
+    username: crawler
+    password: secret
+
+  - name: weather_api
+    type: api_key
+    key: "abc123"
+    header: "X-API-Key"
+
+  - name: github_api
+    type: bearer
+    token: "ghp_xxxxxxxxx"
+
+  - name: website_session
+    type: cookie
+    cookies:
+      sessionid: "abc123"
+      csrftoken: "xyz456"
+
+  - name: oauth_api
+    type: oauth2_client_credentials
+    token_url: "https://example.com/oauth/token"
+    client_id: "crawler"
+    client_secret: "secret"
+    scope: "read"
+    timeout: 10
+    token_expiry_margin: 30
 spiders:
 
   - name: news

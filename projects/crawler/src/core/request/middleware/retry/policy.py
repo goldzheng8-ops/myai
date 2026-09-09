@@ -4,7 +4,7 @@ from typing import Protocol
 from core.request.context import RequestContext
 from core.request.middleware.retry.config import RetryPolicyConfig
 from core.request.middleware.retry.exceptions import NonRetryableError, RetryableError
-from core.request.middleware.robot.exceptions import RobotsDenied
+from core.request.middleware.robots.exceptions import RobotsDenied
 from core.request.middleware.response_validation.exceptions import ResponseValidationError
 import httpx
 

@@ -1,7 +1,7 @@
 from core.request.context import RequestContext
-from .provider import AuthCredentials, AuthProvider
+from .provider import AuthCredentials, BaseAuthProvider
 
-class BearerAuthProvider(AuthProvider):
+class BearerAuthProvider(BaseAuthProvider):
 
     def __init__(
         self,
@@ -9,7 +9,7 @@ class BearerAuthProvider(AuthProvider):
     ) -> None:
         self._token = token
 
-    async def provide(
+    async def get(
         self,
         context: RequestContext,
     ) -> AuthCredentials:

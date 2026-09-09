@@ -4,9 +4,10 @@ from typing import Self
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
+from core.request.middleware.auth.config import AuthProviderConfigUnion
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
 from core.request.middleware.retry.config import RetryPolicyConfig
-from core.request.middleware.robot.typing import RobotsFailureStrategy
+from core.request.middleware.robots.config import RobotsPolicyConfig
 from core.request.middleware.user_agent.config import UserAgentProviderConfigUnion
 from core.request.profile import RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
@@ -19,32 +20,27 @@ class EngineRuntimeConfig(BaseConfig):
     """
     Runtime configuration of the crawler engine.
     """
+    concurrency: int = Field(default=8, gt=0)
 
-    concurrency: int = 8
-
-    timeout: float | None = 30.0
-
+    timeout: float | None = Field(
+        default=30.0,
+        gt=0,
+    )
 
 class ThrottleRuntimeConfig(BaseConfig):
     """
     Runtime configuration of throttling.
     """
 
-    delay: float = 0.0
-
-    concurrency: int | None = None
-
-class RobotRuntimeConfig(BaseConfig):
-    """
-    Runtime configuration of throttling.
-    """
-
-    timeout: float = 10.0
-    ttl: float = 3600.0
-    failure_strategy: RobotsFailureStrategy = (
-        RobotsFailureStrategy.ALLOW
+    delay: float = Field(
+        default=0.0,
+        ge=0,
     )
-    failure_ttl: float = 60.0
+
+    concurrency: int | None = Field(
+        default=None,
+        gt=0,
+    )
 
 
 class RuntimeConfig(BaseConfig):
@@ -60,8 +56,8 @@ class RuntimeConfig(BaseConfig):
         default_factory=ThrottleRuntimeConfig,
     )
 
-    robot: RobotRuntimeConfig = Field(
-        default_factory=RobotRuntimeConfig,
+    robots_policy: RobotsPolicyConfig = Field(
+        default_factory=RobotsPolicyConfig,
     )
 
     retry_policy: RetryPolicyConfig = Field(
@@ -80,6 +76,7 @@ class ApplicationConfig(BaseConfig):
     default_spider: str = "news"
     proxies: tuple[ProxyProviderConfigUnion, ...] = ()
     user_agents: tuple[UserAgentProviderConfigUnion, ...] = ()
+    auth_providers: tuple[AuthProviderConfigUnion, ...] = ()
     spiders: tuple[
         SpiderConfigUnion,
         ...

@@ -3,7 +3,7 @@ from typing import Any, Sequence
 from core.extraction.transform.config import TransformConfigUnion
 from core.extraction.value.config import ValueConfigUnion
 from core.extraction.extractor.context import ExtractContext
-from core.extraction.transform.evaluator import TransformExecutor
+from core.extraction.transform.executor import TransformExecutor
 from core.extraction.value.evaluator import ValueExecutor
 from core.extraction.resolver.executor import ResolverExecutor
 

@@ -1,29 +1,29 @@
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
-from core.request.middleware.proxy.provider import ProxyProvider
+from core.request.middleware.auth.provider import AuthProvider
 
 
-class ProxyProviderResolver:
+class AuthProviderResolver:
 
     def __init__(
         self,
-        providers: Mapping[
-            str,
-            ProxyProvider[Any],
-        ],
+        providers: Mapping[str, AuthProvider[Any]],
     ) -> None:
-        self._providers = providers
+        self._providers = dict(providers)
 
     def resolve(
         self,
         name: str,
-    ) -> ProxyProvider[Any]:
+    ) -> AuthProvider[Any]:
 
         try:
             return self._providers[name]
+
         except KeyError as exc:
             raise LookupError(
-                f"Proxy provider not found: {name!r}",
+                "Auth provider not found: "
+                f"{name!r}",
             ) from exc
 
     def contains(
@@ -39,5 +39,5 @@ class ProxyProviderResolver:
 
     def values(
         self,
-    ) -> tuple[ProxyProvider[Any], ...]:
+    ) -> tuple[AuthProvider[Any], ...]:
         return tuple(self._providers.values())

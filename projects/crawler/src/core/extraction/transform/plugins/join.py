@@ -5,7 +5,7 @@ from core.extraction.transform.base import TransformPlugin
 from core.extraction.transform.typing import TransformType
 
 class JoinTransform(TransformPlugin[Iterable[str], str, JoinTransformConfig]):
-    plugin_type = TransformType.DATETIME
+    plugin_type = TransformType.JOIN
 
     def transform_one(
         self,

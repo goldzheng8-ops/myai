@@ -3,7 +3,7 @@ from core.extraction.transform.base import TransformPlugin
 from core.extraction.transform.typing import TransformType
 
 class SplitTransform(TransformPlugin[str, list[str], SplitTransformConfig]):
-    plugin_type = TransformType.DATETIME
+    plugin_type = TransformType.SPLIT
 
     def transform_one(
         self,

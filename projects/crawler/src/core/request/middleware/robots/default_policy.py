@@ -4,10 +4,10 @@ import time
 from urllib.parse import urlsplit
 from urllib.robotparser import RobotFileParser
 
-from core.request.middleware.robot.cache import RobotsCacheEntry
-from core.request.middleware.robot.exceptions import RobotsFetchError
-from core.request.middleware.robot.policy import RobotsPolicy
-from core.request.middleware.robot.typing import RobotsFailureStrategy
+from core.request.middleware.robots.cache import RobotsCacheEntry
+from core.request.middleware.robots.exceptions import RobotsFetchError
+from core.request.middleware.robots.policy import RobotsPolicy
+from core.request.middleware.robots.typing import RobotsFailureStrategy
 import httpx
 
 

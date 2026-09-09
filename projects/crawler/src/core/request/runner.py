@@ -5,7 +5,7 @@ import logging
 from core.event import Event, EventDispatcher
 from core.request.events.skipped import RequestSkipped
 from core.request.middleware.chain_builder import MiddlewareChainBuilder
-from core.request.middleware.robot.exceptions import RobotsDenied
+from core.request.middleware.robots.exceptions import RobotsDenied
 from core.request.result import RequestResult
 
 from .context import RequestContext

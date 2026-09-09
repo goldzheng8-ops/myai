@@ -1,8 +1,8 @@
 import base64
 
 from core.request.context import RequestContext
-from .provider import AuthCredentials, AuthProvider
-class BasicAuthProvider(AuthProvider):
+from .provider import AuthCredentials, BaseAuthProvider
+class BasicAuthProvider(BaseAuthProvider):
 
     def __init__(
         self,
@@ -12,7 +12,7 @@ class BasicAuthProvider(AuthProvider):
         self._username = username
         self._password = password
 
-    async def provide(
+    async def get(
         self,
         context: RequestContext,
     ) -> AuthCredentials:

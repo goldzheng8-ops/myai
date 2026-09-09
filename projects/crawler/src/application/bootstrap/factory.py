@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from application.config.model import ApplicationConfig
+from core.lifecycle.manager import LifecycleManager
 from core.provider import (
     ProviderBuilder,
     SingletonProvider,
 )
+from core.request.middleware.auth.resolver import AuthProviderResolver
 
 from .container import ApplicationContainer
 from .registration import (
@@ -15,8 +17,9 @@ from .registration import (
     register_events,
     register_extractors,
     register_lifecycle,
-    register_proxy_providers,
-    register_user_agent_providers,
+    register_proxy_providers_resolver,
+    register_user_agent_providers_resolver,
+    register_auth_providers_resolver,
     register_middleware_dependencies,
     register_middlewares,
     register_runtimes,
@@ -53,9 +56,14 @@ class ApplicationContainerFactory:
 
         providers = builder.build()
 
-        return ApplicationContainer(
-            providers,
+        container = ApplicationContainer(providers)
+
+        self._register_lifecycle_participants(
+            container,
+            config,
         )
+
+        return container
 
     def _register_application_services(
         self,
@@ -91,11 +99,15 @@ class ApplicationContainerFactory:
         register_downloaders(
             builder,
         )
-        register_proxy_providers(
+        register_proxy_providers_resolver(
             builder,
             config,          
         )
-        register_user_agent_providers(
+        register_user_agent_providers_resolver(
+            builder,
+            config,          
+        )
+        register_auth_providers_resolver(
             builder,
             config,          
         )
@@ -141,3 +153,20 @@ class ApplicationContainerFactory:
             builder,
             config,
         )
+
+    def _register_lifecycle_participants(
+        self,
+        container: ApplicationContainer,
+        config: ApplicationConfig,
+    ) -> None:
+
+        lifecycle = container.resolve(
+            LifecycleManager,
+        )
+
+        auth_resolver:AuthProviderResolver = container.resolve(
+            AuthProviderResolver,
+        )
+
+        for provider in auth_resolver.values():
+            lifecycle.register(provider)

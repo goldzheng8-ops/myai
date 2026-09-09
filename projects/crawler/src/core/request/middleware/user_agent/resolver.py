@@ -25,3 +25,19 @@ class UserAgentProviderResolver:
             raise LookupError(
                 f"User-Agent provider not found: {name!r}",
             ) from exc
+
+    def contains(
+        self,
+        name: str,
+    ) -> bool:
+        return name in self._providers
+
+    def names(
+        self,
+    ) -> tuple[str, ...]:
+        return tuple(self._providers)
+
+    def values(
+        self,
+    ) -> tuple[UserAgentProvider[Any], ...]:
+        return tuple(self._providers.values())

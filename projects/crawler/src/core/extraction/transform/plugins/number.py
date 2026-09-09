@@ -3,7 +3,7 @@ from core.extraction.transform.base import TransformPlugin
 from core.extraction.transform.typing import TransformType
 
 class NumberTransform(TransformPlugin[str | int | float, int | float, NumberTransformConfig]):
-    plugin_type = TransformType.DATETIME
+    plugin_type = TransformType.NUMBER
 
     def transform_one(
         self,

@@ -1,3 +1,5 @@
+from core.extraction.transform.engine import TransformEngine
+from core.extraction.transform.executor import TransformExecutor
 from core.extraction.transform.plugins.datetime import DateTimeTransform
 from core.extraction.transform.plugins.join import JoinTransform
 from core.extraction.transform.plugins.lower import LowerTransform
@@ -25,7 +27,14 @@ def register_transforms(
         lambda _: create_transform_registry(),
     )
 
-
+    builder.add_factory(
+        TransformExecutor,
+        lambda resolver: TransformEngine(
+            registry=resolver.resolve(
+                TransformRegistry,
+            ),
+        ),     
+    )
 def create_transform_registry() -> TransformRegistry:
     registry = TransformRegistry()
 

@@ -3,7 +3,7 @@ from core.extraction.transform.base import TransformPlugin
 from core.extraction.transform.typing import TransformType
 
 class StripTransform(TransformPlugin[str, str, StripTransformConfig]):
-    plugin_type = TransformType.DATETIME
+    plugin_type = TransformType.STRIP
 
     def transform_one(self, value: str, config: StripTransformConfig) -> str:
 
