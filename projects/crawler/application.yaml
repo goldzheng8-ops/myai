@@ -119,7 +119,7 @@ spiders:
 
             selector:
               type: css
-              selector: "h1.title"
+              selector: "title"
 
           required: false
 

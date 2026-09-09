@@ -95,7 +95,7 @@ class DiscoveryTemplateSpider(
                 context.config.extraction,
                 extract_context,
             )
-
+            print(item)
             requests = await self._discover(
                 context,
                 extract_context,

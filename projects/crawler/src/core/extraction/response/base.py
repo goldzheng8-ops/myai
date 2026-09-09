@@ -25,17 +25,25 @@ class ResponseAdapter(ABC):
         self,
         selector: SelectorConfigUnion,
     ) -> Any:
+        match selector.type:
+            case SelectorType.CSS | SelectorType.XPATH:
+                return await self.select_nodes(selector)
 
-        handler = (
-            self._selector_dispatch.dispatch(
-                selector.type
-            )
-        )
+            case (
+                SelectorType.REGEX
+                | SelectorType.JMESPATH
+                | SelectorType.JSONPATH
+            ):
+                handler = self._selector_dispatch.dispatch(
+                    selector.type,
+                )
+                return await handler(selector)
 
-        return await handler(
-            selector,
-        )
-    
+            case _:
+                raise ValueError(
+                    f"Unsupported selector type: {selector.type!r}",
+                )
+            
     @abstractmethod
     async def select_nodes(
         self,
