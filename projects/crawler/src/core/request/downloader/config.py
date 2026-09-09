@@ -44,6 +44,7 @@ class HttpxDownloaderConfig(
     """
     Configuration for HTTPXDownloader.
     """
+    timeout:float | None = 30
 
     verify_ssl: bool = True
 
@@ -67,15 +68,15 @@ class ScrapyDownloaderConfig(
 
 class HttpxDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.HTTPX] = DownloaderType.HTTPX
-    config: HttpxDownloaderConfig
+    config: HttpxDownloaderConfig=Field(default_factory=HttpxDownloaderConfig)
 
 class PlaywrightDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.PLAYWRIGHT] = DownloaderType.PLAYWRIGHT
-    config: PlaywrightDownloaderConfig
+    config: PlaywrightDownloaderConfig=Field(default_factory=PlaywrightDownloaderConfig)
 
 class ScrapyDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.SCRAPY] = DownloaderType.SCRAPY
-    config: ScrapyDownloaderConfig
+    config: ScrapyDownloaderConfig=Field(default_factory=ScrapyDownloaderConfig)
 
 DownloaderSpecUnion = Annotated[
     (

@@ -82,13 +82,8 @@ spiders:
 
     profile:
       downloader:
-        type: httpx
-        config:
-          timeout: 30
-          verify_ssl: true
-          follow_redirects: true
-          max_redirects: 20
-          http2: false
+        type: playwright
+
 
       response_format: html
 
@@ -126,7 +121,7 @@ spiders:
               type: css
               selector: "h1.title"
 
-          required: true
+          required: false
 
           transforms:
             - type: strip

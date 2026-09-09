@@ -34,7 +34,7 @@ class ValueEngine(
         )
 
         if transforms:
-            value = await self._transformer.transform(
+            value = self._transformer.transform(
                 value,
                 transforms,
             )

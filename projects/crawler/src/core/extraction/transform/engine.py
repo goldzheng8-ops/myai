@@ -16,7 +16,7 @@ class TransformEngine(
     def __init__(self, registry: TransformRegistry):
         self._registry = registry
 
-    async def transform(
+    def transform(
         self,
         value: Any,
         configs: Sequence[TransformConfigUnion],
