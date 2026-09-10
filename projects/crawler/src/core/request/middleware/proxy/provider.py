@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 from core.request.context import RequestContext
-from .model import Proxy
+from .config import ProxyConfig
 
 
 ConfigT = TypeVar(
@@ -29,7 +29,7 @@ class ProxyProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> ProxyConfig  | None:
         raise NotImplementedError
 
 

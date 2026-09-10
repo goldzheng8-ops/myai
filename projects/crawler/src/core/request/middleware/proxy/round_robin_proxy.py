@@ -4,7 +4,7 @@ from core.request.context import RequestContext
 
 
 from .config import RoundRobinProxyProviderConfig
-from .model import Proxy
+from .config import ProxyConfig
 from .provider import ProxyProvider
 
 
@@ -16,7 +16,6 @@ class RoundRobinProxyProvider(
         self,
         config: RoundRobinProxyProviderConfig,
     ) -> None:
-
         super().__init__(config)
 
         self._index = 0
@@ -25,7 +24,7 @@ class RoundRobinProxyProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> ProxyConfig | None:
 
         proxies = self.config.proxies
 
@@ -38,6 +37,4 @@ class RoundRobinProxyProvider(
             ]
             self._index += 1
 
-        return Proxy(
-            url=proxy.as_url(),
-        )
+        return proxy

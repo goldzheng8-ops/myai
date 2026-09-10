@@ -4,8 +4,8 @@ from typing import Any
 from collections.abc import Mapping
 
 from core.request.context import RequestContext
-from core.request.middleware.proxy.config import ProxyPoolProviderConfig
-from core.request.middleware.proxy.model import Proxy
+from core.request.middleware.proxy.config import ProxyPoolProviderConfig,ProxyConfig
+
 from core.request.middleware.proxy.provider import ProxyProvider
 
 
@@ -30,7 +30,7 @@ class ProxyPoolProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> ProxyConfig | None:
 
         names = self.config.providers
 
@@ -51,7 +51,7 @@ class ProxyPoolProvider(
 
             case _:
                 raise ValueError(
-                    "Unsupported User-Agent pool strategy: "
+                    "Unsupported Proxy pool strategy: "
                     f"{self.config.strategy!r}",
                 )
 

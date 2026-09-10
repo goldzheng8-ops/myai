@@ -4,7 +4,7 @@ import time
 from core.request.context import RequestContext
 
 from .config import RotatingProxyProviderConfig
-from .model import Proxy
+from .config import ProxyConfig
 from .provider import ProxyProvider
 
 
@@ -16,7 +16,6 @@ class RotatingProxyProvider(
         self,
         config: RotatingProxyProviderConfig,
     ) -> None:
-
         super().__init__(config)
 
         self._index = 0
@@ -26,7 +25,7 @@ class RotatingProxyProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> ProxyConfig | None:
 
         proxies = self.config.proxies
 
@@ -48,6 +47,4 @@ class RotatingProxyProvider(
 
             proxy = proxies[self._index]
 
-        return Proxy(
-            url=proxy.as_url(),
-        )
+        return proxy

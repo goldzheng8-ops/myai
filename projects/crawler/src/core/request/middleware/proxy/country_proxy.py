@@ -4,7 +4,7 @@ import asyncio
 from core.request.context import RequestContext
 
 from .config import CountryProxyProviderConfig
-from .model import Proxy
+from .config import ProxyConfig
 from .provider import ProxyProvider
 
 
@@ -23,14 +23,16 @@ class CountryProxyProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> Proxy | None:
+    ) -> ProxyConfig | None:
 
         proxies = tuple(
             proxy
             for proxy in self.config.proxies
-            if proxy.country is not None
-            and proxy.country.upper()
-            == self.config.country.upper()
+            if (
+                proxy.country is not None
+                and proxy.country.upper()
+                == self.config.country.upper()
+            )
         )
 
         if not proxies:
@@ -42,7 +44,4 @@ class CountryProxyProvider(
             ]
             self._index += 1
 
-        return Proxy(
-            url=proxy.url,
-            country=proxy.country,
-        )
+        return proxy
