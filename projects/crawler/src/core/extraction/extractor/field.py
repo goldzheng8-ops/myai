@@ -1,6 +1,7 @@
 from typing import Any
 
 
+from core.extraction.exception import RequiredFieldMissingError
 from core.extraction.extractor.base import Extractor
 from core.extraction.extractor.config import FieldConfig
 from core.extraction.extractor.typing import ExtractType
@@ -40,7 +41,7 @@ class FieldExtractor(
 
             if config.required:
 
-                raise ValueError(
+                raise RequiredFieldMissingError(
                     f"Required field missing: {config.name}"
                 )
 

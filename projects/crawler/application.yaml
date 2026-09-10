@@ -119,9 +119,9 @@ spiders:
 
             selector:
               type: css
-              selector: "title"
+              selector: "h1.title"
 
-          required: false
+          required: true
 
           transforms:
             - type: strip
