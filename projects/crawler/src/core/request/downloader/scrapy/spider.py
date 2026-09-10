@@ -30,7 +30,8 @@ class RuntimeSpider(Spider):
         self,
     ) -> AsyncIterator[None]:
 
-        await self._stop_event.wait()
+        while not self._stop_event.is_set():
+            await asyncio.sleep(0.1)
 
         if False:
             yield

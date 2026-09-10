@@ -82,7 +82,7 @@ spiders:
 
     profile:
       downloader:
-        type: playwright
+        type: scrapy
 
 
       response_format: html

@@ -104,6 +104,8 @@ class ScrapyAsyncCrawlerRunnerAdapter:
             stop_event=self._stop_event,
         )
 
+        self._ready.set()
+
         try:
             await self._wait_until_ready()
 
