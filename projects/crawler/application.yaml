@@ -74,6 +74,18 @@ auth_providers:
     scope: "read"
     timeout: 10
     token_expiry_margin: 30
+
+output_sinks:
+  - name: news_jsonl
+    type: jsonl
+    path: data/news.jsonl
+  - name: news_csv
+    type: csv
+    path: data/news.csv
+  - name: news_postgres
+    type: postgres
+    dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
+    table: news
 spiders:
 
   - name: news
@@ -104,6 +116,9 @@ spiders:
       - type: robot
       - type: retry
       - type: throttle
+    outputs:
+      - news_jsonl
+      - news_csv
     extraction:
 
       type: object
@@ -119,7 +134,7 @@ spiders:
 
             selector:
               type: css
-              selector: "h1.title"
+              selector: "title"
 
           required: true
 

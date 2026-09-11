@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 
 from core.request.config import RequestConfig
 from core.request.middleware.config import MiddlewareSpecUnion
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .typing import SpiderTemplate
 
@@ -37,7 +37,19 @@ class SpiderConfig(BaseConfig):
     settings: dict[str, Any] = Field(
         default_factory=dict,
     )
-    outputs: tuple[str, ...] 
+    outputs: tuple[str, ...] = ()
+
+    @field_validator("outputs")
+    @classmethod
+    def validate_outputs(
+        cls,
+        value: tuple[str, ...],
+    ) -> tuple[str, ...]:
+        if len(value) != len(set(value)):
+            raise ValueError(
+                "Spider outputs must be unique."
+            )
+        return value
 
 class DiscoverySpiderConfig(SpiderConfig):
     discovery: tuple[

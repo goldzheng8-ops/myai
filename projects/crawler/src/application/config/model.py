@@ -96,7 +96,18 @@ class ApplicationConfig(BaseConfig):
                 f"Default spider {self.default_spider!r} "
                 "is not registered."
             )
+        output_names = {
+            output.name
+            for output in self.output_sinks
+        }
 
+        for spider in self.spiders:
+            for output_name in spider.outputs:
+                if output_name not in output_names:
+                    raise ValueError(
+                        f"Spider {spider.name!r} references "
+                        f"unknown output sink {output_name!r}."
+                    )
         return self
 class CrawlRequest(BaseConfig):
     spider: str
