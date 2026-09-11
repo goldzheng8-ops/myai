@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
+from core.output.config import OutputConfigUnion
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.auth.config import AuthProviderConfigUnion
@@ -77,6 +78,8 @@ class ApplicationConfig(BaseConfig):
     proxies: tuple[ProxyProviderConfigUnion, ...] = ()
     user_agents: tuple[UserAgentProviderConfigUnion, ...] = ()
     auth_providers: tuple[AuthProviderConfigUnion, ...] = ()
+    output_sinks: tuple[OutputConfigUnion, ...] = ()
+
     spiders: tuple[
         SpiderConfigUnion,
         ...

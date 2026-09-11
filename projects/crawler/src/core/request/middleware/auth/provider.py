@@ -65,7 +65,7 @@ type AuthProviderMap = dict[
 ]
 
 class BaseAuthProvider(
-    AuthProvider[Any],
+    AuthProvider[ConfigT],
     LifecycleParticipant,
 ):
 

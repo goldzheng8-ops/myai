@@ -113,21 +113,23 @@ class SpiderExecutor:
 
                 await extract_context.response.close()
 
-            result.items.extend(
-                step.items,
-            )
+            if step.item is not None:
+                await self._services.output_engine.write(
+                    step.item,
+                    step.outputs,
+                )
 
-            result.requests.extend(
-                step.requests,
+            result.item_count += (
+                1 if step.item is not None else 0
             )
 
             for descriptor in step.requests:
-
-                self._enqueue(
+                if self._enqueue(
                     descriptor,
                     queue,
                     seen,
-                )
+                ):
+                    result.request_count += 1
 
             if not step.continue_:
                 break

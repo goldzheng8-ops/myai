@@ -1,13 +1,14 @@
 from core.request.context import RequestContext
+from core.request.middleware.auth.config import BearerAuthProviderConfig
 from .provider import AuthCredentials, BaseAuthProvider
 
-class BearerAuthProvider(BaseAuthProvider):
+class BearerAuthProvider(BaseAuthProvider[BearerAuthProviderConfig]):
 
     def __init__(
         self,
-        token: str,
+        config: BearerAuthProviderConfig,
     ) -> None:
-        self._token = token
+        super().__init__(config)
 
     async def get(
         self,
@@ -16,6 +17,6 @@ class BearerAuthProvider(BaseAuthProvider):
         return AuthCredentials(
             headers={
                 "Authorization":
-                    f"Bearer {self._token}",
+                    f"Bearer {self.config.token}",
             },
         )

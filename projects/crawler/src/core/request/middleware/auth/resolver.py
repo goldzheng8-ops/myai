@@ -1,21 +1,21 @@
 from collections.abc import Mapping
 from typing import Any
 
-from core.request.middleware.auth.provider import AuthProvider
+from core.request.middleware.auth.provider import BaseAuthProvider
 
 
 class AuthProviderResolver:
 
     def __init__(
         self,
-        providers: Mapping[str, AuthProvider[Any]],
+        providers: Mapping[str, BaseAuthProvider[Any]],
     ) -> None:
         self._providers = dict(providers)
 
     def resolve(
         self,
         name: str,
-    ) -> AuthProvider[Any]:
+    ) -> BaseAuthProvider[Any]:
 
         try:
             return self._providers[name]
@@ -39,5 +39,5 @@ class AuthProviderResolver:
 
     def values(
         self,
-    ) -> tuple[AuthProvider[Any], ...]:
+    ) -> tuple[BaseAuthProvider[Any], ...]:
         return tuple(self._providers.values())

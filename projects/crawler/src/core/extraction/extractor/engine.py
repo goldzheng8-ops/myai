@@ -1,4 +1,4 @@
-from typing import Any
+from core.extraction.extractor.result import ExtractResult
 
 from .config import ExtractConfigUnion
 
@@ -24,7 +24,7 @@ class ExtractEngine(
         self,
         config: ExtractConfigUnion,
         context: ExtractContext,
-    ) -> Any:
+    ) -> ExtractResult:
 
 
         extractor = self._registry.create(

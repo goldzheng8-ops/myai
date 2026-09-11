@@ -5,6 +5,7 @@ from typing import  ClassVar, Generic,TypeVar
 
 
 from core.extraction.extractor.context import ExtractContext
+from core.output.model import OutputItem
 from core.plugin import Plugin
 from core.request.context import RequestContext
 
@@ -90,22 +91,25 @@ class DiscoveryTemplateSpider(
         request: RequestContext,
         extract_context: ExtractContext,
     ) -> SpiderStep:
-        try:
-            item = await self.services.extract_engine.extract(
-                context.config.extraction,
-                extract_context,
-            )
-            print(item)
-            requests = await self._discover(
-                context,
-                extract_context,
-            )
 
-            return SpiderStep(
-                request=request,
-                items=[item],
-                requests=requests,
-            )
-        finally:
-            await extract_context.response.close()
+        item = await self.services.extract_engine.extract(
+            context.config.extraction,
+            extract_context,
+        )
+
+        requests = await self._discover(
+            context,
+            extract_context,
+        )
+
+        return SpiderStep(
+            request=request,
+            item=OutputItem(
+                data=item.data,
+                spider=context.config.name,
+                metadata=item.metadata
+            ),
+            outputs=context.config.outputs,
+            requests=requests,
+        )
 

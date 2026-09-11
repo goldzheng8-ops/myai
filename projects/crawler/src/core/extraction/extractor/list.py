@@ -6,6 +6,7 @@ from core.extraction.extractor.base import Extractor
 from core.extraction.extractor.config import ListConfig
 from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.extractor.context import ExtractContext
+from core.extraction.extractor.result import ExtractResult
 from core.extraction.extractor.typing import ExtractType
 
 class ListExtractor(
@@ -25,7 +26,7 @@ class ListExtractor(
         self,
         config: ListConfig,
         context: ExtractContext,
-    ) -> list[Any]:
+    ) -> ExtractResult:
 
 
         nodes = await context.response.select_nodes(
@@ -33,7 +34,7 @@ class ListExtractor(
         )
 
 
-        result = []
+        items: list[Any] = []
 
 
         for node in nodes:
@@ -44,15 +45,15 @@ class ListExtractor(
             )
 
 
-            value = await self._executor.extract(
+            result = await self._executor.extract(
                 config.item,
                 child_context,
             )
 
 
-            result.append(
-                value
-            )
+            items.append(result.data)
 
-
-        return result
+        return ExtractResult(
+            data=items,
+            metadata=config.metadata.copy(),
+        )

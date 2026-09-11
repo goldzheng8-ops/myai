@@ -37,7 +37,7 @@ class SpiderConfig(BaseConfig):
     settings: dict[str, Any] = Field(
         default_factory=dict,
     )
-
+    outputs: tuple[str, ...] 
 
 class DiscoverySpiderConfig(SpiderConfig):
     discovery: tuple[
@@ -49,7 +49,7 @@ class DiscoverySpiderConfig(SpiderConfig):
 class ListSpiderConfig(DiscoverySpiderConfig):
     template: Literal[SpiderTemplate.LIST] = SpiderTemplate.LIST
 
-    extraction: ExtractConfigUnion
+
 
 
 class DetailSpiderConfig(SpiderConfig):
@@ -57,13 +57,13 @@ class DetailSpiderConfig(SpiderConfig):
         SpiderTemplate.DETAIL
     )
 
-    extraction: ExtractConfigUnion
+
 
 
 class ApiSpiderConfig(DiscoverySpiderConfig):
     template: Literal[SpiderTemplate.API] = SpiderTemplate.API
 
-    extraction: ExtractConfigUnion
+
 
 
 class BrowserSpiderConfig(DiscoverySpiderConfig):
@@ -71,7 +71,7 @@ class BrowserSpiderConfig(DiscoverySpiderConfig):
         SpiderTemplate.BROWSER
     )
 
-    extraction: ExtractConfigUnion
+
 
 
 SpiderConfigUnion = Annotated[

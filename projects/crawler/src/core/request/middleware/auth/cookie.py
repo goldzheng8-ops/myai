@@ -1,20 +1,20 @@
-from collections.abc import Mapping
 from core.request.context import RequestContext
+from core.request.middleware.auth.config import CookieAuthProviderConfig
 
 from .provider import AuthCredentials, BaseAuthProvider
 
-class CookieAuthProvider(BaseAuthProvider):
+class CookieAuthProvider(BaseAuthProvider[CookieAuthProviderConfig]):
 
     def __init__(
         self,
-        cookies: Mapping[str, str],
+        config: CookieAuthProviderConfig,
     ) -> None:
-        self._cookies = dict(cookies)
+        super().__init__(config)
 
     async def get(
         self,
         context: RequestContext,
     ) -> AuthCredentials:
         return AuthCredentials(
-            cookies=self._cookies,
+            cookies=self.config.cookies,
         )

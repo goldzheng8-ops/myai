@@ -1,9 +1,7 @@
-from typing import Any
-
-
 from core.extraction.exception import RequiredFieldMissingError
 from core.extraction.extractor.base import Extractor
 from core.extraction.extractor.config import FieldConfig
+from core.extraction.extractor.result import ExtractResult
 from core.extraction.extractor.typing import ExtractType
 from core.extraction.value.evaluator import ValueExecutor
 from core.extraction.extractor.context import ExtractContext
@@ -26,7 +24,7 @@ class FieldExtractor(
         self,
         config: FieldConfig,
         context: ExtractContext,
-    ) -> Any:
+    ) -> ExtractResult:
 
 
         value = await self._executor.resolve(
@@ -46,7 +44,11 @@ class FieldExtractor(
                 )
 
 
-            return config.default
+            return ExtractResult(
+                data=config.default,
+            )
 
-
-        return value
+        return ExtractResult(
+            data=value,
+            metadata=config.metadata.copy(),
+        )

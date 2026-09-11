@@ -2,6 +2,7 @@
 
 
 from core.extraction.extractor.context import ExtractContext
+from core.output.model import OutputItem
 from core.request.context import RequestContext
 
 
@@ -25,17 +26,20 @@ class TemplateDetailSpider(
         request: RequestContext,
         extract_context: ExtractContext,
     ) -> SpiderStep:
-        try:
-            item = (
-                await self.services.extract_engine.extract(
-                    context.config.extraction,
-                    extract_context,
-                )
-            )
 
-            return SpiderStep(
-                request=request,
-                items=[item],
+        item = (
+            await self.services.extract_engine.extract(
+                context.config.extraction,
+                extract_context,
             )
-        finally:
-            await extract_context.response.close()
+        )
+
+        return SpiderStep(
+            request=request,
+            item=OutputItem(
+                data=item.data,
+                spider=context.config.name,
+                metadata=item.metadata
+            ),
+            outputs=context.config.outputs,
+        )

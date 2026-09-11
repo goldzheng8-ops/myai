@@ -1,15 +1,15 @@
 from core.request.context import RequestContext
+from core.request.middleware.auth.config import ApiKeyAuthProviderConfig
 from .provider import AuthCredentials, BaseAuthProvider
 
-class ApiKeyAuthProvider(BaseAuthProvider):
+class ApiKeyAuthProvider(BaseAuthProvider[ApiKeyAuthProviderConfig]):
 
     def __init__(
         self,
-        key: str,
-        header: str = "X-API-Key",
+        config: ApiKeyAuthProviderConfig,
+
     ) -> None:
-        self._key = key
-        self._header = header
+        super().__init__(config)
 
     async def get(
         self,
@@ -17,6 +17,6 @@ class ApiKeyAuthProvider(BaseAuthProvider):
     ) -> AuthCredentials:
         return AuthCredentials(
             headers={
-                self._header: self._key,
+                self.config.header: self.config.key,
             },
         )

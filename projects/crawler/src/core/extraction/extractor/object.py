@@ -7,6 +7,7 @@ from core.extraction.extractor.base import Extractor
 from core.extraction.extractor.config import ObjectConfig
 from core.extraction.extractor.context import ExtractContext
 from core.extraction.extractor.executor import ExtractExecutor
+from core.extraction.extractor.result import ExtractResult
 from core.extraction.extractor.typing import ExtractType
 
 class ObjectExtractor(
@@ -26,12 +27,12 @@ class ObjectExtractor(
         self,
         config: ObjectConfig,
         context: ExtractContext,
-    ) -> dict[str, Any]:
+    ) -> ExtractResult:
 
-        result = {}
+        data: dict[str, Any] = {}
         for child in config.children:
             try:
-                value = await self._executor.extract(
+                result = await self._executor.extract(
                     child,
                     context,
                 )
@@ -43,5 +44,8 @@ class ObjectExtractor(
                     exc,
                 )
                 continue            
-            result[child.name] = value
-        return result
+            data[child.name] = result.data
+        return ExtractResult(
+            data=data,
+            metadata=config.metadata.copy(),
+        )

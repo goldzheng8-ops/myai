@@ -1,7 +1,8 @@
-from typing import Any, Protocol
+from typing import Protocol
 
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.extraction.extractor.context import ExtractContext
+from core.extraction.extractor.result import ExtractResult
 
 
 class ExtractExecutor(
@@ -12,5 +13,5 @@ class ExtractExecutor(
         self,
         config: ExtractConfigUnion,
         context: ExtractContext,
-    ) -> Any:
+    ) -> ExtractResult:
         ...

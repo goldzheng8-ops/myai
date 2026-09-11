@@ -6,7 +6,12 @@ from core.typing.result import BaseResult
 
 @dataclass(slots=True)
 class ExtractResult(BaseResult):
+    """
+    Result produced by extraction.
+    """
 
     data: Any = None
-    
-    metadata:dict[str, Any] = field(default_factory=dict)
+
+    metadata: dict[str, Any] = field(
+        default_factory=dict,
+    )

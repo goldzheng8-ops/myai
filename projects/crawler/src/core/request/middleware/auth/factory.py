@@ -7,7 +7,7 @@ from core.request.middleware.auth.bearer import BearerAuthProvider
 from core.request.middleware.auth.config import AuthProviderConfigUnion
 from core.request.middleware.auth.cookie import CookieAuthProvider
 from core.request.middleware.auth.oauth2 import OAuth2ClientCredentialsProvider
-from core.request.middleware.auth.provider import AuthProvider
+from core.request.middleware.auth.provider import BaseAuthProvider
 
 
 class AuthProviderFactory:
@@ -15,43 +15,34 @@ class AuthProviderFactory:
     def create(
         self,
         config: AuthProviderConfigUnion,
-    ) -> AuthProvider[Any]:
+    ) -> BaseAuthProvider[Any]:
 
         match config.type:
 
             case "basic":
                 return BasicAuthProvider(
-                    username=config.username,
-                    password=config.password,
+                    config,
                 )
 
             case "api_key":
                 return ApiKeyAuthProvider(
-                    key=config.key,
-                    header=config.header,
+                    config,
                 )
 
             case "bearer":
                 return BearerAuthProvider(
-                    token=config.token,
+                    config
                 )
 
             case "cookie":
                 return CookieAuthProvider(
-                    cookies=config.cookies,
+                    config
                 )
 
             case "oauth2_client_credentials":
                 return (
                     OAuth2ClientCredentialsProvider(
-                        token_url=config.token_url,
-                        client_id=config.client_id,
-                        client_secret=config.client_secret,
-                        scope=config.scope,
-                        timeout=config.timeout,
-                        token_expiry_margin=(
-                            config.token_expiry_margin
-                        ),
+                        config
                     )
                 )
 
@@ -66,9 +57,9 @@ class AuthProviderFactory:
         configs: Sequence[
             AuthProviderConfigUnion
         ],
-    ) -> dict[str, AuthProvider[Any]]:
+    ) -> dict[str, BaseAuthProvider[Any]]:
 
-        providers: dict[str, AuthProvider[Any]] = {}
+        providers: dict[str, BaseAuthProvider[Any]] = {}
 
         for config in configs:
 

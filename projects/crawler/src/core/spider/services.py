@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.output.engine import OutputEngine
 from core.request.discovery.engine import DiscoveryEngine
 from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.response.resolver import (
@@ -26,3 +27,5 @@ class SpiderServices:
     fingerprint_provider: FingerprintProvider
 
     response_adapter_resolver: ResponseAdapterResolver
+    
+    output_engine:OutputEngine

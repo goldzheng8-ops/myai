@@ -1,23 +1,22 @@
 import base64
 
 from core.request.context import RequestContext
+from core.request.middleware.auth.config import BasicAuthProviderConfig
 from .provider import AuthCredentials, BaseAuthProvider
-class BasicAuthProvider(BaseAuthProvider):
+class BasicAuthProvider(BaseAuthProvider[BasicAuthProviderConfig]):
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        config:BasicAuthProviderConfig,
     ) -> None:
-        self._username = username
-        self._password = password
+        super().__init__(config)
 
     async def get(
         self,
         context: RequestContext,
     ) -> AuthCredentials:
         raw = (
-            f"{self._username}:{self._password}"
+            f"{self.config.username}:{self.config.password}"
             .encode()
         )
 

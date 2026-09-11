@@ -5,6 +5,7 @@ import asyncio
 import time
 from dataclasses import dataclass
 
+from core.request.middleware.auth.config import OAuth2ClientCredentialsProviderConfig
 from core.request.middleware.auth.exceptions import OAuth2AuthenticationError
 import httpx
 
@@ -25,27 +26,14 @@ class OAuth2Token:
 
 
 class OAuth2ClientCredentialsProvider(
-    BaseAuthProvider,
+    BaseAuthProvider[OAuth2ClientCredentialsProviderConfig],
 ):
 
     def __init__(
         self,
-        token_url: str,
-        client_id: str,
-        client_secret: str,
-        *,
-        scope: str | None = None,
-        timeout: float = 10.0,
-        token_expiry_margin: float = 30.0,
+        config:OAuth2ClientCredentialsProviderConfig
     ) -> None:
-        self._token_url = token_url
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._scope = scope
-        self._timeout = timeout
-        self._token_expiry_margin = (
-            token_expiry_margin
-        )
+        super().__init__(config)
 
         self._client: httpx.AsyncClient | None = None
         self._token: OAuth2Token | None = None
@@ -57,7 +45,7 @@ class OAuth2ClientCredentialsProvider(
             return
 
         self._client = httpx.AsyncClient(
-            timeout=self._timeout,
+            timeout=self.config.timeout,
         )
 
     async def get(
@@ -122,7 +110,7 @@ class OAuth2ClientCredentialsProvider(
             time.monotonic()
             >= (
                 token.expires_at
-                - self._token_expiry_margin
+                - self.config.token_expiry_margin
             )
         )
 
@@ -135,15 +123,15 @@ class OAuth2ClientCredentialsProvider(
             "grant_type": "client_credentials",
         }
 
-        if self._scope is not None:
-            data["scope"] = self._scope
+        if self.config.scope is not None:
+            data["scope"] = self.config.scope
 
         response = await client.post(
-            self._token_url,
+            self.config.token_url,
             data=data,
             auth=(
-                self._client_id,
-                self._client_secret,
+                self.config.client_id,
+                self.config.client_secret,
             ),
         )
 

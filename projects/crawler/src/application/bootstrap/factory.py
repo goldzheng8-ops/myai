@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
+from core.output.resolver import OutputResolver
 from core.provider import (
     ProviderBuilder,
     SingletonProvider,
@@ -144,7 +146,7 @@ class ApplicationContainerFactory:
         register_discoveries(
             builder,
         )
-
+        register_outputs(builder, config)
         register_request_services(
             builder,
         )
@@ -170,3 +172,10 @@ class ApplicationContainerFactory:
 
         for provider in auth_resolver.values():
             lifecycle.register(provider)
+
+        out_resolver:OutputResolver = container.resolve(
+            OutputResolver,
+        )
+
+        for output_sink in out_resolver.values():
+            lifecycle.register(output_sink)
