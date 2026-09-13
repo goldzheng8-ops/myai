@@ -32,7 +32,9 @@ class CrawlerService:
             base_config,
             request.override,
         )
-
+        if request.start_requests is None:
+            return SpiderResult()
         return await self._runner.run(
             config,
+            request.start_requests,
         )

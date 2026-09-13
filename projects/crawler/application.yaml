@@ -1,6 +1,9 @@
 name: ai-space
 environment: development
-default_spider: news
+crawl:
+  entry_spider: "news"
+  start_requests:
+    - url: https://books.toscrape.com/
 
 runtime:
 
@@ -82,10 +85,10 @@ output_sinks:
   - name: news_csv
     type: csv
     path: data/news.csv
-  - name: news_postgres
-    type: postgres
-    dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
-    table: news
+  # - name: news_postgres
+  #   type: postgres
+  #   dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
+  #   table: news
 spiders:
 
   - name: news
@@ -99,8 +102,7 @@ spiders:
 
       response_format: html
 
-    start_requests:
-      - url: https://example.com/news
+
 
     middlewares:
       - type: fingerprint
@@ -120,41 +122,65 @@ spiders:
       - news_jsonl
       - news_csv
     extraction:
+      name: cloth_list
+      type: list
 
-      type: object
-      name: article
+      selector:
+        type: css
+        selector: "li article.product_pod"
+        selection: multiple
 
-      children:
+      item:
+        name: cloth
+        type: object
 
-        - type: field
-          name: title
+        children:
 
-          source:
-            type: selector
+          # - name: image_url
+          #   type: field
+          #   source:
+          #     type: selector
+          #     selector:
+          #       type: css
+          #       selector: "img"
+          #       selection: single
+          #       extract: attribute
+          #       attribute: data-original
 
-            selector:
-              type: css
-              selector: "title"
+          #   transforms:
+          #     - type: prefix
+          #       value: "https:"
 
-          required: true
+          - name: name
+            type: field
+            source:
+              type: selector
+              selector:
+                type: css
+                selector: "h3 a"
+                selection: single
+                extract: text
 
-          transforms:
-            - type: strip
+          - name: price
+            type: field
+            source:
+              type: selector
+              selector:
+                type: css
+                selector: "p.price_color"
+                selection: single
+                extract: text
 
-            - type: regex
-              pattern: "\\s+"
-              replacement: " "
+    # discovery:
 
-    discovery:
+    #   - type: detail_link
 
-      - type: detail_link
+    #     selector:
+    #       type: css
+    #       selector: "article a"
 
-        selector:
-          type: css
-          selector: "article a"
+    #   - type: next_page
 
-      - type: next_page
-
-        selector:
-          type: css
-          selector: "a.next"
+    #     selector:
+    #       type: css
+    #       selector: "a.next"

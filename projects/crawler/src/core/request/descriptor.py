@@ -25,6 +25,8 @@ class RequestDescriptor:
 
     profile: RequestProfile
 
+    target_spider: str 
+
     method: HttpMethod = HttpMethod.GET
 
     headers: RequestHeaders = field(

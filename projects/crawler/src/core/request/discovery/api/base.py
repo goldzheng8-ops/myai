@@ -1,6 +1,7 @@
 
 
 from abc import ABC, abstractmethod
+from dataclasses import replace
 from typing import Any, TypeVar
 
 from core.extraction.response.base import ResponseAdapter
@@ -62,6 +63,11 @@ class ApiDiscoveryPlugin(
         descriptor = RequestBuilder.from_patch(
             descriptor=context.descriptor,
             patch=patch,
+        )
+        
+        descriptor = replace(
+            descriptor,
+            target_spider=config.target_spider,
         )
 
         return self.build_result(

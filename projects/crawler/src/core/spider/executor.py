@@ -2,18 +2,19 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import Any
+from typing import Sequence
+from application.config.registry import SpiderConfigRegistry
 from core.extraction.extractor.context import ExtractContext
-from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
-from core.spider.config import SpiderConfig
+from core.runtime import RuntimeContext
+from core.spider.registry import SpiderRegistry
 
 
 from .context import SpiderContext
 from .result import SpiderResult
 from .services import SpiderServices
-from .template.base import TemplateSpider
+
 
 
 
@@ -40,9 +41,15 @@ class SpiderExecutor:
     def __init__(
         self,
         services: SpiderServices,
+        spider_registry: SpiderRegistry,
+        spider_config_registry: SpiderConfigRegistry,
+        runtime: RuntimeContext
     ) -> None:
 
         self._services = services
+        self._spider_registry=spider_registry
+        self._spider_config_registry=spider_config_registry
+        self._runtime=runtime
 
     @property
     def services(
@@ -53,8 +60,7 @@ class SpiderExecutor:
 
     async def execute(
         self,
-        spider: TemplateSpider[Any],
-        context: SpiderContext[SpiderConfig],
+        descriptors:Sequence[RequestDescriptor]
     ) -> SpiderResult:
 
         result = SpiderResult()
@@ -63,28 +69,32 @@ class SpiderExecutor:
 
         seen: set[str] = set()
 
-        for request in context.config.start_requests:
-
-            descriptor = RequestBuilder.from_request(
-                request,
-                kind=context.config.kind,
-                profile=context.config.profile,
-            )
-
-            self._enqueue(
+        for descriptor in descriptors:
+            if self._enqueue(
                 descriptor,
                 queue,
                 seen,
-            )
+            ):
+                result.request_count += 1
 
         while queue:
 
             item = queue.popleft()
-
+            descriptor=item.descriptor
+            # if descriptor.target_spider is None:
+            #     raise ConfigurationError(
+            #         "Request descriptor has no target spider."
+            #     )
+            spider_config=self._spider_config_registry.get(descriptor.target_spider)
+            spider_context  = SpiderContext(
+                config=spider_config,
+                runtime=self._runtime,
+            )
+            spider=self._spider_registry.create(spider_config.template)
             request_context = RequestContext(
-                configs=context.config.middlewares,
-                descriptor=item.descriptor,
-                runtime=context.runtime,
+                configs=spider_context.config.middlewares,
+                descriptor=descriptor,
+                runtime=spider_context.runtime,
                 fingerprint=item.fingerprint,
             )
 
@@ -104,7 +114,7 @@ class SpiderExecutor:
             try:
 
                 step = await spider.process(
-                    context,
+                    spider_context,
                     request_context,
                     extract_context,
                 )
@@ -118,10 +128,7 @@ class SpiderExecutor:
                     step.item,
                     step.outputs,
                 )
-
-            result.item_count += (
-                1 if step.item is not None else 0
-            )
+                result.item_count += 1
 
             for descriptor in step.requests:
                 if self._enqueue(
@@ -134,7 +141,7 @@ class SpiderExecutor:
             if not step.continue_:
                 break
 
-        context.result = result
+            spider_context.result = result
 
         return result
 

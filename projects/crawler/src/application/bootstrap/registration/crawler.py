@@ -5,7 +5,6 @@ from application.crawler.service import CrawlerService
 from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder
 from core.spider.executor import SpiderExecutor
-from core.spider.registry import SpiderRegistry
 from core.spider.runner import CrawlerRunner
 from application.config.registry import SpiderConfigRegistry
 from application.config.resolver import SpiderConfigResolver
@@ -22,9 +21,6 @@ def register_crawler(
     builder.add_factory(
         CrawlerRunner,
         lambda resolver: CrawlerRunner(
-            registry=resolver.resolve(
-                SpiderRegistry,
-            ),
             executor=resolver.resolve(
                 SpiderExecutor,
             ),
@@ -55,6 +51,6 @@ def register_crawler(
             lifecycle=resolver.resolve(
                 LifecycleManager,
             ),
-            default_spider=config.default_spider,
+            crawl_config=config.crawl,
         ),
     )

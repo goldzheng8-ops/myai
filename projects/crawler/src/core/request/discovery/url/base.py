@@ -54,6 +54,7 @@ class UrlDiscoveryPlugin(
             self.build_descriptor(
                 url=url,
                 profile=context.descriptor.profile,
+                target_spider=config.target_spider,
             )
             for url in urls
         ]
@@ -82,10 +83,12 @@ class UrlDiscoveryPlugin(
         *,
         url: str,
         profile: RequestProfile,
+        target_spider: str,
     ) -> RequestDescriptor:
 
         return RequestBuilder.create(
             url=url,
             kind=self.request_kind,
             profile=profile,
+            target_spider=target_spider,
         )

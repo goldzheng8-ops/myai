@@ -1,5 +1,5 @@
 
-from application.config.model import CrawlRequest
+from application.config.model import CrawlConfig, CrawlRequest
 from application.crawler.service import CrawlerService
 from core.lifecycle.manager import LifecycleManager
 
@@ -11,12 +11,11 @@ class CrawlerApplication:
         self,
         service: CrawlerService,
         lifecycle: LifecycleManager,
-        default_spider: str,
+        crawl_config: CrawlConfig,
     ) -> None:
-
         self._service = service
         self._lifecycle = lifecycle
-        self._default_spider = default_spider
+        self._crawl_config = crawl_config
 
     async def start(self) -> None:
         await self._lifecycle.start()
@@ -25,18 +24,14 @@ class CrawlerApplication:
         self,
         request: CrawlRequest | None = None,
     ) -> SpiderResult:
-        await self.start()
-        if request is None:
-            request = CrawlRequest(
-                spider=self._default_spider,
-            )
 
-        return await self._service.run(
+        await self.start()
+
+        request = self._crawl_config.create_request(
             request,
         )
 
-    async def close(
-        self,
-    ) -> None:
+        return await self._service.run(request)
 
+    async def close(self) -> None:
         await self._lifecycle.close()

@@ -1,0 +1,103 @@
+spiders:
+
+  - name: cloth_list
+    template: list
+
+    kind: html
+
+    profile:
+      downloader: httpx
+
+    start_requests:
+      - url: "https://example.com/clothes"
+        method: GET
+
+    extraction:
+      name: cloth_list
+      type: list
+
+      selector:
+        type: css
+        selector: "ul.cloth_shoplist > li"
+        selection: multiple
+
+      item:
+        name: cloth
+        type: object
+
+        children:
+
+          - name: name
+            type: field
+            source:
+              type: selector
+              selector:
+                type: css
+                selector: "p.name > a"
+                extract: text
+
+          - name: price
+            type: field
+            source:
+              type: selector
+              selector:
+                type: css
+                selector: "p.price > span.price_n"
+                extract: text
+
+    discovery:
+      - name: detail
+        type: detail_link
+        selector:
+          type: css
+          selector: "p.name > a"
+          extract: attribute
+          attribute: href
+
+    outputs:
+      - cloth_output
+
+
+  - name: cloth_detail
+    template: detail
+
+    kind: html
+
+    profile:
+      downloader: httpx
+
+    extraction:
+      name: cloth_detail
+      type: object
+
+      children:
+
+        - name: name
+          type: field
+          source:
+            type: selector
+            selector:
+              type: css
+              selector: "h1.product-name"
+              extract: text
+
+        - name: price
+          type: field
+          source:
+            type: selector
+            selector:
+              type: css
+              selector: ".price"
+              extract: text
+
+        - name: description
+          type: field
+          source:
+            type: selector
+            selector:
+              type: css
+              selector: ".description"
+              extract: text
+
+    outputs:
+      - cloth_output

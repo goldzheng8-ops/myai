@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import TextIO
 import asyncio
 import csv
@@ -84,52 +84,63 @@ class CsvOutputSink(
                 "CsvOutputSink is not open.",
             )
 
-        if not isinstance(item.data, Mapping):
-            raise TypeError(
-                "CsvOutputSink requires "
-                "OutputItem.data to be a mapping.",
-            )
-
+        payloads: Sequence[Mapping[Any, Any]]
         data: Mapping[Any, Any] = item.data
+        if isinstance(data, Sequence) and not isinstance(
+            data,
+            (str, bytes, bytearray),
+        ):
+            payloads = tuple(data)
+        else:
+            payloads = (data,)
 
-        row: dict[str, Any] = {
-            str(key): value
-            for key, value in data.items()
-        }
+        for payload in payloads:
+            if not isinstance(payload, Mapping):
+                raise TypeError(
+                    "CsvOutputSink requires "
+                    "OutputItem.data to be a mapping or a sequence of mappings.",
+                )
 
-        if self._fieldnames is None:
-            self._fieldnames = tuple(row.keys())
-            self._writer = csv.DictWriter(
-                file,
-                fieldnames=self._fieldnames,
-            )
+            data = payload
 
-        writer = self._writer
+            row: dict[str, Any] = {
+                str(key): value
+                for key, value in data.items()
+            }
 
-        if writer is None:
-            raise RuntimeError(
-                "CSV writer is not initialized.",
-            )
+            if self._fieldnames is None:
+                self._fieldnames = tuple(row.keys())
+                self._writer = csv.DictWriter(
+                    file,
+                    fieldnames=self._fieldnames,
+                )
 
-        if not self._header_written:
+            writer = self._writer
+
+            if writer is None:
+                raise RuntimeError(
+                    "CSV writer is not initialized.",
+                )
+
+            if not self._header_written:
+                await asyncio.to_thread(
+                    writer.writeheader,
+                )
+                self._header_written = True
+
+            expected = set(self._fieldnames)
+            actual = set(row)
+
+            if actual != expected:
+                raise ValueError(
+                    "CSV row fields do not match "
+                    "the initial schema.",
+                )
+
             await asyncio.to_thread(
-                writer.writeheader,
+                writer.writerow,
+                row,
             )
-            self._header_written = True
-
-        expected = set(self._fieldnames)
-        actual = set(row)
-
-        if actual != expected:
-            raise ValueError(
-                "CSV row fields do not match "
-                "the initial schema.",
-            )
-
-        await asyncio.to_thread(
-            writer.writerow,
-            row,
-        )
 
     async def close(self) -> None:
         file = self._file

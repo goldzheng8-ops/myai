@@ -66,6 +66,30 @@ class RuntimeConfig(BaseConfig):
     )
 
 
+class CrawlConfig(BaseConfig):
+    entry_spider: str = "news"
+    start_requests: tuple[RequestConfig, ...] = ()
+
+    def create_request(
+        self,
+        request: CrawlRequest | None = None,
+    ) -> CrawlRequest:
+
+        if request is None:
+            return CrawlRequest(
+                spider=self.entry_spider,
+                start_requests=self.start_requests,
+            )
+
+        return request.model_copy(
+            update={
+                "start_requests": (
+                    self.start_requests
+                    if request.start_requests is None
+                    else request.start_requests
+                ),
+            },
+        )
 
 class ApplicationConfig(BaseConfig):
     name: str = "ai-space"
@@ -74,7 +98,9 @@ class ApplicationConfig(BaseConfig):
     runtime: RuntimeConfig = Field(
         default_factory=RuntimeConfig,
     )
-    default_spider: str = "news"
+    crawl: CrawlConfig = Field(
+        default_factory=CrawlConfig,
+    )
     proxies: tuple[ProxyProviderConfigUnion, ...] = ()
     user_agents: tuple[UserAgentProviderConfigUnion, ...] = ()
     auth_providers: tuple[AuthProviderConfigUnion, ...] = ()
@@ -91,9 +117,9 @@ class ApplicationConfig(BaseConfig):
             for spider in self.spiders
         }
 
-        if self.default_spider not in names:
+        if self.crawl.entry_spider not in names:
             raise ValueError(
-                f"Default spider {self.default_spider!r} "
+                f"Default spider {self.crawl.entry_spider!r} "
                 "is not registered."
             )
         output_names = {
@@ -109,9 +135,10 @@ class ApplicationConfig(BaseConfig):
                         f"unknown output sink {output_name!r}."
                     )
         return self
+
 class CrawlRequest(BaseConfig):
     spider: str
-
+    start_requests: tuple[RequestConfig, ...] | None = None
     override: SpiderConfigOverride | None = None
 
 class SpiderConfigOverride(BaseConfig):
@@ -119,11 +146,6 @@ class SpiderConfigOverride(BaseConfig):
     kind: RequestKind | None = None
 
     profile: RequestProfile | None = None
-
-    start_requests: tuple[
-        RequestConfig,
-        ...
-    ] | None = None
 
     middlewares: tuple[
         MiddlewareSpecUnion,

@@ -7,7 +7,8 @@ from core.request.patch import RequestPatch
 from pydantic import Field
 
 class DiscoveryConfig(BaseConfig):
-    pass
+    name:str
+    target_spider:str
 class UrlDiscoveryConfig(DiscoveryConfig):
     pass
 class HtmlDiscoveryConfig(UrlDiscoveryConfig):

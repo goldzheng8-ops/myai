@@ -21,7 +21,7 @@ async def test_csv_sink_writes_header_and_rows(tmp_path):
         )
     )
 
-    await sink.open()
+    await sink.start()
     await sink.write(
         OutputItem(
             data={"name": "alice", "age": 42},
@@ -59,10 +59,43 @@ async def test_csv_sink_appends_without_repeating_header(tmp_path):
         )
     )
 
-    await sink.open()
+    await sink.start()
     await sink.write(
         OutputItem(
             data={"name": "bob", "age": 24},
+            spider="demo",
+        )
+    )
+    await sink.close()
+
+    with csv_path.open("r", encoding="utf-8", newline="") as file:
+        rows = list(csv.DictReader(file))
+
+    assert rows == [
+        {"name": "alice", "age": "42"},
+        {"name": "bob", "age": "24"},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_csv_sink_writes_rows_for_list_payloads(tmp_path):
+    csv_path = tmp_path / "output.csv"
+    sink = CsvOutputSink(
+        CsvOutputConfig(
+            name="items",
+            path=str(csv_path),
+            encoding="utf-8",
+            append=False,
+        )
+    )
+
+    await sink.start()
+    await sink.write(
+        OutputItem(
+            data=[
+                {"name": "alice", "age": 42},
+                {"name": "bob", "age": 24},
+            ],
             spider="demo",
         )
     )

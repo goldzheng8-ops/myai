@@ -1,6 +1,3 @@
-
-
-
 from core.extraction.extractor.context import ExtractContext
 from core.output.model import OutputItem
 from core.request.context import RequestContext

@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal
 
 
-from core.request.config import RequestConfig
 from core.request.middleware.config import MiddlewareSpecUnion
 from pydantic import Field, field_validator
 
@@ -25,10 +24,6 @@ class SpiderConfig(BaseConfig):
     profile: RequestProfile
 
     extraction: ExtractConfigUnion
-    start_requests: tuple[
-        RequestConfig,
-        ...
-    ] = ()
 
     middlewares: tuple[
         MiddlewareSpecUnion,
