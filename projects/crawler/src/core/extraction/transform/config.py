@@ -28,7 +28,7 @@ class NumberTransformConfig(BaseConfig):
 
 class PrefixTransformConfig(BaseConfig):
     type: Literal[TransformType.PREFIX] = TransformType.PREFIX
-    prefix: str
+    value: str
 
 
 class RegexTransformConfig(BaseConfig):

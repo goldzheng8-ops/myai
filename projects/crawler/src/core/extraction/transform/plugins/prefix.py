@@ -6,5 +6,6 @@ class PrefixTransform(TransformPlugin[str, str, PrefixTransformConfig]):
     plugin_type = TransformType.PREFIX
 
     def transform_one(self, value: str, config: PrefixTransformConfig) -> str:
-
-        return f"{config.prefix}{value}"
+        # print(value)
+        # print(f"{config.value}{value}")
+        return f"{config.value}{value}"

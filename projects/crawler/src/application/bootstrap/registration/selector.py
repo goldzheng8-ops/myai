@@ -1,4 +1,6 @@
 
+from core.extraction.selector.base import SelectorPipeline
+from core.extraction.selector.executor import PipelineExecutor
 from core.extraction.selector.extraction.attribute import AttributeExtractionStrategy
 from core.extraction.selector.extraction.html import HtmlExtractionStrategy
 from core.extraction.selector.extraction.mode import ExtractMode
@@ -15,6 +17,18 @@ def register_selector_registries(
     builder: ProviderBuilder,
 ) -> None:
 
+    builder.add_factory(
+        PipelineExecutor,
+        lambda resolver: SelectorPipeline(
+            selections=resolver.resolve(
+                SelectionRegistry,
+            ),
+            extractions=resolver.resolve(
+                ExtractionRegistry,
+            ),
+        ),
+    )
+    
     builder.add_factory(
         SelectionRegistry,
         lambda _: create_selection_registry(),

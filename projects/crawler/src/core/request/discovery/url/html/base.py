@@ -28,8 +28,11 @@ class HtmlDiscoveryPlugin(
         config: HtmlConfigT,
     ) -> list[str]:
 
-        value = await response.select(
+        nodes = await response.select(
             config.selector,
         )
-
+        value = await self._pipeline_executor.execute(
+            nodes,
+            config.selector,
+        )
         return self.normalize(value)

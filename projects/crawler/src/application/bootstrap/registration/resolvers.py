@@ -4,10 +4,6 @@ from core.extraction.resolver.engine import ResolverEngine
 from core.extraction.resolver.executor import ResolverExecutor
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator
 from core.extraction.resolver.registry import ResolverRegistry
-from core.extraction.selector.base import SelectorPipeline
-from core.extraction.selector.executor import PipelineExecutor
-from core.extraction.selector.extraction.registry import ExtractionRegistry
-from core.extraction.selector.selection.registry import SelectionRegistry
 from core.provider import ProviderBuilder,ProviderResolver
 from core.extraction.resolver.factory import (
     create_constant_resolver,
@@ -27,17 +23,7 @@ def register_resolvers(
         DefaultExpressionEvaluator,
     )
 
-    builder.add_factory(
-        PipelineExecutor,
-        lambda resolver: SelectorPipeline(
-            selections=resolver.resolve(
-                SelectionRegistry,
-            ),
-            extractions=resolver.resolve(
-                ExtractionRegistry,
-            ),
-        ),
-    )
+
     builder.add_factory(
         ResolverExecutor,
         lambda resolver: ResolverEngine(

@@ -1,16 +1,18 @@
 from typing import Annotated, Literal
 
 from core.extraction.selector.config import SelectorConfigUnion
+from core.extraction.transform.config import TransformConfigUnion
 from core.typing.config import BaseConfig
 from core.request.discovery.typing import DiscoveryType
 from core.request.patch import RequestPatch
 from pydantic import Field
 
 class DiscoveryConfig(BaseConfig):
-    name:str
     target_spider:str
 class UrlDiscoveryConfig(DiscoveryConfig):
-    pass
+    transforms: list[TransformConfigUnion] = Field(
+        default_factory=list,
+    )
 class HtmlDiscoveryConfig(UrlDiscoveryConfig):
     selector: SelectorConfigUnion
 class FeedDiscoveryConfig(UrlDiscoveryConfig):

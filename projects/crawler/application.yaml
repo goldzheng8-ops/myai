@@ -85,6 +85,12 @@ output_sinks:
   - name: news_csv
     type: csv
     path: data/news.csv
+  - name: detail_jsonl
+    type: jsonl
+    path: data/detail_news.jsonl
+  - name: detail_csv
+    type: csv
+    path: data/detail_news.csv
   # - name: news_postgres
   #   type: postgres
   #   dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
@@ -170,17 +176,81 @@ spiders:
                 selector: "p.price_color"
                 selection: single
                 extract: text
+    discovery:
+      - type: next_page
+        target_spider: news
+        selector:
+          type: css
+          selector: "ul.pager a"
+          extract: attribute
+          attribute: href
+        transforms:
+          - type: prefix
+            value: "https://books.toscrape.com/"
+      - type: detail_link
+        target_spider: detail
+        selector:
+          type: css
+          selector: "h3 a"
+          extract: attribute
+          attribute: href
+        transforms:
+          - type: prefix
+            value: "https://books.toscrape.com/"
 
-    # discovery:
+  - name: detail
+    template: detail
+    kind: detail
 
-    #   - type: detail_link
+    profile:
+      downloader:
+        type: scrapy
 
-    #     selector:
-    #       type: css
-    #       selector: "article a"
 
-    #   - type: next_page
+      response_format: html
 
-    #     selector:
-    #       type: css
-    #       selector: "a.next"
+
+
+    middlewares:
+      - type: fingerprint
+      - type: deduplicate
+      - type: cache
+      - type: session
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
+      - type: throttle
+    outputs:
+      - detail_jsonl
+      - detail_csv
+    extraction:
+
+      name: cloth
+      type: object
+
+      children:
+
+        - name: name
+          type: field
+          source:
+            type: selector
+            selector:
+              type: css
+              selector: "h1"
+              selection: single
+              extract: text
+
+        - name: description
+          type: field
+          source:
+            type: selector
+            selector:
+              type: css
+              selector: "#content_inner > article.product_page > p"
+              selection: single
+              extract: text

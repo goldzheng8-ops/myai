@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import Any, ClassVar, TypeVar
 
 from core.extraction.response.base import ResponseAdapter
 
+from core.extraction.selector.executor import PipelineExecutor
+from core.extraction.transform.executor import TransformExecutor
 from core.request.discovery.config import UrlDiscoveryConfig
 from core.request.discovery.base import DiscoveryPlugin
 from core.request.typing import RequestKind
@@ -25,6 +28,13 @@ class UrlDiscoveryPlugin(
 ):
 
     request_kind: ClassVar[RequestKind]
+    def __init__(
+        self,
+        transform_executor: TransformExecutor,
+        pipeline_executor: PipelineExecutor,
+    ) -> None:
+        self._transform_executor = transform_executor
+        self._pipeline_executor = pipeline_executor
 
     @abstractmethod
     async def urls(
@@ -49,33 +59,42 @@ class UrlDiscoveryPlugin(
             context=context,
             config=config,
         )
-
+        transformed_urls = [
+            self._transform_executor.transform(
+                url,
+                config.transforms,
+            )
+            for url in urls
+        ]
+        print(transformed_urls)
         descriptors = [
             self.build_descriptor(
                 url=url,
                 profile=context.descriptor.profile,
                 target_spider=config.target_spider,
             )
-            for url in urls
+            for url in transformed_urls
         ]
 
         return self.build_result(descriptors)
 
     @staticmethod
-    def normalize(
-        value: Any,
-    ) -> list[str]:
-
+    def normalize(value: Any) -> list[str]:
         if value is None:
             return []
 
         if isinstance(value, str):
-            return [value]
+            values = (value,)
+        elif isinstance(value, Iterable):
+            values = value
+        else:
+            return []
 
         return [
-            str(item)
-            for item in value
-            if item is not None
+            item.strip()
+            for item in values
+            if isinstance(item, str)
+            and item.strip()
         ]
 
     def build_descriptor(
