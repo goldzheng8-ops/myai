@@ -120,6 +120,7 @@ class SpiderExecutor:
                 )
 
             finally:
+                print(queue.__len__())
 
                 await extract_context.response.close()
 

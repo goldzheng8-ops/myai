@@ -66,7 +66,6 @@ class UrlDiscoveryPlugin(
             )
             for url in urls
         ]
-        print(transformed_urls)
         descriptors = [
             self.build_descriptor(
                 url=url,

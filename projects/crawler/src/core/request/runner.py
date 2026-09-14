@@ -7,6 +7,9 @@ from core.request.events.skipped import RequestSkipped
 from core.request.middleware.chain_builder import MiddlewareChainBuilder
 from core.request.middleware.robots.exceptions import RobotsDenied
 from core.request.result import RequestResult
+from core.request.middleware.response_validation.exceptions import (
+    ResponseValidationError,
+)
 
 from .context import RequestContext
 from .events import (
@@ -80,6 +83,40 @@ class RequestRunner:
 
             raise
         
+        except ResponseValidationError as exc:
+
+            # Treat 404 responses as non-fatal: skip the request and
+            # continue processing the remaining queue. Other validation
+            # errors are treated as failures and re-raised.
+            if exc.status_code == 404:
+
+                context.state.skip(
+                    reason=str(exc),
+                )
+
+                await self._notify(
+                    RequestSkipped(
+                        request=context.descriptor,
+                        reason=str(exc),
+                    ),
+                )
+
+                return context
+
+            context.state.fail(
+                exc,
+            )
+
+            await self._notify(
+                RequestFailed(
+                    request=context.descriptor,
+                    error=exc,
+                    result=context.result,
+                ),
+            )
+
+            raise
+
         except Exception as exc:
 
             context.state.fail(

@@ -60,6 +60,7 @@ class DefaultResponseValidator(
                 f"expected one of "
                 f"{sorted(status_codes)}"
             ),
+            status_code=response.status_code,
         )
 
     def _validate_content_type(
@@ -80,6 +81,7 @@ class DefaultResponseValidator(
             raise ResponseValidationError(
                 url=response.url,
                 reason="Missing Content-Type header.",
+                status_code=response.status_code,
             )
 
         media_type = (
@@ -126,6 +128,7 @@ class DefaultResponseValidator(
                     f"response body is too small: "
                     f"{size} < {minimum}"
                 ),
+                status_code=response.status_code,
             )
 
         maximum = self._config.max_body_size
@@ -140,6 +143,7 @@ class DefaultResponseValidator(
                     f"response body is too large: "
                     f"{size} > {maximum}"
                 ),
+                status_code=response.status_code,
             )
 
     @staticmethod

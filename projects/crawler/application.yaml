@@ -182,6 +182,7 @@ spiders:
         selector:
           type: css
           selector: "ul.pager a"
+          selection: multiple
           extract: attribute
           attribute: href
         transforms:
@@ -192,6 +193,7 @@ spiders:
         selector:
           type: css
           selector: "h3 a"
+          selection: multiple
           extract: attribute
           attribute: href
         transforms:
