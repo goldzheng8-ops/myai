@@ -197,8 +197,8 @@ spiders:
           extract: attribute
           attribute: href
         transforms:
-          - type: prefix
-            value: "https://books.toscrape.com/"
+          - type: url_resolve
+
 
   - name: detail
     template: detail

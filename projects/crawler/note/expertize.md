@@ -22,6 +22,11 @@
 
 # Domain-Oriented Plugin Architecture（面向领域的插件化架构）
 
+-----------------------------------------------------------
+CSS Selector Tester
+XPath Tester
+CSS Selector & XPath Finder
+-----------------------------------------------------------
 
 docker compose up --build crawler
 docker compose up crawler
