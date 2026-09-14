@@ -1,5 +1,6 @@
 from core.extraction.transform.config import SplitTransformConfig
 from core.extraction.transform.base import TransformPlugin
+from core.extraction.transform.context import TransformContext
 from core.extraction.transform.typing import TransformType
 
 class SplitTransform(TransformPlugin[str, list[str], SplitTransformConfig]):
@@ -9,6 +10,7 @@ class SplitTransform(TransformPlugin[str, list[str], SplitTransformConfig]):
         self,
         value: str,
         config: SplitTransformConfig,
+        context: TransformContext | None = None,
     ) -> list[str]:
 
         if config.separator:

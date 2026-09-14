@@ -32,3 +32,5 @@ class TransformType(str,Enum):
     REGEX="regex"
 
     SPLIT="split"
+
+    URL_RESOLVE = "url_resolve"

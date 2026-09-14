@@ -69,6 +69,11 @@ class ToIntTransformConfig(BaseConfig):
 class UpperTransformConfig(BaseConfig):
     type: Literal[TransformType.UPPER] = TransformType.UPPER
 
+class UrlResolveTransformConfig(BaseConfig):
+    type: Literal[TransformType.URL_RESOLVE] = (
+        TransformType.URL_RESOLVE
+    )
+
 TransformConfigUnion = Annotated[
     (
         DatetimeTransformConfig
@@ -84,6 +89,7 @@ TransformConfigUnion = Annotated[
         | ToFloatConfig
         | ToIntTransformConfig
         | UpperTransformConfig
+        | UrlResolveTransformConfig
     ),
     Field(discriminator="type"),
 ]

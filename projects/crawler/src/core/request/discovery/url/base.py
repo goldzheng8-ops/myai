@@ -5,6 +5,7 @@ from typing import Any, ClassVar, TypeVar
 from core.extraction.response.base import ResponseAdapter
 
 from core.extraction.selector.executor import PipelineExecutor
+from core.extraction.transform.context import TransformContext
 from core.extraction.transform.executor import TransformExecutor
 from core.request.discovery.config import UrlDiscoveryConfig
 from core.request.discovery.base import DiscoveryPlugin
@@ -61,8 +62,11 @@ class UrlDiscoveryPlugin(
         )
         transformed_urls = [
             self._transform_executor.transform(
-                url,
-                config.transforms,
+                value=url,
+                configs=config.transforms,
+                context=TransformContext(
+                    request=context,
+                ),
             )
             for url in urls
         ]

@@ -1,5 +1,6 @@
 from core.extraction.transform.config import NumberTransformConfig
 from core.extraction.transform.base import TransformPlugin
+from core.extraction.transform.context import TransformContext
 from core.extraction.transform.typing import TransformType
 
 class NumberTransform(TransformPlugin[str | int | float, int | float, NumberTransformConfig]):
@@ -9,6 +10,7 @@ class NumberTransform(TransformPlugin[str | int | float, int | float, NumberTran
         self,
         value: str | int | float,
         config: NumberTransformConfig,
+        context: TransformContext | None = None,
     ) -> int | float:
         if isinstance(value, bool):
             return int(value)

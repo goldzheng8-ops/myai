@@ -1,5 +1,6 @@
 from core.extraction.transform.config import ReplaceTransformConfig
 from core.extraction.transform.base import TransformPlugin
+from core.extraction.transform.context import TransformContext
 from core.extraction.transform.typing import TransformType
 
 class ReplaceTransform(TransformPlugin[str, str, ReplaceTransformConfig]):
@@ -9,6 +10,7 @@ class ReplaceTransform(TransformPlugin[str, str, ReplaceTransformConfig]):
         self,
         value: str,
         config: ReplaceTransformConfig,
+        context: TransformContext | None = None,
     ) -> str:
 
         return value.replace(

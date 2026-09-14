@@ -13,6 +13,7 @@ from core.extraction.transform.plugins.suffix import SuffixTransform
 from core.extraction.transform.plugins.to_float import ToFloatTransform
 from core.extraction.transform.plugins.to_int import ToIntTransform
 from core.extraction.transform.plugins.upper import UpperTransform
+from core.extraction.transform.plugins.url_resolve import UrlResolveTransform
 from core.extraction.transform.registry import TransformRegistry
 from core.extraction.transform.typing import TransformType
 from core.provider import ProviderBuilder
@@ -102,5 +103,8 @@ def create_transform_registry() -> TransformRegistry:
         TransformType.UPPER,
         UpperTransform,
     )
-
+    registry.register(
+        TransformType.URL_RESOLVE,
+        UrlResolveTransform,
+    )
     return registry

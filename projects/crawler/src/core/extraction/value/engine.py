@@ -1,6 +1,7 @@
 from typing import Any, Sequence
 
 from core.extraction.transform.config import TransformConfigUnion
+from core.extraction.transform.context import TransformContext
 from core.extraction.value.config import ValueConfigUnion
 from core.extraction.extractor.context import ExtractContext
 from core.extraction.transform.executor import TransformExecutor
@@ -35,8 +36,11 @@ class ValueEngine(
 
         if transforms:
             value = self._transformer.transform(
-                value,
-                transforms,
+                value=value,
+                configs=transforms,
+                context=TransformContext(
+                    request=context.request,
+                ),
             )
 
         return value
