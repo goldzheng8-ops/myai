@@ -19,3 +19,5 @@ class DiscoveryType(str,Enum):
     RSS = "rss"
 
     SITEMAP = "sitemap"
+
+    IMAGE_LINK = "image_link"

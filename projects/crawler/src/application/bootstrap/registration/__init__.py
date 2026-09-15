@@ -1,5 +1,8 @@
 from .adapters import register_adapters
-from .crawler import register_crawler
+from .crawler import (
+    register_crawler,
+    register_request_dispatcher,
+)
 from .discoveries import register_discoveries
 from .downloaders import register_downloaders
 from .events import register_events
@@ -37,6 +40,7 @@ __all__ = [
     "register_runtimes",
     "register_lifecycle",
     "register_crawler",
+    "register_request_dispatcher",
     "register_request_services",
     "register_events",
     "register_template",

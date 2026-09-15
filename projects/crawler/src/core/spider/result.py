@@ -4,7 +4,7 @@ from core.typing import BaseResult
 
 
 @dataclass(slots=True)
-class SpiderResult(BaseResult):
+class CrawlResult(BaseResult):
     """
     Summary produced by spider execution.
     """

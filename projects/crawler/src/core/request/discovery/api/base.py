@@ -69,6 +69,11 @@ class ApiDiscoveryPlugin(
             descriptor,
             target_spider=config.target_spider,
         )
+        
+        descriptor = replace(
+            descriptor,
+            kind=config.request_kind,
+        )
 
         return self.build_result(
             [descriptor]

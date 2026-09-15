@@ -3,7 +3,7 @@ from application.config.model import CrawlConfig, CrawlRequest
 from application.crawler.service import CrawlerService
 from core.lifecycle.manager import LifecycleManager
 
-from core.spider.result import SpiderResult
+from core.spider.result import CrawlResult
 
 class CrawlerApplication:
 
@@ -23,7 +23,7 @@ class CrawlerApplication:
     async def run(
         self,
         request: CrawlRequest | None = None,
-    ) -> SpiderResult:
+    ) -> CrawlResult:
 
         await self.start()
 

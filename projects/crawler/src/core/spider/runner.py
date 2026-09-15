@@ -1,10 +1,10 @@
 from core.request.builder import RequestBuilder
 from core.request.config import RequestConfig
-from core.spider.executor import SpiderExecutor
+from core.spider.executor import CrawlerExecutor
 
 
 from .config import SpiderConfigUnion
-from .result import SpiderResult
+from .result import CrawlResult
 
 
 
@@ -12,7 +12,7 @@ class CrawlerRunner:
 
     def __init__(
         self,
-        executor: SpiderExecutor,
+        executor: CrawlerExecutor,
     ) -> None:
 
         self._executor = executor
@@ -20,14 +20,14 @@ class CrawlerRunner:
     @property
     def executor(
         self,
-    ) -> SpiderExecutor:
+    ) -> CrawlerExecutor:
         return self._executor
 
     async def run(
         self,
         config: SpiderConfigUnion,
         start_requests: tuple[RequestConfig, ...],       
-    ) -> SpiderResult:
+    ) -> CrawlResult:
 
         descriptors = tuple(
             RequestBuilder.from_request(

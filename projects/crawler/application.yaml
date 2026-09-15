@@ -178,6 +178,7 @@ spiders:
                 extract: text
     discovery:
       - type: next_page
+        request_kind: list
         target_spider: news
         selector:
           type: css
@@ -189,6 +190,7 @@ spiders:
           - type: prefix
             value: "https://books.toscrape.com/"
       - type: detail_link
+        request_kind: detail
         target_spider: detail
         selector:
           type: css
@@ -198,6 +200,17 @@ spiders:
           attribute: href
         transforms:
           - type: url_resolve
+      # - type: image_link
+      #   target_spider: image
+      #   request_kind: download
+      #   selector:
+      #     type: css
+      #     selector: "img.product-image"
+      #     selection: multiple
+      #     extract: attribute
+      #     attribute: src
+      #   transforms:
+      #     - type: url_resolve
 
 
   - name: detail

@@ -1,4 +1,5 @@
 from typing import Any
+
 from application.config.registry import SpiderConfigRegistry
 from core.extraction.extractor.executor import ExtractExecutor
 from core.extraction.response.resolver import ResponseAdapterResolver
@@ -7,9 +8,10 @@ from core.request.discovery.engine import DiscoveryEngine
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
 from core.runtime import RuntimeContext
+from core.spider.handler.download_request import DownloadRequestHandler
+from core.spider.handler.spider_request import SpiderRequestHandler
 from core.spider.registry import SpiderRegistry
 from core.spider.services import SpiderServices
-from core.spider.executor import SpiderExecutor
 from core.provider import ProviderBuilder, ProviderResolver
 from core.spider.factory import (
     build_api_spider_factory,
@@ -25,18 +27,22 @@ def register_spider_components(
 ) -> None:
     
     builder.add_type(RuntimeContext)
+
+
     builder.add_factory(
-        SpiderExecutor,
-        lambda resolver: SpiderExecutor(
-            services=resolver.resolve(
-                SpiderServices,
-            ),
-            spider_registry=resolver.resolve(
-                SpiderRegistry,
-            ),
-            spider_config_registry=resolver.resolve(
-                SpiderConfigRegistry,
-            ),
+        SpiderRequestHandler,
+        lambda resolver: SpiderRequestHandler(
+            services=resolver.resolve(SpiderServices),
+            spider_registry=resolver.resolve(SpiderRegistry),
+            spider_config_registry=resolver.resolve(SpiderConfigRegistry),
+            runtime=resolver.resolve(RuntimeContext),
+        ),
+    )
+
+    builder.add_factory(
+        DownloadRequestHandler,
+        lambda resolver: DownloadRequestHandler(
+            services=resolver.resolve(SpiderServices),
             runtime=resolver.resolve(RuntimeContext),
         ),
     )

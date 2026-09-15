@@ -2,7 +2,7 @@ from application.config.model import CrawlRequest
 from application.config.registry import SpiderConfigRegistry
 from application.config.resolver import SpiderConfigResolver
 
-from core.spider.result import SpiderResult
+from core.spider.result import CrawlResult
 from core.spider.runner import CrawlerRunner
 
 
@@ -22,7 +22,7 @@ class CrawlerService:
     async def run(
         self,
         request: CrawlRequest,
-    ) -> SpiderResult:
+    ) -> CrawlResult:
 
         base_config = self._registry.get(
             request.spider,
@@ -33,7 +33,7 @@ class CrawlerService:
             request.override,
         )
         if request.start_requests is None:
-            return SpiderResult()
+            return CrawlResult()
         return await self._runner.run(
             config,
             request.start_requests,

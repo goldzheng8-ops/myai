@@ -4,7 +4,7 @@ from typing import Generic
 from core.runtime import RuntimeContext
 
 
-from .result import SpiderResult
+
 from .state import SpiderState
 from .typing import ConfigT
 
@@ -29,4 +29,3 @@ class SpiderContext(
         default_factory=SpiderState,
     )
 
-    result: SpiderResult | None = None

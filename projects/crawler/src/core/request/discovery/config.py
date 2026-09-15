@@ -1,5 +1,6 @@
 from typing import Annotated, Literal
 
+from core.request.typing import RequestKind
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.transform.config import TransformConfigUnion
 from core.typing.config import BaseConfig
@@ -9,6 +10,7 @@ from pydantic import Field
 
 class DiscoveryConfig(BaseConfig):
     target_spider:str
+    request_kind: RequestKind
 class UrlDiscoveryConfig(DiscoveryConfig):
     transforms: list[TransformConfigUnion] = Field(
         default_factory=list,
@@ -27,6 +29,8 @@ class NextPageConfig(HtmlDiscoveryConfig):
     type: Literal[DiscoveryType.NEXT_PAGE] = DiscoveryType.NEXT_PAGE
 class PageNumberConfig(HtmlDiscoveryConfig):
     type: Literal[DiscoveryType.PAGE_NUMBER] = DiscoveryType.PAGE_NUMBER
+class ImageLinkConfig(HtmlDiscoveryConfig):
+    type: Literal[DiscoveryType.IMAGE_LINK] = DiscoveryType.IMAGE_LINK
 class RssConfig(FeedDiscoveryConfig):
     type: Literal[DiscoveryType.RSS] = DiscoveryType.RSS
 class SitemapConfig(FeedDiscoveryConfig):

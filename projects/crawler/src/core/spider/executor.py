@@ -1,72 +1,40 @@
 from __future__ import annotations
-
+import asyncio
 from collections import deque
-from dataclasses import dataclass
 from typing import Sequence
-from application.config.registry import SpiderConfigRegistry
-from core.extraction.extractor.context import ExtractContext
-from core.request.context import RequestContext
+import logging
+
+from core.output.engine import OutputEngine
 from core.request.descriptor import RequestDescriptor
-from core.runtime import RuntimeContext
-from core.spider.registry import SpiderRegistry
+from core.spider.dispatcher import RequestKindDispatcher
+from core.spider.handler.base import RequestExecutionResult, ScheduledRequest
 
+from .result import CrawlResult
+from core.request.middleware.fingerprint.provider import FingerprintProvider
 
-from .context import SpiderContext
-from .result import SpiderResult
-from .services import SpiderServices
+logger = logging.getLogger(__name__)
 
-
-
-
-@dataclass(frozen=True, slots=True)
-class SpiderRequest:
-    """
-    Scheduled spider request.
-
-    Keeps the descriptor and its already-computed fingerprint
-    together so that fingerprint calculation is not repeated
-    during request execution.
-    """
-
-    descriptor: RequestDescriptor
-
-    fingerprint: str
-
-class SpiderExecutor:
-    """
-    Executes the request/discovery/extraction lifecycle
-    of a spider.
-    """
+class CrawlerExecutor:
 
     def __init__(
         self,
-        services: SpiderServices,
-        spider_registry: SpiderRegistry,
-        spider_config_registry: SpiderConfigRegistry,
-        runtime: RuntimeContext
+        dispatcher: RequestKindDispatcher,
+        fingerprint_provider: FingerprintProvider,
+        output_engine: OutputEngine,
     ) -> None:
-
-        self._services = services
-        self._spider_registry=spider_registry
-        self._spider_config_registry=spider_config_registry
-        self._runtime=runtime
-
-    @property
-    def services(
-        self,
-    ) -> SpiderServices:
-
-        return self._services
-
+        self._dispatcher = dispatcher
+        self._fingerprint_provider = (
+            fingerprint_provider
+        )
+        self._output_engine = output_engine
     async def execute(
         self,
-        descriptors:Sequence[RequestDescriptor]
-    ) -> SpiderResult:
+        descriptors: Sequence[RequestDescriptor],
+    ) -> CrawlResult:
 
-        result = SpiderResult()
+        result = CrawlResult()
 
-        queue: deque[SpiderRequest] = deque()
-
+        queue: deque[ScheduledRequest] = deque()
         seen: set[str] = set()
 
         for descriptor in descriptors:
@@ -80,58 +48,33 @@ class SpiderExecutor:
         while queue:
 
             item = queue.popleft()
-            descriptor=item.descriptor
-            # if descriptor.target_spider is None:
-            #     raise ConfigurationError(
-            #         "Request descriptor has no target spider."
-            #     )
-            spider_config=self._spider_config_registry.get(descriptor.target_spider)
-            spider_context  = SpiderContext(
-                config=spider_config,
-                runtime=self._runtime,
-            )
-            spider=self._spider_registry.create(spider_config.template)
-            request_context = RequestContext(
-                configs=spider_context.config.middlewares,
-                descriptor=descriptor,
-                runtime=spider_context.runtime,
-                fingerprint=item.fingerprint,
-            )
-
-            request_context = (
-                await self._services.request_runner.run(
-                    request_context,
-                )
-            )
-
-            if request_context.state.is_skipped:
-                continue
-            extract_context = (
-                self._build_extract_context(
-                    request_context,
-                )
-            )
+            print(queue.__len__())
             try:
-
-                step = await spider.process(
-                    spider_context,
-                    request_context,
-                    extract_context,
+                execution = (
+                    await self._dispatcher.execute(
+                        item,
+                    )
                 )
 
-            finally:
-                print(queue.__len__())
+            except asyncio.CancelledError:
+                raise
 
-                await extract_context.response.close()
-
-            if step.item is not None:
-                await self._services.output_engine.write(
-                    step.item,
-                    step.outputs,
+            except Exception:
+                logger.exception(
+                    "Request failed: %s",
+                    item.descriptor.url,
                 )
-                result.item_count += 1
+                continue
 
-            for descriptor in step.requests:
+            if execution.item is not None:
+
+                await self._write_output(
+                    execution,
+                    result,
+                )
+
+            for descriptor in execution.requests:
+
                 if self._enqueue(
                     descriptor,
                     queue,
@@ -139,22 +82,36 @@ class SpiderExecutor:
                 ):
                     result.request_count += 1
 
-            if not step.continue_:
+            if not execution.continue_:
                 break
 
-            spider_context.result = result
-
         return result
+
+    async def _write_output(
+        self,
+        execution: RequestExecutionResult,
+        result: CrawlResult,
+    ) -> None:
+
+        if execution.item is None:
+            return
+
+        await self._output_engine.write(
+            execution.item,
+            execution.outputs,
+        )
+
+        result.item_count += 1
 
     def _enqueue(
         self,
         descriptor: RequestDescriptor,
-        queue: deque[SpiderRequest],
+        queue: deque[ScheduledRequest],
         seen: set[str],
     ) -> bool:
 
         fingerprint = (
-            self._services.fingerprint_provider.fingerprint(
+            self._fingerprint_provider.fingerprint(
                 descriptor,
             )
         )
@@ -164,49 +121,13 @@ class SpiderExecutor:
             if fingerprint in seen:
                 return False
 
-            seen.add(
-                fingerprint,
-            )
+            seen.add(fingerprint)
 
         queue.append(
-            SpiderRequest(
+            ScheduledRequest(
                 descriptor=descriptor,
                 fingerprint=fingerprint,
             ),
         )
 
         return True
-
-    def _build_extract_context(
-        self,
-        request_context: RequestContext,
-    ) -> ExtractContext:
-
-        result = request_context.result
-
-        if result is None:
-            raise RuntimeError(
-                "Request execution produced no result.",
-            )
-
-        response = result.response
-
-        if response is None:
-            raise RuntimeError(
-                "Request execution produced no response.",
-            )
-
-        adapter = (
-            self._services
-            .response_adapter_resolver
-            .resolve(
-                profile=request_context.descriptor.profile,
-                response=response,
-            )
-        )
-
-        return ExtractContext(
-            request=request_context,
-            response=adapter,
-            runtime=request_context.runtime,
-        )

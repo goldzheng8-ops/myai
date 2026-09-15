@@ -14,6 +14,7 @@ from .container import ApplicationContainer
 from .registration import (
     register_adapters,
     register_crawler,
+    register_request_dispatcher,
     register_discoveries,
     register_downloaders,
     register_events,
@@ -150,7 +151,7 @@ class ApplicationContainerFactory:
         register_request_services(
             builder,
         )
-
+        register_request_dispatcher(builder)
         register_crawler(
             builder,
             config,
