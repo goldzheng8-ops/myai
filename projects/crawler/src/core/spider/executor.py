@@ -72,11 +72,11 @@ class CrawlerExecutor:
                     execution,
                     result,
                 )
-            # if execution.download is not None:
-            #     await self._output_engine.write_download(
-            #         execution.download,
-            #         execution.outputs,
-            #     )
+            if execution.download is not None:
+                await self._output_engine.write_download(
+                    execution.download,
+                    execution.outputs,
+                )
 
             for descriptor in execution.requests:
 

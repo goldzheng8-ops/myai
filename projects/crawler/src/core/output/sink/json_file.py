@@ -1,26 +1,25 @@
-from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any
 
 import aiofiles
-
-from core.output.config import JsonlOutputConfig
+from core.output.config import JsonFileOutputConfig
 from core.output.model import OutputItem
 from core.output.sink.base import OutputSink
 
 
-class JsonlOutputSink(
-    OutputSink[JsonlOutputConfig],
+class JsonFileOutputSink(
+    OutputSink[JsonFileOutputConfig],
 ):
 
     def __init__(
         self,
-        config: JsonlOutputConfig,
+        config: JsonFileOutputConfig,
     ) -> None:
         super().__init__(config)
         self._file = None
+        self._first = True
 
     async def start(self) -> None:
         if self._file is not None:
@@ -35,9 +34,11 @@ class JsonlOutputSink(
 
         self._file = await aiofiles.open(
             path,
-            mode="a",
+            mode="w",
             encoding="utf-8",
         )
+
+        await self._file.write("[\n")
 
     async def write(
         self,
@@ -45,8 +46,9 @@ class JsonlOutputSink(
     ) -> None:
         if self._file is None:
             raise RuntimeError(
-                "JsonlOutputSink is not open.",
+                "JsonFileOutputSink is not open.",
             )
+
         record: Any
 
         if self.config.include_metadata:
@@ -58,15 +60,19 @@ class JsonlOutputSink(
         else:
             record = item.data
 
-        line = json.dumps(
+        if not self._first:
+            await self._file.write(",\n")
+
+        text = json.dumps(
             record,
             ensure_ascii=self.config.ensure_ascii,
+            indent=self.config.indent,
             default=str,
         )
 
-        await self._file.write(
-            line + "\n",
-        )
+        await self._file.write(text)
+
+        self._first = False
 
     async def close(self) -> None:
         if self._file is None:
@@ -75,5 +81,6 @@ class JsonlOutputSink(
         file = self._file
         self._file = None
 
+        await file.write("\n]\n")
         await file.flush()
         await file.close()

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Generic
 
 from core.lifecycle.protocol import LifecycleParticipant
-from core.output.model import OutputItem
+from core.output.model import DownloadResult, OutputItem
 from core.output.typing import ConfigT
 
 
@@ -32,6 +32,15 @@ class OutputSink(
         item: OutputItem,
     ) -> None:
         raise NotImplementedError
+
+    async def write_download(
+        self,
+        download: DownloadResult,
+    ) -> None:
+        raise TypeError(
+            f"{type(self).__name__} does not support "
+            "download output.",
+        )
 
     async def flush(self) -> None:
         return None

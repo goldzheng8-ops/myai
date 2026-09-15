@@ -26,12 +26,29 @@ class PostgresOutputConfig(OutputConfig):
     table: str
     dsn: str
 
+class JsonFileOutputConfig(OutputConfig):
+    type: Literal["json_file"] = "json_file"
+
+    path: str
+    ensure_ascii: bool = False
+    indent: int | None = None
+    include_metadata: bool = False
+
+
+class BinaryFileOutputConfig(OutputConfig):
+    type: Literal["binary_file"] = "binary_file"
+
+    directory: str
+    filename: str | None = None
+    overwrite: bool = False
 
 OutputConfigUnion = Annotated[
     (
         JsonlOutputConfig
+        | JsonFileOutputConfig
         | CsvOutputConfig
         | PostgresOutputConfig
+        | BinaryFileOutputConfig
     ),
     Field(discriminator="type"),
 ]
