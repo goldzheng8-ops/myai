@@ -4,25 +4,25 @@ from typing import Any
 from collections.abc import Callable
 from core.provider import  ProviderResolver
 from core.spider.services import SpiderServices
-from core.spider.template.base import TemplateSpider
-from core.spider.template.api import TemplateApiSpider
-from core.spider.template.browser import TemplateBrowserSpider
-from core.spider.template.detail import TemplateDetailSpider
-from core.spider.template.list import TemplateListSpider
+from core.spider.template.base import RequestTemplate
+from core.spider.template.api import ApiRequestTemplate
+from core.spider.template.browser import BrowserRequestTemplate
+from core.spider.template.detail import DetailRequestTemplate
+from core.spider.template.list import ListRequestTemplate
 
 
 SpiderFactory = Callable[
     [],
-    TemplateSpider[Any],
+    RequestTemplate[Any],
 ]
 
 def build_api_spider_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> TemplateApiSpider:
+    def factory() -> ApiRequestTemplate:
 
-        return TemplateApiSpider(
+        return ApiRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -34,9 +34,9 @@ def build_browser_spider_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> TemplateBrowserSpider:
+    def factory() -> BrowserRequestTemplate:
 
-        return TemplateBrowserSpider(
+        return BrowserRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -48,9 +48,9 @@ def build_detail_spider_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> TemplateDetailSpider:
+    def factory() -> DetailRequestTemplate:
 
-        return TemplateDetailSpider(
+        return DetailRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -62,9 +62,9 @@ def build_list_spider_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> TemplateListSpider:
+    def factory() -> ListRequestTemplate:
 
-        return TemplateListSpider(
+        return ListRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),

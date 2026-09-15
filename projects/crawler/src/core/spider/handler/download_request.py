@@ -1,7 +1,7 @@
 from core.request.context import RequestContext
 from core.request.typing import RequestKind
 from core.runtime import RuntimeContext
-from core.spider.handler.base import RequestExecutionResult, RequestKindHandler, ScheduledRequest
+from core.spider.handler.base import DownloadResult, RequestExecutionResult, RequestKindHandler, ScheduledRequest
 from core.spider.services import SpiderServices
 
 
@@ -55,15 +55,14 @@ class DownloadRequestHandler(RequestKindHandler):
                 "Download request produced no response.",
             )
 
-        # download = DownloadResult(
-        #     url=response.url,
-        #     body=response.body,
-        #     content_type=(
-        #         response.headers.get("content-type")
-        #     ),
-        # )
+        download = DownloadResult(
+            url=response.url,
+            body=response.body,
+            content_type=response.headers.get(
+                "content-type",
+            ),
+        )
 
-        # 第一阶段先不决定具体保存方式。
-        # 后面交给 DownloadOutput / FileOutputSink。
-
-        return RequestExecutionResult()
+        return RequestExecutionResult(
+            download=download,
+        )

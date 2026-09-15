@@ -2,7 +2,7 @@ from typing import Any
 
 from core.registry import Registry
 from core.spider.factory import SpiderFactory
-from core.spider.template.base import TemplateSpider
+from core.spider.template.base import RequestTemplate
 
 
 from .typing import SpiderTemplate
@@ -21,6 +21,6 @@ class SpiderRegistry(
     def create(
         self,
         template: SpiderTemplate,
-    ) -> TemplateSpider[Any]:
+    ) -> RequestTemplate[Any]:
 
         return self.get(template)()

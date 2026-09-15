@@ -28,7 +28,7 @@ DiscoveryConfigT = TypeVar(
     bound=DiscoverySpiderConfig,
 )
 
-class TemplateSpider(
+class RequestTemplate(
     Plugin,
     Generic[ConfigT],
 ):
@@ -57,8 +57,8 @@ class TemplateSpider(
         raise NotImplementedError
     
 
-class DiscoveryTemplateSpider(
-    TemplateSpider[DiscoveryConfigT],
+class DiscoveryRequestTemplate(
+    RequestTemplate[DiscoveryConfigT],
 ):
     async def _discover(
         self,

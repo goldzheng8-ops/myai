@@ -2,10 +2,10 @@ from ..config import BrowserSpiderConfig
 
 
 from ..typing import SpiderTemplate
-from .base import DiscoveryTemplateSpider
+from .base import DiscoveryRequestTemplate
 
-class TemplateBrowserSpider(
-    DiscoveryTemplateSpider[BrowserSpiderConfig],
+class BrowserRequestTemplate(
+    DiscoveryRequestTemplate[BrowserSpiderConfig],
 ):
 
     plugin_type = SpiderTemplate.BROWSER

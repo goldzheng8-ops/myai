@@ -9,3 +9,10 @@ class OutputItem:
     metadata: Mapping[str, Any] = field(
         default_factory=dict,
     )
+
+@dataclass(frozen=True, slots=True)
+class DownloadResult:
+    url: str
+    body: bytes
+    content_type: str | None = None
+    filename: str | None = None

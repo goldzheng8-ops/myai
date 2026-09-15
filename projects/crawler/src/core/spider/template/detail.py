@@ -7,10 +7,10 @@ from ..config import DetailSpiderConfig
 from ..context import SpiderContext
 
 from ..typing import SpiderTemplate
-from .base import SpiderStep, TemplateSpider
+from .base import SpiderStep, RequestTemplate
 
-class TemplateDetailSpider(
-    TemplateSpider[DetailSpiderConfig],
+class DetailRequestTemplate(
+    RequestTemplate[DetailSpiderConfig],
 ):
 
     plugin_type = SpiderTemplate.DETAIL

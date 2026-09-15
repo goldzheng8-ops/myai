@@ -125,4 +125,69 @@ buffer
     ↓
 flush()
     ↓
-executemany()
+executemany()--
+----------------------------------------------------------
+我建议你不要一次把整个 Download 系统做完，而是按这个顺序：
+
+① DownloadResult
+        ↓
+② RequestExecutionResult 增加 download
+        ↓
+③ DownloadRequestHandler 返回 DownloadResult
+        ↓
+④ CrawlerExecutor 能识别 download
+        ↓
+⑤ OutputEngine 增加 write_download()
+        ↓
+⑥ BinaryFileOutputSink
+        ↓
+⑦ DI 注册
+        ↓
+⑧ YAML 配置
+        ↓
+⑨ 实际下载图片测试
+
+最终测试：
+
+discovery:
+  - type: image_link
+    target_spider: image
+    request_kind: download
+    selector:
+      ...
+    transforms:
+      - type: url_resolve
+
+运行：
+
+list spider
+    ↓
+发现 image URL
+    ↓
+RequestDescriptor
+    kind=DOWNLOAD
+    target_spider=image
+    ↓
+CrawlerExecutor
+    ↓
+RequestKindDispatcher
+    ↓
+DownloadRequestHandler
+    ↓
+RequestRunner
+    ↓
+HttpxDownloader
+    ↓
+ResponseAdapter.body
+    ↓
+DownloadResult
+    ↓
+OutputEngine
+    ↓
+BinaryFileOutputSink
+    ↓
+data/downloads/xxx.jpg
+
+这条链跑通以后，你的框架就真正从**“网页爬虫”变成“资源获取 + 内容抽取”的通用 Crawling Runtime** 了。
+
+**我建议现在先不要碰 MinIO/S3、文件命名模板、hash 文件名、断点下载这些东西。**先把 DownloadResult → BinaryFileOutputSink → 本地文件 这条最小闭环跑通，再扩展

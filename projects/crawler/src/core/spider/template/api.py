@@ -2,10 +2,10 @@ from ..config import ApiSpiderConfig
 
 
 from ..typing import SpiderTemplate
-from .base import DiscoveryTemplateSpider
+from .base import DiscoveryRequestTemplate
 
-class TemplateApiSpider(
-    DiscoveryTemplateSpider[ApiSpiderConfig],
+class ApiRequestTemplate(
+    DiscoveryRequestTemplate[ApiSpiderConfig],
 ):
 
     plugin_type = SpiderTemplate.API
