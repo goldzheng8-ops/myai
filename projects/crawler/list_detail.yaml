@@ -99,5 +99,12 @@ spiders:
               selector: ".description"
               extract: text
 
+
+  # - type: pagination
+  #   target_spider: news
+  #   request_kind: list
+  #   start: 1
+  #   end: 20
+  #   template: "https://example.com/news?page={page}"
     outputs:
       - cloth_output

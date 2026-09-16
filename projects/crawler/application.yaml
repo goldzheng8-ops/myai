@@ -91,6 +91,13 @@ output_sinks:
   - name: detail_csv
     type: csv
     path: data/detail_news.csv
+  - name: json_file
+    type: json_file
+    path: data/news.json
+  - name: binary_file
+    type: binary_file
+    directory: data/downloads
+
   # - name: news_postgres
   #   type: postgres
   #   dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
@@ -177,7 +184,7 @@ spiders:
                 selection: single
                 extract: text
     discovery:
-      - type: next_page
+      - type: html
         request_kind: list
         target_spider: news
         selector:
@@ -189,7 +196,7 @@ spiders:
         transforms:
           - type: prefix
             value: "https://books.toscrape.com/"
-      - type: detail_link
+      - type: html
         request_kind: detail
         target_spider: detail
         selector:
@@ -242,6 +249,7 @@ spiders:
       - type: throttle
     outputs:
       - detail_jsonl
+      - json_file
       - detail_csv
     extraction:
 

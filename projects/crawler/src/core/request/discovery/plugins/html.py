@@ -1,31 +1,25 @@
 
-from abc import ABC
-from typing import TypeVar
-
 from core.extraction.response.base import ResponseAdapter
 from core.request.discovery.config import HtmlDiscoveryConfig
+from core.request.discovery.typing import DiscoveryType
 from core.request.discovery.url.base import UrlDiscoveryPlugin
 from core.request.context import RequestContext
 
 
-HtmlConfigT = TypeVar(
-    "HtmlConfigT",
-    bound=HtmlDiscoveryConfig,
-)
-
 class HtmlDiscoveryPlugin(
     UrlDiscoveryPlugin[
-        HtmlConfigT
+        HtmlDiscoveryConfig
     ],
-    ABC,
 ):
+    plugin_type = DiscoveryType.FILE
+    config_type = HtmlDiscoveryConfig
 
     async def urls(
         self,
         *,
         response: ResponseAdapter,
         context: RequestContext,
-        config: HtmlConfigT,
+        config: HtmlDiscoveryConfig,
     ) -> list[str]:
 
         nodes = await response.select(
@@ -35,4 +29,4 @@ class HtmlDiscoveryPlugin(
             nodes,
             config.selector,
         )
-        return self.normalize(value)
+        return value

@@ -9,3 +9,6 @@ class ConfigurationError(ApplicationError):
 
 class ApplicationRuntimeError(ApplicationError):
     pass
+
+class CrawlerError(ApplicationError):
+    pass

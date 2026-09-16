@@ -15,22 +15,15 @@ class UrlDiscoveryConfig(DiscoveryConfig):
     transforms: list[TransformConfigUnion] = Field(
         default_factory=list,
     )
-class HtmlDiscoveryConfig(UrlDiscoveryConfig):
-    selector: SelectorConfigUnion
 class FeedDiscoveryConfig(UrlDiscoveryConfig):
     pass
 class ApiDiscoveryConfig(DiscoveryConfig):
     patch: RequestPatch 
 
 
-class DetailLinkConfig(HtmlDiscoveryConfig):
-    type: Literal[DiscoveryType.DETAIL_LINK] = DiscoveryType.DETAIL_LINK
-class NextPageConfig(HtmlDiscoveryConfig):
-    type: Literal[DiscoveryType.NEXT_PAGE] = DiscoveryType.NEXT_PAGE
-class PageNumberConfig(HtmlDiscoveryConfig):
-    type: Literal[DiscoveryType.PAGE_NUMBER] = DiscoveryType.PAGE_NUMBER
-class ImageLinkConfig(HtmlDiscoveryConfig):
-    type: Literal[DiscoveryType.IMAGE_LINK] = DiscoveryType.IMAGE_LINK
+class HtmlDiscoveryConfig(UrlDiscoveryConfig):
+    type: Literal[DiscoveryType.HTML] = DiscoveryType.HTML
+    selector: SelectorConfigUnion
 class RssConfig(FeedDiscoveryConfig):
     type: Literal[DiscoveryType.RSS] = DiscoveryType.RSS
 class SitemapConfig(FeedDiscoveryConfig):
@@ -53,11 +46,32 @@ class InfiniteScrollConfig(ApiDiscoveryConfig):
     scroll_count: int = 1
     scroll_delay: float = 0.5
 
+class PaginationDiscoveryConfig(
+    UrlDiscoveryConfig,
+):
+    type: Literal[DiscoveryType.PAGINATION] = (
+        DiscoveryType.PAGINATION
+    )
+
+    url_template: str
+
+    start_page: int = 1
+    end_page: int = 1
+    step: int = 1
+
+class FileDiscoveryConfig(UrlDiscoveryConfig):
+    type: Literal[DiscoveryType.FILE] = DiscoveryType.FILE
+
+    path: str
+    encoding: str = "utf-8"
+    strip: bool = True
+    skip_empty: bool = True
+
 DiscoveryConfigUnion = Annotated[
     (
-        DetailLinkConfig
-        | NextPageConfig
-        | PageNumberConfig
+        HtmlDiscoveryConfig
+        | PaginationDiscoveryConfig
+        | FileDiscoveryConfig
         | RssConfig
         | SitemapConfig
         | OffsetApiConfig

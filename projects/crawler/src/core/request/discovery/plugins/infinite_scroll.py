@@ -26,7 +26,7 @@ class InfiniteScrollDiscovery(
         self,
         *,
         response: ResponseAdapter,
-        context: RequestContext,
+        request: RequestContext,
         config: InfiniteScrollConfig,
     ) -> dict[str, Any] | None:
         if not isinstance(

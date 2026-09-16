@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, ClassVar, TypeVar
+from typing import Any, TypeVar
 
 from core.extraction.response.base import ResponseAdapter
 
@@ -9,7 +9,7 @@ from core.extraction.transform.context import TransformContext
 from core.extraction.transform.executor import TransformExecutor
 from core.request.discovery.config import UrlDiscoveryConfig
 from core.request.discovery.base import DiscoveryPlugin
-from core.request.typing import RequestKind
+from core.request.discovery.context import DiscoveryContext
 from core.request.builder import RequestBuilder
 from core.request.descriptor import RequestDescriptor
 from core.request.discovery.result import DiscoveryResult
@@ -25,10 +25,8 @@ UrlConfigT = TypeVar(
 
 class UrlDiscoveryPlugin(
     DiscoveryPlugin[UrlConfigT],
-    ABC,
 ):
 
-    request_kind: ClassVar[RequestKind]
     def __init__(
         self,
         transform_executor: TransformExecutor,
@@ -44,60 +42,79 @@ class UrlDiscoveryPlugin(
         response: ResponseAdapter,
         context: RequestContext,
         config: UrlConfigT,
-    ) -> list[str]:
-        ...
+    ) -> Iterable[str]:
+        raise NotImplementedError
 
     async def discover(
         self,
         *,
-        response: ResponseAdapter,
-        context: RequestContext,
+        context: DiscoveryContext,
         config: UrlConfigT,
     ) -> DiscoveryResult:
-
+        request = self.require_request(context)
+        response = self.require_response(context)
         urls = await self.urls(
             response=response,
-            context=context,
+            context=request,
             config=config,
         )
-        transformed_urls = [
-            self._transform_executor.transform(
-                value=url,
-                configs=config.transforms,
-                context=TransformContext(
-                    request=context,
-                ),
-            )
-            for url in urls
-        ]
-        descriptors = [
-            self.build_descriptor(
-                url=url,
-                profile=context.descriptor.profile,
-                config=config,
-            )
-            for url in transformed_urls
-        ]
+        transformed_urls = self.transform_urls(
+            urls=urls,
+            request=request,
+            config=config,
+        )
+        descriptors = self.build_descriptors(
+            urls=transformed_urls,
+            request=request,
+            config=config,
+        )
 
         return self.build_result(descriptors)
 
-    @staticmethod
-    def normalize(value: Any) -> list[str]:
-        if value is None:
-            return []
+    def transform_urls(
+        self,
+        *,
+        urls: Iterable[str],
+        request: RequestContext,
+        config: UrlConfigT,
+    ) -> list[str]:
 
-        if isinstance(value, str):
-            values = (value,)
-        elif isinstance(value, Iterable):
-            values = value
-        else:
-            return []
+        transform_context = TransformContext(
+            request=request,
+        )
+
+        result: list[str] = []
+
+        for url in urls:
+            value = self._transform_executor.transform(
+                value=url,
+                configs=config.transforms,
+                context=transform_context,
+            )
+
+            result.extend(
+                self.normalize(value),
+            )
+
+        return result
+
+    def build_descriptors(
+        self,
+        *,
+        urls: Iterable[str],
+        request: RequestContext,
+        config: UrlConfigT,
+    ) -> list[RequestDescriptor]:
+
+        profile = request.descriptor.profile
 
         return [
-            item.strip()
-            for item in values
-            if isinstance(item, str)
-            and item.strip()
+            self.build_descriptor(
+                url=url,
+                profile=profile,
+                config=config,
+            )
+            for url in urls
         ]
 
     def build_descriptor(
@@ -114,3 +131,27 @@ class UrlDiscoveryPlugin(
             profile=profile,
             target_spider=config.target_spider,
         )
+
+    @staticmethod
+    def normalize(
+        value: Any,
+    ) -> list[str]:
+
+        if value is None:
+            return []
+
+        if isinstance(value, str):
+            values: Iterable[Any] = (value,)
+
+        elif isinstance(value, Iterable):
+            values = value
+
+        else:
+            return []
+
+        return [
+            item.strip()
+            for item in values
+            if isinstance(item, str)
+            and item.strip()
+        ]

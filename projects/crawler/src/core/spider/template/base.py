@@ -10,6 +10,7 @@ from core.plugin import Plugin
 from core.request.context import RequestContext
 
 from core.request.descriptor import RequestDescriptor
+from core.request.discovery.context import DiscoveryContext
 from core.spider.step import SpiderStep
 
 from ..config import DiscoverySpiderConfig, SpiderConfig
@@ -69,11 +70,13 @@ class DiscoveryRequestTemplate(
         descriptors: list[RequestDescriptor] = []
 
         for config in context.config.discovery:
-
+            discovery_context=DiscoveryContext(
+                request=extract_context.request,
+                response=extract_context.response,
+            )
             result = (
                 await self.services.discovery_engine.discover(
-                    response=extract_context.response,
-                    context=extract_context.request,
+                    context=discovery_context,
                     config=config,
                 )
             )

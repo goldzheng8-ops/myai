@@ -9,6 +9,7 @@ from core.request.discovery.config import ApiDiscoveryConfig
 from core.request.discovery.base import DiscoveryPlugin
 from core.request.discovery.api.patch_renderer import RequestPatchRenderer
 from core.request.builder import RequestBuilder
+from core.request.discovery.context import DiscoveryContext
 from core.request.discovery.result import DiscoveryResult
 from core.request.context import RequestContext
 
@@ -28,7 +29,7 @@ class ApiDiscoveryPlugin(
         self,
         *,
         response: ResponseAdapter,
-        context: RequestContext,
+        request: RequestContext,
         config: ApiConfigT,
     ) -> dict[str, Any] | None:
         """
@@ -41,14 +42,14 @@ class ApiDiscoveryPlugin(
     async def discover(
         self,
         *,
-        response: ResponseAdapter,
-        context: RequestContext,
+        context: DiscoveryContext,
         config: ApiConfigT,
     ) -> DiscoveryResult:
-
+        request = self.require_request(context)
+        response = self.require_response(context)
         variables = await self.variables(
             response=response,
-            context=context,
+            request=request,
             config=config,
         )
 
@@ -61,7 +62,7 @@ class ApiDiscoveryPlugin(
         )
 
         descriptor = RequestBuilder.from_patch(
-            descriptor=context.descriptor,
+            descriptor=request.descriptor,
             patch=patch,
         )
         

@@ -1,10 +1,7 @@
-
-
-from core.extraction.response.base import ResponseAdapter
+from core.request.discovery.context import DiscoveryContext
 from .config import DiscoveryConfigUnion
 from core.request.discovery.registry import DiscoveryRegistry
 from core.request.discovery.result import DiscoveryResult
-from core.request.context import RequestContext
 
 
 class DiscoveryEngine:
@@ -13,21 +10,18 @@ class DiscoveryEngine:
         self,
         registry: DiscoveryRegistry,
     ) -> None:
-
         self._registry = registry
 
     @property
     def registry(
         self,
     ) -> DiscoveryRegistry:
-
         return self._registry
 
     async def discover(
         self,
         *,
-        response: ResponseAdapter,
-        context: RequestContext,
+        context: DiscoveryContext,
         config: DiscoveryConfigUnion,
     ) -> DiscoveryResult:
 
@@ -47,7 +41,6 @@ class DiscoveryEngine:
             )
 
         return await plugin.discover(
-            response=response,
             context=context,
             config=config,
         )

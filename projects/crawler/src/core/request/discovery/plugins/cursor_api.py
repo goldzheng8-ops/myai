@@ -24,7 +24,7 @@ class CursorApiDiscovery(
         self,
         *,
         response: ResponseAdapter,
-        context: RequestContext,
+        request: RequestContext,
         config: CursorApiConfig,
     ) -> dict[str, Any] | None:
 

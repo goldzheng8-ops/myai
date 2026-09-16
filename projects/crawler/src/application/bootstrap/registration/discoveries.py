@@ -8,9 +8,9 @@ from core.request.discovery.factory import (
     create_cursor_api_discovery,
     create_infinite_scroll_discovery,
     create_offset_api_discovery,
-    build_detail_link_discovery_factory,
-    build_next_page_discovery_factory,
-    build_page_number_discovery_factory,
+    build_file_discovery_factory,
+    build_html_discovery_factory,
+    build_pagination_discovery_factory,
     build_rss_discovery_factory,
     build_sitemap_discovery_factory,
 )
@@ -59,18 +59,18 @@ def create_discovery_registry(
     )
 
     registry.register(
-        DiscoveryType.DETAIL_LINK,
-        build_detail_link_discovery_factory(resolver),
+        DiscoveryType.HTML,
+        build_html_discovery_factory(resolver),
     )
 
     registry.register(
-        DiscoveryType.NEXT_PAGE,
-        build_next_page_discovery_factory(resolver),
+        DiscoveryType.FILE,
+        build_file_discovery_factory(resolver),
     )
 
     registry.register(
-        DiscoveryType.PAGE_NUMBER,
-        build_page_number_discovery_factory(resolver),
+        DiscoveryType.PAGINATION,
+        build_pagination_discovery_factory(resolver),
     )
 
     registry.register(

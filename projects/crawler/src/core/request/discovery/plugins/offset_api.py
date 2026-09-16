@@ -23,12 +23,12 @@ class OffsetApiDiscovery(
         self,
         *,
         response: ResponseAdapter,
-        context: RequestContext,
+        request: RequestContext,
         config: OffsetApiConfig,
     ) -> dict[str, Any]:
 
         current = int(
-            context.descriptor.params.get(
+            request.descriptor.params.get(
                 config.parameter,
                 config.start,
             )

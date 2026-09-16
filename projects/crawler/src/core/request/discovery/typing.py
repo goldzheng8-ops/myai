@@ -3,21 +3,21 @@ from enum import Enum
 
 class DiscoveryType(str,Enum):
 
-    DETAIL_LINK = "detail_link"
+    PAGINATION = "pagination"
 
-    NEXT_PAGE = "next_page"
-
-    PAGE_NUMBER = "page_number"
-
-    CURSOR_API = "cursor_api"
-
-    INFINITE_SCROLL = "infinite_scroll"
-
-    GRAPHQL_CURSOR = "graphql_cursor"
-    OFFSET_API="offset_api"
+    HTML = "html"
 
     RSS = "rss"
 
     SITEMAP = "sitemap"
 
-    IMAGE_LINK = "image_link"
+    FILE = "file"
+
+    CURSOR_API = "cursor_api"
+
+    INFINITE_SCROLL = "infinite_scroll"
+
+    OFFSET_API="offset_api"
+
+    GRAPHQL_CURSOR = "graphql_cursor"
+

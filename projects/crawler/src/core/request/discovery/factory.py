@@ -6,11 +6,11 @@ from core.extraction.transform.executor import TransformExecutor
 from core.provider import ProviderResolver
 from core.request.discovery.base import DiscoveryPlugin
 from core.request.discovery.plugins.cursor_api import CursorApiDiscovery
-from core.request.discovery.plugins.detail_link import DetailLinkDiscovery
+from core.request.discovery.plugins.html import HtmlDiscoveryPlugin
 from core.request.discovery.plugins.infinite_scroll import InfiniteScrollDiscovery
-from core.request.discovery.plugins.next_page import NextPageDiscovery
+from core.request.discovery.plugins.pagination import PaginationDiscoveryPlugin
 from core.request.discovery.plugins.offset_api import OffsetApiDiscovery
-from core.request.discovery.plugins.page_number import PageNumberDiscovery
+from core.request.discovery.plugins.file import FileDiscoveryPlugin
 from core.request.discovery.plugins.rss import RssDiscovery
 from core.request.discovery.plugins.sitemap import SitemapDiscovery
 
@@ -19,12 +19,12 @@ DiscoveryFactory: TypeAlias = Callable[
     DiscoveryPlugin[Any],
 ]
 
-def build_detail_link_discovery_factory(
+def build_html_discovery_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> DiscoveryFactory:
 
-    def factory() -> DetailLinkDiscovery:
-        return DetailLinkDiscovery(
+    def factory() -> HtmlDiscoveryPlugin:
+        return HtmlDiscoveryPlugin(
             transform_executor=resolver.resolve(
                 TransformExecutor,
             ),
@@ -34,12 +34,12 @@ def build_detail_link_discovery_factory(
         )
     return factory
 
-def build_next_page_discovery_factory(
+def build_pagination_discovery_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> DiscoveryFactory:
 
-    def factory() -> NextPageDiscovery:
-        return NextPageDiscovery(
+    def factory() -> PaginationDiscoveryPlugin:
+        return PaginationDiscoveryPlugin(
             transform_executor=resolver.resolve(
                 TransformExecutor,
             ),
@@ -49,12 +49,12 @@ def build_next_page_discovery_factory(
         )
     return factory
 
-def build_page_number_discovery_factory(
+def build_file_discovery_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> DiscoveryFactory:
 
-    def factory() -> PageNumberDiscovery:
-        return PageNumberDiscovery(
+    def factory() -> FileDiscoveryPlugin:
+        return FileDiscoveryPlugin(
             transform_executor=resolver.resolve(
                 TransformExecutor,
             ),
