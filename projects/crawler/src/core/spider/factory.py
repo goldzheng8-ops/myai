@@ -4,11 +4,10 @@ from typing import Any
 from collections.abc import Callable
 from core.provider import  ProviderResolver
 from core.spider.services import SpiderServices
-from core.spider.template.base import RequestTemplate
-from core.spider.template.api import ApiRequestTemplate
-from core.spider.template.browser import BrowserRequestTemplate
-from core.spider.template.detail import DetailRequestTemplate
-from core.spider.template.list import ListRequestTemplate
+from core.spider.template.extraction import RequestTemplate
+from core.spider.template.download import DownloadRequestTemplate
+from core.spider.template.plain import PlainRequestTemplate
+from core.spider.template.extraction import ExtractionRequestTemplate
 
 
 SpiderFactory = Callable[
@@ -16,13 +15,13 @@ SpiderFactory = Callable[
     RequestTemplate[Any],
 ]
 
-def build_api_spider_factory(
+def build_extraction_template_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> ApiRequestTemplate:
+    def factory() -> ExtractionRequestTemplate:
 
-        return ApiRequestTemplate(
+        return ExtractionRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -30,13 +29,13 @@ def build_api_spider_factory(
 
     return factory
 
-def build_browser_spider_factory(
+def build_plain_template_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> BrowserRequestTemplate:
+    def factory() -> PlainRequestTemplate:
 
-        return BrowserRequestTemplate(
+        return PlainRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -44,13 +43,13 @@ def build_browser_spider_factory(
 
     return factory
 
-def build_detail_spider_factory(
+def build_download_template_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> SpiderFactory:
 
-    def factory() -> DetailRequestTemplate:
+    def factory() -> DownloadRequestTemplate:
 
-        return DetailRequestTemplate(
+        return DownloadRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),
@@ -58,16 +57,3 @@ def build_detail_spider_factory(
 
     return factory
 
-def build_list_spider_factory(
-    resolver: ProviderResolver[Any, Any],
-) -> SpiderFactory:
-
-    def factory() -> ListRequestTemplate:
-
-        return ListRequestTemplate(
-            resolver.resolve(
-                SpiderServices,
-            ),
-        )
-
-    return factory

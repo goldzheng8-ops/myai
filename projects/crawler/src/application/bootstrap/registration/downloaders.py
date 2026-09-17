@@ -2,7 +2,7 @@ from typing import Any
 
 from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder, ProviderResolver
-from core.request.downloader.factory import build_scrapy_downloader_factory, create_httpx_downloader, create_playwright_downloader
+from core.request.downloader.factory import build_scrapy_downloader_factory, build_httpx_downloader_factory, build_playwright_downloader_factory
 from core.request.downloader.manager import DownloaderManager
 from core.request.typing import DownloaderType
 from core.request.downloader.registry import DownloaderRegistry
@@ -40,7 +40,9 @@ def create_downloader_registry(
 
     registry.register(
         DownloaderType.HTTPX,
-        create_httpx_downloader,
+        build_httpx_downloader_factory(
+            resolver,
+        ),
     )
 
     registry.register(
@@ -52,7 +54,9 @@ def create_downloader_registry(
 
     registry.register(
         DownloaderType.PLAYWRIGHT,
-        create_playwright_downloader,
+        build_playwright_downloader_factory(
+            resolver,
+        ),
     )
 
     return registry

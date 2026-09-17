@@ -9,10 +9,9 @@ if TYPE_CHECKING:
 
 
 class SpiderTemplate(str, Enum):
-    LIST = "list"
-    DETAIL = "detail"
-    API = "api"
-    BROWSER = "browser"
+    PLAIN = "plain"
+    EXTRACTION = "extraction"
+    DOWNLOAD = "download"
 
 
 class SpiderStatus(str, Enum):

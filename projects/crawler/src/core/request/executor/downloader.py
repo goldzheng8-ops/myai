@@ -41,6 +41,14 @@ class DownloaderRequestExecutor(
             context,
         )
 
+        if download_result.response is None:
+            if download_result.error is not None:
+                raise download_result.error
+
+            raise RuntimeError(
+                "Downloader completed without a response.",
+            )
+
         context.result = RequestResult(
             response=download_result.response,
             success=download_result.success,

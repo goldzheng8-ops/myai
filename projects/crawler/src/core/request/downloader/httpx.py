@@ -1,5 +1,6 @@
 import asyncio
 
+from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
 from core.request.middleware.proxy.config import ProxyConfig
 from core.request.response.model import HttpxResponse
@@ -20,6 +21,7 @@ class HttpxDownloader(
 
     def __init__(
         self,
+        response_adapter_resolver: ResponseAdapterResolver,
         config: HttpxDownloaderConfig | None = None,
     ) -> None:
 
@@ -28,6 +30,7 @@ class HttpxDownloader(
             if config is not None
             else HttpxDownloaderConfig(),
         )
+        self._response_adapter_resolver = response_adapter_resolver
 
         self._clients: dict[
             str | None,
@@ -74,8 +77,13 @@ class HttpxDownloader(
                 raw=response,
             )
 
-            return DownloadResult(
+            adapter = self._response_adapter_resolver.resolve(
+                profile=context.descriptor.profile,
                 response=normalized,
+            )
+
+            return DownloadResult(
+                response=adapter,
                 success=response.is_success,
             )
 

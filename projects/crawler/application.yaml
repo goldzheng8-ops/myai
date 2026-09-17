@@ -105,7 +105,7 @@ output_sinks:
 spiders:
 
   - name: news
-    template: list
+    template: extraction
     kind: list
 
     profile:
@@ -221,7 +221,7 @@ spiders:
 
 
   - name: detail
-    template: detail
+    template: extraction
     kind: detail
 
     profile:

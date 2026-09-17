@@ -3,9 +3,6 @@ from dataclasses import dataclass
 from core.output.engine import OutputEngine
 from core.request.discovery.engine import DiscoveryEngine
 from core.extraction.extractor.executor import ExtractExecutor
-from core.extraction.response.resolver import (
-    ResponseAdapterResolver,
-)
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
 
@@ -20,12 +17,10 @@ class SpiderServices:
 
     request_runner: RequestRunner
 
-    extract_engine: ExtractExecutor
+    extract_executor: ExtractExecutor
 
     discovery_engine: DiscoveryEngine
 
     fingerprint_provider: FingerprintProvider
 
-    response_adapter_resolver: ResponseAdapterResolver
-    
     output_engine:OutputEngine

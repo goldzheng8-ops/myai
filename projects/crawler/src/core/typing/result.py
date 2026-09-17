@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Sequence
 
 
 @dataclass(slots=True, kw_only=True)
@@ -12,4 +12,4 @@ class BaseResult:
     error: Exception | None = None
     elapsed: float = 0.0
     meta: dict[str, Any] = field(default_factory=dict)
-    trace: list[str] = field(default_factory=list)
+    trace: Sequence[Any] = ()

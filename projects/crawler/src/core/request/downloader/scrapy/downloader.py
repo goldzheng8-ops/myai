@@ -1,4 +1,5 @@
 from __future__ import annotations
+from core.extraction.response.resolver import ResponseAdapterResolver
 from scrapy.http import Response
 
 from core.request.downloader.scrapy.bridge import ScrapyRequestBridge
@@ -19,6 +20,7 @@ class ScrapyDownloader(
         self,
         executor: ScrapyRequestExecutor,
         bridge: ScrapyRequestBridge,
+        response_adapter_resolver: ResponseAdapterResolver,
         config: ScrapyDownloaderConfig | None = None,
     ) -> None:
 
@@ -27,7 +29,7 @@ class ScrapyDownloader(
             if config is not None
             else ScrapyDownloaderConfig(),
         )
-
+        self._response_adapter_resolver = response_adapter_resolver
         self._executor = executor
         self._bridge = bridge
 
@@ -68,8 +70,18 @@ class ScrapyDownloader(
                 success=False,
             )
 
-        return self._build_result(
+        normalized = self._build_response(
             response,
+        )
+
+        adapter = self._response_adapter_resolver.resolve(
+            profile=context.descriptor.profile,
+            response=normalized,
+        )
+
+        return DownloadResult(
+            response=adapter,
+            success=200 <= response.status < 400,
         )
 
     async def close(
@@ -77,12 +89,14 @@ class ScrapyDownloader(
     ) -> None:
         await self._executor.close()
 
-    def _build_result(
+
+
+    def _build_response(
         self,
         response: Response,
-    ) -> DownloadResult:
+    ) -> ScrapyResponse:
 
-        normalized = ScrapyResponse(
+        return ScrapyResponse(
             url=response.url,
             status_code=response.status,
             headers=self._build_response_headers(
@@ -93,11 +107,6 @@ class ScrapyDownloader(
             encoding=None,
             reason=None,
             raw=response,
-        )
-
-        return DownloadResult(
-            response=normalized,
-            success=200 <= response.status < 400,
         )
 
     @staticmethod

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Any
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from core.extraction.selector.config import SelectorConfigUnion
 from core.extraction.selector.typing import SelectorType
 from core.extraction.response.node import NodeAdapter
 from core.extraction.response.dispatch import SelectorDispatchTable, StaticDispatchTable, RuntimeDispatchTable
+from core.request.response.model import RequestResponse
 
 class ResponseAdapter(ABC):
 
@@ -92,4 +93,36 @@ class ResponseAdapter(ABC):
         self,
     ) -> None:
         return None
+
+    @property
+    @abstractmethod
+    def response(
+        self,
+    ) -> RequestResponse:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def url(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def status_code(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def headers(self) -> Mapping[str, str]:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def body(self) -> bytes:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def encoding(self) -> str | None:
+        raise NotImplementedError
     

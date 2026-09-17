@@ -23,16 +23,14 @@ class SpiderConfig(BaseConfig):
 
     profile: RequestProfile
 
-    extraction: ExtractConfigUnion
-
     middlewares: tuple[
         MiddlewareSpecUnion,
         ...
     ] = ()
+    outputs: tuple[str, ...] = ()
     settings: dict[str, Any] = Field(
         default_factory=dict,
     )
-    outputs: tuple[str, ...] = ()
 
     @field_validator("outputs")
     @classmethod
@@ -46,60 +44,36 @@ class SpiderConfig(BaseConfig):
             )
         return value
 
-class DiscoverySpiderConfig(SpiderConfig):
+class ExtractConSpiderConfig(SpiderConfig):
+    extraction: ExtractConfigUnion
+    
     discovery: tuple[
         DiscoveryConfigUnion,
         ...
     ] = ()
 
-
-class ListSpiderConfig(DiscoverySpiderConfig):
-    template: Literal[SpiderTemplate.LIST] = SpiderTemplate.LIST
-
-
-
-
-class DetailSpiderConfig(SpiderConfig):
-    template: Literal[SpiderTemplate.DETAIL] = (
-        SpiderTemplate.DETAIL
+    template: Literal[SpiderTemplate.EXTRACTION] = (
+        SpiderTemplate.EXTRACTION
     )
 
-
-
-
-class ApiSpiderConfig(DiscoverySpiderConfig):
-    template: Literal[SpiderTemplate.API] = SpiderTemplate.API
-
-
-
-
-class BrowserSpiderConfig(DiscoverySpiderConfig):
-    template: Literal[SpiderTemplate.BROWSER] = (
-        SpiderTemplate.BROWSER
+class DownloadSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.DOWNLOAD] = (
+        SpiderTemplate.DOWNLOAD
     )
+
+class PlainSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.PLAIN] = SpiderTemplate.PLAIN
+
 
 
 
 
 SpiderConfigUnion = Annotated[
     (
-        ListSpiderConfig
-        | DetailSpiderConfig
-        | ApiSpiderConfig
-        | BrowserSpiderConfig
+        ExtractConSpiderConfig
+        | DownloadSpiderConfig
+        | PlainSpiderConfig
     ),
     Field(discriminator="template"),
 ]
 
-BrowserType = Literal[
-    "chromium",
-    "firefox",
-    "webkit",
-]
-
-WaitUntil = Literal[
-    "commit",
-    "domcontentloaded",
-    "load",
-    "networkidle",
-]

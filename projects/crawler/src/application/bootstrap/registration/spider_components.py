@@ -2,7 +2,6 @@ from typing import Any
 
 from application.config.registry import SpiderConfigRegistry
 from core.extraction.extractor.executor import ExtractExecutor
-from core.extraction.response.resolver import ResponseAdapterResolver
 from core.output.engine import OutputEngine
 from core.request.discovery.engine import DiscoveryEngine
 from core.request.middleware.fingerprint.provider import FingerprintProvider
@@ -14,10 +13,9 @@ from core.spider.registry import SpiderRegistry
 from core.spider.services import SpiderServices
 from core.provider import ProviderBuilder, ProviderResolver
 from core.spider.factory import (
-    build_api_spider_factory,
-    build_browser_spider_factory,
-    build_detail_spider_factory,
-    build_list_spider_factory,
+    build_download_template_factory,
+    build_extraction_template_factory,
+    build_plain_template_factory
 )
 from core.spider.typing import SpiderTemplate
 
@@ -43,6 +41,8 @@ def register_spider_components(
         DownloadRequestHandler,
         lambda resolver: DownloadRequestHandler(
             services=resolver.resolve(SpiderServices),
+            spider_registry=resolver.resolve(SpiderRegistry),
+            spider_config_registry=resolver.resolve(SpiderConfigRegistry),
             runtime=resolver.resolve(RuntimeContext),
         ),
     )
@@ -51,10 +51,9 @@ def register_spider_components(
         SpiderServices,
         lambda resolver: SpiderServices(
             request_runner=resolver.resolve(RequestRunner),
-            extract_engine=resolver.resolve(ExtractExecutor),
+            extract_executor=resolver.resolve(ExtractExecutor),
             discovery_engine=resolver.resolve(DiscoveryEngine),
             fingerprint_provider=resolver.resolve(FingerprintProvider),
-            response_adapter_resolver=resolver.resolve(ResponseAdapterResolver),
             output_engine=resolver.resolve(OutputEngine),
         ),
     )
@@ -74,29 +73,24 @@ def create_spider_registry(
 
   
     registry.register(
-        SpiderTemplate.API,
-        build_api_spider_factory(
+        SpiderTemplate.EXTRACTION,
+        build_extraction_template_factory(
             resolver,
         ),
     )
     registry.register(
-        SpiderTemplate.BROWSER,
-        build_browser_spider_factory(
+        SpiderTemplate.DOWNLOAD,
+        build_download_template_factory(
             resolver,
         ),
     )
     registry.register(
-        SpiderTemplate.DETAIL,
-        build_detail_spider_factory(
+        SpiderTemplate.PLAIN,
+        build_plain_template_factory(
             resolver,
         ),
     )
-    registry.register(
-        SpiderTemplate.LIST,
-        build_list_spider_factory(
-            resolver,
-        ),
-    )
+
 
 
 

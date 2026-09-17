@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
@@ -13,7 +14,6 @@ from playwright.async_api import (
     async_playwright,
 )
 
-from core.request.response import RequestResponse
 from core.request.typing import DownloaderType
 
 from .base import BaseDownloader
@@ -28,6 +28,7 @@ class PlaywrightDownloader(
 
     def __init__(
         self,
+        response_adapter_resolver: ResponseAdapterResolver,
         config: PlaywrightDownloaderConfig | None = None,
     ) -> None:
 
@@ -36,7 +37,7 @@ class PlaywrightDownloader(
             if config is not None
             else PlaywrightDownloaderConfig(),
         )
-
+        self._response_adapter_resolver = response_adapter_resolver
         self._playwright: Playwright | None = None
         self._browser: Browser | None = None
 
@@ -99,9 +100,12 @@ class PlaywrightDownloader(
                 page,
                 browser_context,
             )
-
-            return DownloadResult(
+            adapter = self._response_adapter_resolver.resolve(
+                profile=context.descriptor.profile,
                 response=normalized,
+            )
+            return DownloadResult(
+                response=adapter,
                 success=200 <= normalized.status_code < 400,
             )
 
@@ -155,7 +159,7 @@ class PlaywrightDownloader(
         response: Response,
         page: Page,
         browser_context: BrowserContext
-    ) -> RequestResponse:
+    ) -> BrowserResponse:
 
         body = await response.body()
 

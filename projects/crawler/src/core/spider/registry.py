@@ -2,7 +2,7 @@ from typing import Any
 
 from core.registry import Registry
 from core.spider.factory import SpiderFactory
-from core.spider.template.base import RequestTemplate
+from core.spider.template.extraction import RequestTemplate
 
 
 from .typing import SpiderTemplate
