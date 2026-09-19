@@ -24,7 +24,11 @@ class GlobalExtension(
         backend: TemplateBackend,
     ) -> None:
 
+        # try:
         backend.globals.register(
             self.name,
             self.global_,
         )
+        # except ValueError:
+        #     # global already registered by the backend; skip to avoid crash
+        #     return

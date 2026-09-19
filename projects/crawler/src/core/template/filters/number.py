@@ -20,16 +20,6 @@ def _coerce_number(value: Any) -> float | None:
     return None
 
 
-class RoundFilter(FilterExtension):
-    name = "round"
-
-    def filter(self, value: Any, digits: int = 0) -> Any:
-        num = _coerce_number(value)
-        if num is None:
-            return value
-        return round(num, digits)
-
-
 class CeilFilter(FilterExtension):
     name = "ceil"
 
@@ -48,16 +38,6 @@ class FloorFilter(FilterExtension):
         if num is None:
             return value
         return math.floor(num)
-
-
-class AbsFilter(FilterExtension):
-    name = "abs"
-
-    def filter(self, value: Any) -> Any:
-        num = _coerce_number(value)
-        if num is None:
-            return value
-        return abs(num)
 
 
 class ClampFilter(FilterExtension):

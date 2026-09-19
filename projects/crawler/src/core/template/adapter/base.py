@@ -2,8 +2,8 @@
 
 from abc import ABC
 from abc import abstractmethod
-
-from core.runtime import RuntimeContext
+from collections.abc import Mapping
+from typing import Any
 
 
 class RenderableTemplate(
@@ -20,6 +20,6 @@ class RenderableTemplate(
     @abstractmethod
     def render(
         self,
-        context: RuntimeContext,
+        context: Mapping[str, Any],
     ) -> str:
         """Render template."""

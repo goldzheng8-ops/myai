@@ -191,3 +191,95 @@ data/downloads/xxx.jpg
 这条链跑通以后，你的框架就真正从**“网页爬虫”变成“资源获取 + 内容抽取”的通用 Crawling Runtime** 了。
 
 **我建议现在先不要碰 MinIO/S3、文件命名模板、hash 文件名、断点下载这些东西。**先把 DownloadResult → BinaryFileOutputSink → 本地文件 这条最小闭环跑通，再扩展
+
+Downloader
+    │
+    ├── Range: bytes=...
+    │
+    ▼
+stream/chunk
+    │
+    ▼
+temporary file
+    │
+    ▼
+DownloadResult / DownloadArtifact
+
+先不要为了 S3/断点下载把整个 Downloader 体系继续复杂化。
+
+等 LocalFileStorage + S3Storage + BinaryFileOutputSink 跑通之后，再处理真正的 streaming downloader 和 multipart/resumable upload，会比较稳。
+
+另外，如果你现在的 HttpxResponse / BrowserResponse / ScrapyResponse 已经都有 body，那么我下一步会建议我们把**DownloadResult 从 ResponseAdapter 的 body 提取逻辑统一抽出来**，避免 DownloadRequestTemplate 里针对 HTTPX / Playwright / Scrapy 写任何分支。
+
+这样以后你的：
+
+core.template.filters
+
+可以增加：
+
+basename
+extension
+sha256
+slugify
+safe_filename
+
+例如：
+
+filename: "{{ download.url | basename }}"
+
+得到：
+
+image.jpg
+
+或者：
+
+filename: "{{ download.body_bytes | sha256 }}.jpg"
+
+得到：
+
+a8f3...91c.jpg
+
+甚至：
+
+filename: >-
+  {{ download.metadata["article_id"] }}/
+  {{ download.url | basename | safe_filename }}
+
+然后你的 core.template 可以注册一些通用 filter：
+
+basename
+extension
+urlencode
+lower
+upper
+replace
+slugify
+sha256
+
+例如：
+
+filename: "{{ download.url | basename }}"
+
+或者：
+
+filename: "{{ download.url | basename | lower }}"
+
+甚至：
+
+filename: "{{ download.url | sha256 }}.{{ download.content_type | extension }}"
+
+outputs:
+  - name: images
+    type: binary_file
+    directory: "./downloads"
+    filename: "{{ spider }}/{{ request.url | basename }}"
+
+或者更有用一点：
+
+filename: "{{ download.filename or request.url | basename }}"
+
+甚至：
+
+filename: "{{ download.metadata.get('hash') }}.{{ download.metadata.get('extension') }}"
+
+filename: "{{ download.body_bytes | sha256 }}.bin"

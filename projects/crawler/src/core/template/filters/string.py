@@ -1,11 +1,22 @@
+from __future__ import annotations
+
+import hashlib
 import re
+from pathlib import PurePosixPath
 from typing import Any
+from urllib.parse import urlparse
 
 from core.template.extension.filter import FilterExtension
 
 
 def _as_text(value: Any) -> str | None:
-    return value if isinstance(value, str) else None
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        return value
+
+    return str(value)
 
 
 def _split_words(value: str) -> list[str]:
@@ -19,73 +30,6 @@ class StripFilter(FilterExtension):
     def filter(self, value: Any) -> Any:
         text = _as_text(value)
         return text.strip() if text is not None else value
-
-
-class LowerFilter(FilterExtension):
-    name = "lower"
-
-    def filter(self, value: Any) -> Any:
-        text = _as_text(value)
-        return text.lower() if text is not None else value
-
-
-class UpperFilter(FilterExtension):
-    name = "upper"
-
-    def filter(self, value: Any) -> Any:
-        text = _as_text(value)
-        return text.upper() if text is not None else value
-
-
-class CapitalizeFilter(FilterExtension):
-    name = "capitalize"
-
-    def filter(self, value: Any) -> Any:
-        text = _as_text(value)
-        return text.capitalize() if text is not None else value
-
-
-class TitleFilter(FilterExtension):
-    name = "title"
-
-    def filter(self, value: Any) -> Any:
-        text = _as_text(value)
-        return text.title() if text is not None else value
-
-
-class ReplaceFilter(FilterExtension):
-    name = "replace"
-
-    def filter(self, value: Any, old: str = "", new: str = "") -> Any:
-        text = _as_text(value)
-        if text is None:
-            return value
-        return text.replace(old, new)
-
-
-class TruncateFilter(FilterExtension):
-    name = "truncate"
-
-    def filter(self, value: Any, length: int = 80, suffix: str = "...") -> Any:
-        text = _as_text(value)
-        if text is None:
-            return value
-        if len(text) <= length:
-            return text
-        if length <= len(suffix):
-            return suffix[:length]
-        return text[: length - len(suffix)] + suffix
-
-
-class SlugFilter(FilterExtension):
-    name = "slug"
-
-    def filter(self, value: Any) -> Any:
-        text = _as_text(value)
-        if text is None:
-            return value
-        slug = re.sub(r"[^a-zA-Z0-9]+", "-", text.strip().lower())
-        return slug.strip("-")
 
 
 class SnakeCaseFilter(FilterExtension):
@@ -148,3 +92,162 @@ class RegexReplaceFilter(FilterExtension):
         if text is None:
             return value
         return re.sub(pattern, replacement, text)
+
+
+class BasenameFilter(FilterExtension):
+    name = "basename"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        text = _as_text(value)
+
+        if text is None:
+            return value
+
+        return PurePosixPath(text).name
+
+
+class ExtensionFilter(FilterExtension):
+    name = "extension"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        text = _as_text(value)
+
+        if text is None:
+            return value
+
+        parsed = urlparse(text)
+
+        path = parsed.path
+
+        if not path:
+            return ""
+
+        suffix = PurePosixPath(path).suffix
+
+        if not suffix:
+            return ""
+
+        return suffix.lstrip(".").lower()
+
+
+class Sha256Filter(FilterExtension):
+    name = "sha256"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        if value is None:
+            return value
+
+        if isinstance(value, bytes):
+            data = value
+        elif isinstance(value, bytearray):
+            data = bytes(value)
+        else:
+            data = str(value).encode("utf-8")
+
+        return hashlib.sha256(data).hexdigest()
+
+
+class SlugifyFilter(FilterExtension):
+    name = "slugify"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        text = _as_text(value)
+
+        if text is None:
+            return value
+
+        text = text.strip().lower()
+
+        text = re.sub(
+            r"[^a-zA-Z0-9]+",
+            "-",
+            text,
+        )
+
+        return text.strip("-")
+
+
+class SafeFilenameFilter(FilterExtension):
+    name = "safe_filename"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        text = _as_text(value)
+
+        if text is None:
+            return value
+
+        text = text.strip()
+
+        # Windows + Linux/macOS 中都不适合作为文件名的字符
+        text = re.sub(
+            r'[<>:"/\\|?*\x00-\x1f]',
+            "_",
+            text,
+        )
+
+        # Windows 文件名不能以空格或句号结尾
+        text = text.rstrip(" .")
+
+        # 避免 Windows 保留设备名
+        if text.upper() in {
+            "CON",
+            "PRN",
+            "AUX",
+            "NUL",
+            "COM1",
+            "COM2",
+            "COM3",
+            "COM4",
+            "COM5",
+            "COM6",
+            "COM7",
+            "COM8",
+            "COM9",
+            "LPT1",
+            "LPT2",
+            "LPT3",
+            "LPT4",
+            "LPT5",
+            "LPT6",
+            "LPT7",
+            "LPT8",
+            "LPT9",
+        }:
+            text = f"_{text}"
+
+        return text
+
+class StemFilter(FilterExtension):
+    name = "stem"
+
+    def filter(
+        self,
+        value: Any,
+    ) -> Any:
+
+        text = _as_text(value)
+
+        if text is None:
+            return value
+
+        return PurePosixPath(text).stem

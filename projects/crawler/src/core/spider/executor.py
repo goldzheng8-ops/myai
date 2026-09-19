@@ -120,7 +120,12 @@ class CrawlerExecutor:
                 descriptor,
             )
         )
-
+        print(
+            f"\nURL: {descriptor.url}"
+            f"\nkind: {descriptor.kind}"
+            f"\ndont_filter: {descriptor.meta.dont_filter}"
+            f"\nfingerprint: {fingerprint}",
+        )
         if not descriptor.meta.dont_filter:
 
             if fingerprint in seen:

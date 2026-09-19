@@ -1,9 +1,12 @@
 
+from typing import Any
+
 from application.config import ApplicationConfig
 from core.output.engine import OutputEngine
-from core.output.factory import OutputSinkFactory
-from core.output.resolver import OutputResolver
-from core.provider import ProviderBuilder
+from core.output.factory import DownloadFilenameResolverFactory, OutputSinkFactory, StorageFactory
+from core.output.output_resolver import OutputResolver
+from core.provider import ProviderBuilder, ProviderResolver
+from core.template.manager.base import TemplateManager
 
 
 def register_outputs(
@@ -11,15 +14,47 @@ def register_outputs(
     config: ApplicationConfig,
 ) -> None:
 
-    sinks = OutputSinkFactory().create_all(
-        config.output_sinks,
+    builder.add_type(StorageFactory)
+    builder.add_factory(
+        DownloadFilenameResolverFactory,
+        lambda resolver: (
+            DownloadFilenameResolverFactory(
+                template_manager=resolver.resolve(
+                    TemplateManager,
+                ),
+            )
+        ),
     )
 
-    resolver = OutputResolver(sinks)
+    builder.add_factory(
+        OutputSinkFactory,
+        lambda resolver: OutputSinkFactory(
+            storage_factory=resolver.resolve(
+                StorageFactory,
+            ),
+            filename_resolver_factory=resolver.resolve(
+                DownloadFilenameResolverFactory,
+            ),
+        ),
+    )
+    def build_output_resolver_factory(
+        resolver: ProviderResolver[Any, Any],
+    ) -> Any:
 
-    builder.add_instance(
+        output_sink_factory:OutputSinkFactory = resolver.resolve(
+            OutputSinkFactory,
+        )
+        sinks = output_sink_factory.create_all(
+            config.output_sinks,
+        )
+        # return an OutputResolver instance constructed with the resolved sinks
+        return OutputResolver(sinks)
+
+    builder.add_factory(
         OutputResolver,
-        resolver,
+        lambda resolver: build_output_resolver_factory(
+            resolver
+        )
     )
 
     builder.add_factory(

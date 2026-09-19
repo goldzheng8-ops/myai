@@ -46,20 +46,6 @@ class RegexTest(TestExtension):
         return isinstance(value, str) and re.fullmatch(pattern, value) is not None
 
 
-class LowerTest(TestExtension):
-    name = "lower"
-
-    def test(self, value: Any) -> bool:
-        return isinstance(value, str) and value == value.lower()
-
-
-class UpperTest(TestExtension):
-    name = "upper"
-
-    def test(self, value: Any) -> bool:
-        return isinstance(value, str) and value == value.upper()
-
-
 class TitleTest(TestExtension):
     name = "title"
 

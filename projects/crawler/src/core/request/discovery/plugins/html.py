@@ -11,7 +11,7 @@ class HtmlDiscoveryPlugin(
         HtmlDiscoveryConfig
     ],
 ):
-    plugin_type = DiscoveryType.FILE
+    plugin_type = DiscoveryType.HTML
     config_type = HtmlDiscoveryConfig
 
     async def urls(
@@ -25,8 +25,11 @@ class HtmlDiscoveryPlugin(
         nodes = await response.select(
             config.selector,
         )
+
         value = await self._pipeline_executor.execute(
             nodes,
             config.selector,
         )
+        if isinstance(value, str):
+            return [value]
         return value

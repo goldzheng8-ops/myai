@@ -4,6 +4,7 @@ from core.template.cache.base import TemplateCache
 from core.template.cache.memory import MemoryTemplateCache
 from core.template.backend.base import TemplateBackend
 from core.template.backend.jinja import JinjaBackend
+from core.template.manager.base import TemplateManager
 from core.template.manager.default import DefaultTemplateManager
 from core.template.backend.config import JinjaTemplateConfig
 from core.template.extension.manager import TemplateExtensionManager, TemplateExtensionRegistry
@@ -52,7 +53,7 @@ def register_template(
     )
 
     builder.add_factory(
-        DefaultTemplateManager,
+        TemplateManager,
         lambda resolver: DefaultTemplateManager(
             backend=resolver.resolve(
                 TemplateBackend,

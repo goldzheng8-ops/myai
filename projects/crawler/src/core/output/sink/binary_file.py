@@ -1,10 +1,10 @@
 from pathlib import Path
-from urllib.parse import urlparse
-from uuid import uuid4
 
 from core.output.config import BinaryFileOutputConfig
+from core.output.filename import DownloadFilenameResolver
 from core.output.model import DownloadResult, OutputItem
 from core.output.sink.base import OutputSink
+from core.output.storage.base import Storage
 
 
 class BinaryFileOutputSink(
@@ -14,24 +14,20 @@ class BinaryFileOutputSink(
     def __init__(
         self,
         config: BinaryFileOutputConfig,
+        filename_resolver: DownloadFilenameResolver,
+        storage: Storage,
     ) -> None:
+
         super().__init__(config)
-        self._directory: Path | None = None
+
+        self._filename_resolver = (
+            filename_resolver
+        )
+
+        self._storage = storage
 
     async def start(self) -> None:
-        if self._directory is not None:
-            return
-
-        directory = Path(
-            self.config.directory,
-        )
-
-        directory.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-
-        self._directory = directory
+        await self._storage.start()
 
     async def write(
         self,
@@ -46,58 +42,79 @@ class BinaryFileOutputSink(
         self,
         download: DownloadResult,
     ) -> None:
-        if self._directory is None:
-            raise RuntimeError(
-                "BinaryFileOutputSink is not open.",
-            )
+        body = download.body.body_bytes
 
-        filename = self._resolve_filename(
-            download,
+        filename = self._filename_resolver.resolve(
+            download=download,
         )
 
-        path = self._directory / filename
+        filename = await self._resolve_collision(
+            filename,
+        )
+        if body is None:
+            raise RuntimeError(
+                "Binary file output requires "
+                "DownloadResult.body_bytes.",
+            )
 
-        if (
-            path.exists()
-            and not self.config.overwrite
-        ):
-            path = self._unique_path(path)
-
-        path.write_bytes(download.body)
-
-    async def close(self) -> None:
-        self._directory = None
-
-    def _resolve_filename(
-        self,
-        download: DownloadResult,
-    ) -> str:
-        if download.filename:
-            return download.filename
-
-        parsed = urlparse(download.url)
-        name = Path(parsed.path).name
-
-        if name:
-            return name
-
-        return f"download-{uuid4().hex}"
+            await self._storage.write_stream(
+                key=filename,
+                body=body,
+                overwrite=self.config.overwrite,
+                content_type=download.content_type,
+                metadata=self._build_metadata(
+                    download,
+                ),
+            )
+        await self._storage.write_bytes(
+            key=filename,
+            body=body,
+            overwrite=self.config.overwrite,
+            content_type=download.content_type,
+            metadata=self._build_metadata(
+                download,
+            ),
+        )
 
     @staticmethod
-    def _unique_path(
-        path: Path,
-    ) -> Path:
+    def _build_metadata(
+        download: DownloadResult,
+    ) -> dict[str, str]:
+        return {
+            str(key): str(value)
+            for key, value in download.metadata.items()
+        }
+    
+    async def close(self) -> None:
+        await self._storage.close()
+
+    async def _resolve_collision(
+        self,
+        filename: str,
+    ) -> str:
+
+        if self.config.overwrite:
+            return filename
+
+        if not await self._storage.exists(filename):
+            return filename
+
+        path = Path(filename)
+
         stem = path.stem
         suffix = path.suffix
 
         index = 1
 
         while True:
-            candidate = path.with_name(
-                f"{stem}-{index}{suffix}",
+
+            candidate = (
+                f"{stem}-{index}{suffix}"
             )
 
-            if not candidate.exists():
+            if not await self._storage.exists(
+                candidate,
+            ):
                 return candidate
 
             index += 1

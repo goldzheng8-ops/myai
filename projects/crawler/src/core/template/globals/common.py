@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterator, List, Set, Tuple
+from typing import Any, Iterator, List, Set, Tuple
 
 from core.template.extension.global_ import GlobalExtension
 
@@ -28,26 +28,6 @@ class ZipGlobal(GlobalExtension):
         if args:
             return zip(value, *args)
         return zip(value)
-
-
-class RangeGlobal(GlobalExtension):
-    name = "range"
-
-    def global_(self, value: Any = None, *args: Any, **kwargs: Any) -> range:
-        if value is None:
-            return range(0)
-        return range(value, *args)
-
-
-class DictGlobal(GlobalExtension):
-    name = "dict"
-
-    def global_(self, value: Any = None, *args: Any, **kwargs: Any) -> Dict[Any, Any]:
-        if value is None:
-            return dict()
-        if args or kwargs:
-            return dict(value, *args, **kwargs)
-        return dict(value)
 
 
 class ListGlobal(GlobalExtension):

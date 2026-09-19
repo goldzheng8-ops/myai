@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
+from typing import Any
 
-from core.runtime import RuntimeContext
+
 from core.template.adapter.base import RenderableTemplate
 
 class TemplateManager(
@@ -12,12 +14,12 @@ class TemplateManager(
         self,
         source: str,
     ) -> RenderableTemplate:
-        ...
+        raise NotImplementedError
 
     @abstractmethod
     def render(
         self,
         template: str,
-        context: RuntimeContext,
+        context: Mapping[str, Any],
     ) -> str:
-        ...
+        raise NotImplementedError

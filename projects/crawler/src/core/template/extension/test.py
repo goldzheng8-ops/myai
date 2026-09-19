@@ -24,7 +24,11 @@ class TestExtension(
         backend: TemplateBackend,
     ) -> None:
 
+        # try:
         backend.tests.register(
             self.name,
             self.test,
         )
+        # except ValueError:
+        #     # test already registered by the backend; skip to avoid crash
+        #     return

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.output.model import DownloadResult, OutputItem
-from core.output.resolver import OutputResolver
+from core.output.output_resolver import OutputResolver
 
 
 class OutputEngine:

@@ -1,8 +1,9 @@
 # template/adapter/jinja.py
 
-from jinja2 import Template
+from collections.abc import Mapping
+from typing import Any
 
-from core.runtime import RuntimeContext
+from jinja2 import Template
 
 from .base import RenderableTemplate
 
@@ -29,9 +30,9 @@ class JinjaRenderableTemplate(
 
     def render(
         self,
-        context: RuntimeContext,
+        context: Mapping[str, Any],
     ) -> str:
 
         return self._template.render(
-            **context.as_mapping(),
+            context,
         )

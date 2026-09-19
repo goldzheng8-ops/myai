@@ -96,8 +96,11 @@ output_sinks:
     path: data/news.json
   - name: binary_file
     type: binary_file
-    directory: data/downloads
-
+    storage:
+      type: local
+      directory: data/downloads
+    filename: "{{ download.body.body_bytes | sha256 }}.{{ download.url | extension }}"
+    overwrite: true
   # - name: news_postgres
   #   type: postgres
   #   dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
@@ -190,7 +193,7 @@ spiders:
         selector:
           type: css
           selector: "ul.pager a"
-          selection: multiple
+          # selection: multiple
           extract: attribute
           attribute: href
         transforms:
@@ -202,22 +205,22 @@ spiders:
         selector:
           type: css
           selector: "h3 a"
-          selection: multiple
+          # selection: multiple
           extract: attribute
           attribute: href
         transforms:
           - type: url_resolve
-      # - type: image_link
-      #   target_spider: image
-      #   request_kind: download
-      #   selector:
-      #     type: css
-      #     selector: "img.product-image"
-      #     selection: multiple
-      #     extract: attribute
-      #     attribute: src
-      #   transforms:
-      #     - type: url_resolve
+      - type: html
+        target_spider: download
+        request_kind: download
+        selector:
+          type: css
+          selector: "img.thumbnail"
+          # selection: multiple
+          extract: attribute
+          attribute: src
+        transforms:
+          - type: url_resolve
 
 
   - name: detail
@@ -277,3 +280,35 @@ spiders:
               selector: "#content_inner > article.product_page > p"
               selection: single
               extract: text
+
+
+  - name: download
+    template: download
+    kind: download
+
+    profile:
+      downloader:
+        type: scrapy
+
+
+      response_format: html
+
+
+
+    middlewares:
+      - type: fingerprint
+      - type: deduplicate
+      - type: cache
+      - type: session
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
+      - type: throttle
+    outputs:
+      - binary_file
+

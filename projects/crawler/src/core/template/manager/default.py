@@ -1,4 +1,6 @@
-from core.runtime import RuntimeContext
+from collections.abc import Mapping
+from typing import Any
+
 from core.template.adapter.base import RenderableTemplate
 from core.template.backend.base import TemplateBackend
 from core.template.cache.base import TemplateCache
@@ -41,11 +43,7 @@ class DefaultTemplateManager(
     def render(
         self,
         template: str,
-        context: RuntimeContext,
+        context: Mapping[str, Any],
     ) -> str:
 
-        return self.load(
-            template,
-        ).render(
-            context,
-        )
+        return self.load(template).render(context)

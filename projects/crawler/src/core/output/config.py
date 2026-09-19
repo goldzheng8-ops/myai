@@ -1,7 +1,44 @@
 from typing import Annotated, Literal
 
+from core.output.typing import StorageType
 from core.typing.config import BaseConfig
 from pydantic import Field
+
+class StorageConfig(BaseConfig):
+    pass
+
+
+class LocalStorageConfig(StorageConfig):
+    type: Literal[StorageType.LOCAL] = StorageType.LOCAL
+
+    directory: str
+
+
+class S3StorageConfig(StorageConfig):
+
+    type: Literal[StorageType.S3] = StorageType.S3
+
+    bucket: str
+
+    region: str = "us-east-1"
+
+    endpoint_url: str | None = None
+
+    access_key: str | None = None
+
+    secret_key: str | None = None
+
+    prefix: str = ""
+
+
+StorageConfigUnion = Annotated[
+    LocalStorageConfig | S3StorageConfig,
+    Field(
+        discriminator="type",
+    ),
+]
+
+
 class OutputConfig(BaseConfig):
     name: str
 
@@ -35,13 +72,21 @@ class JsonFileOutputConfig(OutputConfig):
     include_metadata: bool = False
 
 
-class BinaryFileOutputConfig(OutputConfig):
+class BinaryFileOutputConfig(
+    OutputConfig,
+):
     type: Literal["binary_file"] = "binary_file"
 
-    directory: str
-    filename: str | None = None
+    storage: StorageConfigUnion
+
+    filename: str = (
+        "{{ download.filename or download.url | basename }}"
+    )
+
     overwrite: bool = False
 
+
+    
 OutputConfigUnion = Annotated[
     (
         JsonlOutputConfig

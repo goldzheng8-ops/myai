@@ -24,7 +24,12 @@ class FilterExtension(
         backend: TemplateBackend,
     ) -> None:
 
+        # try:
         backend.filters.register(
             self.name,
             self.filter,
         )
+        # except ValueError:
+        #     # filter already registered by the backend (e.g. built-in Jinja filter);
+        #     # skip registering to avoid crashing on duplicate names.
+        #     return

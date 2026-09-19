@@ -1,24 +1,162 @@
+name: ai-space
+environment: development
+crawl:
+  entry_spider: "news"
+  start_requests:
+    - url: https://books.toscrape.com/
+
+runtime:
+
+  engine:
+    concurrency: 8
+    timeout: 30
+
+  throttle:
+    delay: 0.5
+    concurrency: 2
+proxies:
+  - name: default
+    type: static
+    proxy:
+      url: socks5://127.0.0.1:1080
+
+  - name: france
+    type: country
+    country: FR
+    proxies:
+      - url: socks5://127.0.0.1:1081
+        country: FR
+      - url: socks5://127.0.0.1:1082
+        country: FR
+user_agents:
+  - name: chrome
+    type: static
+    user_agent: "Mozilla/5.0 ..."
+
+  - name: firefox
+    type: static
+    user_agent: "Mozilla/5.0 ..."
+
+  - name: default
+    type: fake
+
+  - name: pool
+    type: pool
+    strategy: random
+    providers:
+      - chrome
+      - firefox
+      - default
+
+auth_providers:
+  - name: default
+    type: basic
+    username: crawler
+    password: secret
+
+  - name: weather_api
+    type: api_key
+    key: "abc123"
+    header: "X-API-Key"
+
+  - name: github_api
+    type: bearer
+    token: "ghp_xxxxxxxxx"
+
+  - name: website_session
+    type: cookie
+    cookies:
+      sessionid: "abc123"
+      csrftoken: "xyz456"
+
+  - name: oauth_api
+    type: oauth2_client_credentials
+    token_url: "https://example.com/oauth/token"
+    client_id: "crawler"
+    client_secret: "secret"
+    scope: "read"
+    timeout: 10
+    token_expiry_margin: 30
+
+output_sinks:
+  - name: news_jsonl
+    type: jsonl
+    path: data/news.jsonl
+  - name: news_csv
+    type: csv
+    path: data/news.csv
+  - name: detail_jsonl
+    type: jsonl
+    path: data/detail_news.jsonl
+  - name: detail_csv
+    type: csv
+    path: data/detail_news.csv
+  - name: json_file
+    type: json_file
+    path: data/news.json
+  - name: binary_file
+    type: binary_file
+    directory: data/downloads
+  - name: images
+    type: binary_file
+    directory: data/downloads
+    filename_template: "{date}/{hash}{extension}"
+    overwrite: false
+  - name: minio_object-storage
+    type: s3
+    endpoint: minio:9000
+    secure: false
+    bucket: downloads
+    prefix: images/
+  - name: s3_object-storage
+    type: s3
+    endpoint: s3.amazonaws.com
+    secure: true
+    bucket: my-bucket
+    prefix: crawler/images/
+  # - name: news_postgres
+  #   type: postgres
+  #   dsn: postgresql+asyncpg://aiuser:password@postgres:5432/aispace
+  #   table: news
 spiders:
 
-  - name: cloth_list
-    template: list
-
-    kind: html
+  - name: news
+    template: extraction
+    kind: list
 
     profile:
-      downloader: httpx
+      downloader:
+        type: scrapy
 
-    start_requests:
-      - url: "https://example.com/clothes"
-        method: GET
 
+      response_format: html
+
+
+
+    middlewares:
+      - type: fingerprint
+      - type: deduplicate
+      - type: cache
+      - type: session
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
+      - type: throttle
+    outputs:
+      - news_jsonl
+      - news_csv
     extraction:
       name: cloth_list
       type: list
 
       selector:
         type: css
-        selector: "ul.cloth_shoplist > li"
+        selector: "li article.product_pod"
         selection: multiple
 
       item:
@@ -27,13 +165,29 @@ spiders:
 
         children:
 
+          # - name: image_url
+          #   type: field
+          #   source:
+          #     type: selector
+          #     selector:
+          #       type: css
+          #       selector: "img"
+          #       selection: single
+          #       extract: attribute
+          #       attribute: data-original
+
+          #   transforms:
+          #     - type: prefix
+          #       value: "https:"
+
           - name: name
             type: field
             source:
               type: selector
               selector:
                 type: css
-                selector: "p.name > a"
+                selector: "h3 a"
+                selection: single
                 extract: text
 
           - name: price
@@ -42,32 +196,80 @@ spiders:
               type: selector
               selector:
                 type: css
-                selector: "p.price > span.price_n"
+                selector: "p.price_color"
+                selection: single
                 extract: text
-
     discovery:
-      - name: detail
-        type: detail_link
+      - type: html
+        request_kind: list
+        target_spider: news
         selector:
           type: css
-          selector: "p.name > a"
+          selector: "ul.pager a"
+          selection: multiple
           extract: attribute
           attribute: href
+        transforms:
+          - type: prefix
+            value: "https://books.toscrape.com/"
+      - type: html
+        request_kind: detail
+        target_spider: detail
+        selector:
+          type: css
+          selector: "h3 a"
+          selection: multiple
+          extract: attribute
+          attribute: href
+        transforms:
+          - type: url_resolve
+      # - type: html
+      #   target_spider: download
+      #   request_kind: download
+      #   selector:
+      #     type: css
+      #     selector: "img.thumbnail"
+      #     selection: multiple
+      #     extract: attribute
+      #     attribute: src
+      #   transforms:
+      #     - type: url_resolve
 
-    outputs:
-      - cloth_output
 
-
-  - name: cloth_detail
-    template: detail
-
-    kind: html
+  - name: detail
+    template: extraction
+    kind: detail
 
     profile:
-      downloader: httpx
+      downloader:
+        type: scrapy
 
+
+      response_format: html
+
+
+
+    middlewares:
+      - type: fingerprint
+      - type: deduplicate
+      - type: cache
+      - type: session
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
+      - type: throttle
+    outputs:
+      - detail_jsonl
+      - json_file
+      - detail_csv
     extraction:
-      name: cloth_detail
+
+      name: cloth
       type: object
 
       children:
@@ -78,16 +280,8 @@ spiders:
             type: selector
             selector:
               type: css
-              selector: "h1.product-name"
-              extract: text
-
-        - name: price
-          type: field
-          source:
-            type: selector
-            selector:
-              type: css
-              selector: ".price"
+              selector: "h1"
+              selection: single
               extract: text
 
         - name: description
@@ -96,15 +290,38 @@ spiders:
             type: selector
             selector:
               type: css
-              selector: ".description"
+              selector: "#content_inner > article.product_page > p"
+              selection: single
               extract: text
 
 
-  # - type: pagination
-  #   target_spider: news
-  #   request_kind: list
-  #   start: 1
-  #   end: 20
-  #   template: "https://example.com/news?page={page}"
+  - name: download
+    template: download
+    kind: download
+
+    profile:
+      downloader:
+        type: scrapy
+
+
+      response_format: html
+
+
+
+    middlewares:
+      - type: fingerprint
+      - type: deduplicate
+      - type: cache
+      - type: session
+      - type: cookie
+      - type: header
+      - type: user_agent
+      - type: auth
+      - type: proxy
+      - type: response_validation
+      - type: robot
+      - type: retry
+      - type: throttle
     outputs:
-      - cloth_output
+      - binary_file
+

@@ -74,10 +74,13 @@ class UrlDiscoveryPlugin(
     def transform_urls(
         self,
         *,
-        urls: Iterable[str],
+        urls: Iterable[str] | None,
         request: RequestContext,
         config: UrlConfigT,
     ) -> list[str]:
+
+        if urls is None:
+            return []
 
         transform_context = TransformContext(
             request=request,

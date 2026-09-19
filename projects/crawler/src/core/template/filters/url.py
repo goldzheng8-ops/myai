@@ -9,65 +9,17 @@ Provided filters:
 - `query`: extract query params from a URL or query string
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional
 from urllib.parse import (
 	parse_qs,
 	quote as _quote,
 	unquote as _unquote,
-	urlencode as _urlencode,
+
 	urljoin,
 	urlparse,
 )
 
 from core.template.extension.filter import FilterExtension
-
-
-from collections.abc import Sequence
-
-
-
-class UrlEncodeFilter(FilterExtension):
-
-    name = "urlencode"
-
-    def filter(
-        self,
-        value: Any,
-    ) -> str:
-
-        if value is None:
-            return ""
-
-        if isinstance(value, dict):
-
-            raw = cast(
-                dict[Any, Any],
-                value,
-            )
-
-            query = {
-                str(key): item
-                for key, item in raw.items()
-            }
-
-            return _urlencode(
-                query,
-                doseq=True,
-            )
-
-        if isinstance(value, (list, tuple)):
-
-            sequence = cast(
-                Sequence[Any],
-                value,
-            )
-
-            return _urlencode(
-                sequence,
-                doseq=True,
-            )
-
-        return str(value)
 
 
 class UrlDecodeFilter(FilterExtension):

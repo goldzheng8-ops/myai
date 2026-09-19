@@ -3,7 +3,7 @@ from __future__ import annotations
 from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
-from core.output.resolver import OutputResolver
+from core.output.output_resolver import OutputResolver
 from core.provider import (
     ProviderBuilder,
     SingletonProvider,

@@ -8,7 +8,7 @@ from core.spider.template.base import RequestTemplate
 
 from ..context import SpiderContext
 
-from core.output.model import DownloadResult
+from core.output.model import DownloadBody, DownloadResult
 from core.spider.typing import SpiderTemplate
 
 
@@ -36,7 +36,7 @@ class DownloadRequestTemplate(
 
         download = DownloadResult(
             url=response.url,
-            body=response.body,
+            body=DownloadBody(body_bytes=response.body),
             content_type=response.headers.get(
                 "content-type",
             ),
