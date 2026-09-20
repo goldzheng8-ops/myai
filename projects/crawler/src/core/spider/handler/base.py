@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 from application.config.registry import SpiderConfigRegistry
+from core.extraction.response import ResponseAdapter
 from core.output.model import DownloadArtifact, OutputItem
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
@@ -26,7 +27,7 @@ class TemplateExecutionContext:
 class RequestExecutionResult:
     item: OutputItem | None = None
     download: DownloadArtifact | None = None
-
+    response: ResponseAdapter | None = None
     outputs: tuple[str, ...] = ()
 
     requests: list[RequestDescriptor] = field(
@@ -95,16 +96,14 @@ class TemplateRequestHandler(
         if request.state.is_skipped:
             return RequestExecutionResult()
 
-        try:
-            step = await execution.template.process(
-                context=execution.spider,
-                request=request,
-            )
 
-            return self._build_execution_result(step)
+        step = await execution.template.process(
+            context=execution.spider,
+            request=request,
+        )
 
-        finally:
-            await self._close_response(request)
+        return self._build_execution_result(step,request)
+
 
     async def _prepare(
         self,
@@ -147,24 +146,22 @@ class TemplateRequestHandler(
             template=template,
         )
 
-    @staticmethod
-    async def _close_response(
-        context: RequestContext,
-    ) -> None:
-
-        if context.result is None:
-            return
-
-        await context.result.response.close()
 
     @staticmethod
     def _build_execution_result(
         step: RequestStep,
+        request: RequestContext,
     ) -> RequestExecutionResult:
+
+        response = None
+
+        if request.result is not None:
+            response = request.result.response
 
         return RequestExecutionResult(
             item=step.item,
             download=step.download,
+            response=response,
             outputs=step.outputs,
             requests=step.requests,
             continue_=step.continue_,

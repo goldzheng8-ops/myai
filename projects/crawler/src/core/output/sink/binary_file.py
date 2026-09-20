@@ -33,6 +33,7 @@ class BinaryFileOutputSink(
         self,
         item: OutputItem,
     ) -> None:
+
         raise TypeError(
             "BinaryFileOutputSink does not support "
             "OutputItem.",
@@ -42,7 +43,6 @@ class BinaryFileOutputSink(
         self,
         download: DownloadArtifact,
     ) -> None:
-        body = download.body.body_bytes
 
         filename = self._filename_resolver.resolve(
             download=download,
@@ -51,40 +51,50 @@ class BinaryFileOutputSink(
         filename = await self._resolve_collision(
             filename,
         )
-        if body is None:
-            raise RuntimeError(
-                "Binary file output requires "
-                "DownloadArtifact.body_bytes.",
-            )
+
+        if download.body.body_stream is not None:
 
             await self._storage.write_stream(
                 key=filename,
-                body=body,
+                body=download.body.body_stream,
                 overwrite=self.config.overwrite,
                 content_type=download.content_type,
                 metadata=self._build_metadata(
                     download,
                 ),
             )
-        await self._storage.write_bytes(
-            key=filename,
-            body=body,
-            overwrite=self.config.overwrite,
-            content_type=download.content_type,
-            metadata=self._build_metadata(
-                download,
-            ),
+
+            return
+
+        if download.body.body_bytes is not None:
+
+            await self._storage.write_bytes(
+                key=filename,
+                body=download.body.body_bytes,
+                overwrite=self.config.overwrite,
+                content_type=download.content_type,
+                metadata=self._build_metadata(
+                    download,
+                ),
+            )
+
+            return
+
+        raise RuntimeError(
+            "DownloadArtifact contains neither "
+            "body_bytes nor body_stream.",
         )
 
     @staticmethod
     def _build_metadata(
         download: DownloadArtifact,
     ) -> dict[str, str]:
+
         return {
             str(key): str(value)
             for key, value in download.metadata.items()
         }
-    
+
     async def close(self) -> None:
         await self._storage.close()
 
@@ -96,7 +106,9 @@ class BinaryFileOutputSink(
         if self.config.overwrite:
             return filename
 
-        if not await self._storage.exists(filename):
+        if not await self._storage.exists(
+            filename,
+        ):
             return filename
 
         path = Path(filename)

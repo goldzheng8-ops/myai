@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import AsyncIterator, Generic
+from typing import Generic
 
 from core.request.context import RequestContext
 from core.request.downloader.model import DownloaderCapabilities
 
 
-from .plugin import DownloaderPlugin
+from .plugin import DownloadResult, DownloaderPlugin
 from .request import DownloadRequest
 
 from .typing import ConfigT
@@ -44,8 +44,11 @@ class BaseDownloader(
     async def stream(
         self,
         context: RequestContext,
-    ) -> AsyncIterator[bytes]:
-        raise NotImplementedError
+    ) -> DownloadResult:
+        raise NotImplementedError(
+            f"{type(self).__name__} "
+            "does not support streaming.",
+        )
 
     def build_request(
         self,

@@ -1,4 +1,5 @@
 import asyncio
+from typing import AsyncIterator
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
@@ -96,6 +97,60 @@ class HttpxDownloader(
 
         except Exception as exc:
 
+            return DownloadResult(
+                success=False,
+                error=exc,
+            )
+
+    async def stream(
+        self,
+        context: RequestContext,
+    ) -> DownloadResult:
+
+        request = self.build_request(
+            context,
+        )
+
+        client = self._get_client(
+            context.descriptor.proxy,
+        )
+
+        try:
+            response = await client.send(
+                request,
+                stream=True,
+            )
+
+            normalized = HttpxResponse(
+                url=str(response.url),
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                body=b"",
+                cookies=dict(response.cookies),
+                encoding=response.encoding,
+                reason=response.reason_phrase,
+                raw=response,
+            )
+
+            adapter = self._response_adapter_resolver.resolve(
+                profile=context.descriptor.profile,
+                response=normalized,
+            )
+
+            async def body_stream() -> AsyncIterator[bytes]:
+                try:
+                    async for chunk in response.aiter_bytes():
+                        yield chunk
+                finally:
+                    await response.aclose()
+
+            return DownloadResult(
+                response=adapter,
+                success=response.is_success,
+                stream=body_stream(),
+            )
+
+        except Exception as exc:
             return DownloadResult(
                 success=False,
                 error=exc,

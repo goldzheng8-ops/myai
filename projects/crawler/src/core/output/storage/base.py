@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from core.output.model import BinaryStream
+
 class Storage(ABC):
 
     @abstractmethod
@@ -23,10 +25,10 @@ class Storage(ABC):
         self,
         *,
         key: str,
-        body: bytes,
+        body: BinaryStream,
         content_type: str | None = None,
         metadata: dict[str, str] | None = None,
-        overwrite: bool = True,
+        overwrite: bool = False,
     ) -> None:
         raise NotImplementedError
 

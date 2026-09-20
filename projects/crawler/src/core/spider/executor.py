@@ -48,13 +48,36 @@ class CrawlerExecutor:
         while queue:
 
             item = queue.popleft()
-            print(queue.__len__())
+
+            execution: RequestExecutionResult | None = None
+
             try:
-                execution = (
-                    await self._dispatcher.execute(
-                        item,
-                    )
+                execution = await self._dispatcher.execute(
+                    item,
                 )
+
+                if execution.item is not None:
+                    await self._write_output(
+                        execution,
+                        result,
+                    )
+
+                if execution.download is not None:
+                    await self._output_engine.write_download(
+                        execution.download,
+                        execution.outputs,
+                    )
+
+                for descriptor in execution.requests:
+                    if self._enqueue(
+                        descriptor,
+                        queue,
+                        seen,
+                    ):
+                        result.request_count += 1
+
+                if not execution.continue_:
+                    break
 
             except asyncio.CancelledError:
                 raise
@@ -64,31 +87,12 @@ class CrawlerExecutor:
                     "Request failed: %s",
                     item.descriptor.url,
                 )
-                continue
 
-            if execution.item is not None:
-
-                await self._write_output(
-                    execution,
-                    result,
-                )
-            if execution.download is not None:
-                await self._output_engine.write_download(
-                    execution.download,
-                    execution.outputs,
-                )
-
-            for descriptor in execution.requests:
-
-                if self._enqueue(
-                    descriptor,
-                    queue,
-                    seen,
-                ):
-                    result.request_count += 1
-
-            if not execution.continue_:
-                break
+            finally:
+                if execution is not None:
+                    await self._close_response(
+                        execution,
+                    )
 
         return result
 
@@ -141,3 +145,15 @@ class CrawlerExecutor:
         )
 
         return True
+
+    @staticmethod
+    async def _close_response(
+        execution: RequestExecutionResult,
+    ) -> None:
+
+        response = execution.response
+
+        if response is None:
+            return
+
+        await response.close()

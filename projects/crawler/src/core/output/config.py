@@ -29,7 +29,7 @@ class S3StorageConfig(StorageConfig):
     secret_key: str | None = None
 
     prefix: str = ""
-
+    multipart_part_size: int = 8 * 1024 * 1024
 
 StorageConfigUnion = Annotated[
     LocalStorageConfig | S3StorageConfig,

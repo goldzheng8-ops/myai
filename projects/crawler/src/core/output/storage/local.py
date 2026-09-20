@@ -1,10 +1,35 @@
 import asyncio
+from typing import BinaryIO
 
+from core.output.model import BinaryStream
 from core.output.storage.base import Storage
 
 
 from pathlib import Path
 
+class AsyncFileWriter:
+
+    def __init__(
+        self,
+        file: BinaryIO,
+    ) -> None:
+        self._file = file
+
+    async def write(
+        self,
+        data: bytes,
+    ) -> None:
+
+        await asyncio.to_thread(
+            self._file.write,
+            data,
+        )
+
+    async def close(self) -> None:
+
+        await asyncio.to_thread(
+            self._file.close,
+        )
 
 class LocalFileStorage(Storage):
 
@@ -93,9 +118,38 @@ class LocalFileStorage(Storage):
         self,
         *,
         key: str,
-        body: bytes,
+        body: BinaryStream,
         content_type: str | None = None,
         metadata: dict[str, str] | None = None,
-        overwrite: bool = True,
+        overwrite: bool = False,
     ) -> None:
-        pass
+
+        path = self._resolve_path(key)
+
+        await asyncio.to_thread(
+            path.parent.mkdir,
+            parents=True,
+            exist_ok=True,
+        )
+
+        if (
+            path.exists()
+            and not overwrite
+        ):
+            raise FileExistsError(
+                f"File already exists: {path}",
+            )
+
+        def open_file() -> BinaryIO:
+            return path.open("wb")
+
+        file = await asyncio.to_thread(
+            open_file,
+        )
+        writer = AsyncFileWriter(file)
+        try:
+            async for chunk in body:
+                if chunk:
+                    await writer.write(chunk)
+        finally:
+            await writer.close()
