@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from core.download.resume.base import ResumeStore
+from core.request.download.resume.base import ResumeStore
 
 
 class LocalResumeStore(
@@ -90,3 +90,6 @@ class LocalResumeStore(
         return self._directory / (
             f"{key}.part"
         )
+
+    async def close(self) -> None:
+        pass

@@ -31,3 +31,9 @@ class ResumeStore(ABC):
         key: str,
     ) -> None:
         raise NotImplementedError
+
+    async def start(self) -> None:
+        pass
+
+    async def close(self) -> None:
+        pass

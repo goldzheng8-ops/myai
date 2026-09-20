@@ -2,7 +2,7 @@ from pathlib import Path
 
 from core.output.config import BinaryFileOutputConfig
 from core.output.filename import DownloadFilenameResolver
-from core.output.model import DownloadResult, OutputItem
+from core.output.model import DownloadArtifact, OutputItem
 from core.output.sink.base import OutputSink
 from core.output.storage.base import Storage
 
@@ -40,7 +40,7 @@ class BinaryFileOutputSink(
 
     async def write_download(
         self,
-        download: DownloadResult,
+        download: DownloadArtifact,
     ) -> None:
         body = download.body.body_bytes
 
@@ -54,7 +54,7 @@ class BinaryFileOutputSink(
         if body is None:
             raise RuntimeError(
                 "Binary file output requires "
-                "DownloadResult.body_bytes.",
+                "DownloadArtifact.body_bytes.",
             )
 
             await self._storage.write_stream(
@@ -78,7 +78,7 @@ class BinaryFileOutputSink(
 
     @staticmethod
     def _build_metadata(
-        download: DownloadResult,
+        download: DownloadArtifact,
     ) -> dict[str, str]:
         return {
             str(key): str(value)

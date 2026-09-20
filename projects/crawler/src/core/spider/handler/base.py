@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 from application.config.registry import SpiderConfigRegistry
-from core.output.model import DownloadResult, OutputItem
+from core.output.model import DownloadArtifact, OutputItem
 from core.request.context import RequestContext
 from core.request.descriptor import RequestDescriptor
 from core.request.typing import RequestKind
@@ -25,7 +25,7 @@ class TemplateExecutionContext:
 @dataclass(slots=True)
 class RequestExecutionResult:
     item: OutputItem | None = None
-    download: DownloadResult | None = None
+    download: DownloadArtifact | None = None
 
     outputs: tuple[str, ...] = ()
 

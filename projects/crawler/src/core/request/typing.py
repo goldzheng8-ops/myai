@@ -36,7 +36,7 @@ class ResponseFormat(str, Enum):
     TEXT = "text"
     # XML = "xml"
     # RSS = "rss"
-    # BINARY = "binary"
+    BINARY = "binary"
 
 
 RequestHeaders: TypeAlias = dict[str, str]

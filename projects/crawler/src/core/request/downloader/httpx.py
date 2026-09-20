@@ -2,6 +2,7 @@ import asyncio
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
+from core.request.downloader.model import DownloaderCapabilities
 from core.request.middleware.proxy.config import ProxyConfig
 from core.request.response.model import HttpxResponse
 import httpx
@@ -36,7 +37,12 @@ class HttpxDownloader(
             str | None,
             httpx.AsyncClient,
         ] = {}
-
+    @property
+    def capabilities(self) -> DownloaderCapabilities:
+        return DownloaderCapabilities(
+            supports_resumable=True,
+            supports_streaming=True,
+        )
     async def start(
         self,
     ) -> None:

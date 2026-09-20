@@ -3,11 +3,11 @@ import re
 from dataclasses import replace
 from typing import Any
 
-from core.download.exception import DownloadError, DownloadIncompleteError
-from core.download.resume.base import ResumeStore
-from core.download.strategy.base import DownloadStrategy
+from core.request.download.exception import DownloadError, DownloadIncompleteError
+from core.request.download.resume.base import ResumeStore
+from core.request.download.strategy.base import DownloadStrategy
 from core.extraction.response import ResponseAdapter
-from core.output.model import DownloadBody, DownloadResult
+from core.request.downloader.result import DownloadResult
 from core.request.context import RequestContext
 from core.request.downloader.base import BaseDownloader
 from core.request.middleware.fingerprint.provider import FingerprintProvider
@@ -58,32 +58,38 @@ class ResumableDownloadStrategy(
             request_context,
         )
 
+        # if not result.success:
+        #     raise DownloadError(
+        #         "Download failed.",
+        #         url=context.descriptor.url,
+        #         cause=result.error,
+        #     )
         if not result.success:
-            raise DownloadError(
-                "Download failed.",
-                url=context.descriptor.url,
-                cause=result.error,
-            )
+            return result
 
         response = result.response
 
+        # if response is None:
+        #     raise DownloadError(
+        #         "Download completed without a response.",
+        #         url=context.descriptor.url,
+        #     )
         if response is None:
-            raise DownloadError(
-                "Download completed without a response.",
-                url=context.descriptor.url,
+            return DownloadResult(
+                success=False,
+                error=DownloadError(
+                    "Download completed without a response.",
+                    url=context.descriptor.url,
+                ),
             )
+        return await self._process_response(
+            context=context,
+            response=response,
+            resume_key=resume_key,
+            downloaded=downloaded,
+            metadata=result.meta,
+        )
 
-        try:
-            return await self._process_response(
-                context=context,
-                response=response,
-                resume_key=resume_key,
-                downloaded=downloaded,
-                metadata=result.meta,
-            )
-
-        finally:
-            await response.close()
 
     async def _process_response(
         self,
@@ -126,19 +132,37 @@ class ResumableDownloadStrategy(
                 )
 
             else:
-                raise DownloadError(
-                    f"Unexpected HTTP status {status} "
-                    f"while resuming.",
-                    url=context.descriptor.url,
-                )
+                # raise DownloadError(
+                #     f"Unexpected HTTP status {status} "
+                #     f"while resuming.",
+                #     url=context.descriptor.url,
+                # )
+                return DownloadResult(
+                    success=False,
+                    error=DownloadError(
+                        f"Unexpected HTTP status {status} "
+                        f"while resuming.",
+                        url=context.descriptor.url,
+                    ),
+                    meta=metadata,
+                )       
 
         else:
 
             if status not in {200, 206}:
-                raise DownloadError(
-                    f"Unexpected HTTP status {status} "
-                    f"for download.",
-                    url=context.descriptor.url,
+                # raise DownloadError(
+                #     f"Unexpected HTTP status {status} "
+                #     f"for download.",
+                #     url=context.descriptor.url,
+                # )
+                return DownloadResult(
+                    success=False,
+                    error=DownloadError(
+                        f"Unexpected HTTP status {status} "
+                        f"for download.",
+                        url=context.descriptor.url,
+                    ),
+                    meta=metadata,
                 )
 
             await self._resume_store.append(
@@ -160,17 +184,36 @@ class ResumableDownloadStrategy(
         if expected is not None:
 
             if total_size > expected:
-                raise DownloadError(
-                    f"Downloaded data exceeds expected "
-                    f"size: {total_size} > {expected}.",
-                    url=context.descriptor.url,
+                # raise DownloadError(
+                #     f"Downloaded data exceeds expected "
+                #     f"size: {total_size} > {expected}.",
+                #     url=context.descriptor.url,
+                # )
+                return DownloadResult(
+                    success=False,
+                    error=DownloadError(
+                        "Downloaded data exceeds "
+                        f"expected size: "
+                        f"{total_size} > {expected}.",
+                        url=context.descriptor.url,
+                    ),
+                    meta=metadata,
                 )
 
             if total_size < expected:
-                raise DownloadIncompleteError(
-                    url=context.descriptor.url,
-                    downloaded=total_size,
-                    expected=expected,
+                # raise DownloadIncompleteError(
+                #     url=context.descriptor.url,
+                #     downloaded=total_size,
+                #     expected=expected,
+                # )
+                return DownloadResult(
+                    success=False,
+                    error=DownloadIncompleteError(
+                        url=context.descriptor.url,
+                        downloaded=total_size,
+                        expected=expected,
+                    ),
+                    meta=metadata,
                 )
 
         body_bytes = await self._resume_store.read(
@@ -181,18 +224,13 @@ class ResumableDownloadStrategy(
             resume_key,
         )
 
+        complete_response = response.with_body(
+            body_bytes,
+        )
         return DownloadResult(
-            url=response.url,
-            body=DownloadBody(
-                body_bytes=body_bytes,
-            ),
-            content_type=response.headers.get(
-                "content-type",
-            ),
-            filename=None,
-            headers=response.headers,
-            size=len(body_bytes),
-            metadata=metadata,
+            response=complete_response,
+            success=True,
+            meta=metadata,
         )
 
     async def _validate_partial_response(

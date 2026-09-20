@@ -114,10 +114,8 @@ spiders:
     profile:
       downloader:
         type: scrapy
-
-
       response_format: html
-
+      download_strategy: resumable
 
 
     middlewares:

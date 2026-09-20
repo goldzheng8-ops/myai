@@ -1,4 +1,5 @@
 from core.request.context import RequestContext
+from core.request.download.factory import DownloadStrategyFactory
 from core.request.downloader.manager import DownloaderManager
 from core.request.result import RequestResult
 
@@ -15,8 +16,12 @@ class DownloaderRequestExecutor(
     def __init__(
         self,
         manager: DownloaderManager,
+        strategy_factory: DownloadStrategyFactory,
     ) -> None:
         self._manager = manager
+        self._strategy_factory = (
+            strategy_factory
+        )
 
     @property
     def manager(
@@ -29,15 +34,19 @@ class DownloaderRequestExecutor(
         context: RequestContext,
     ) -> RequestContext:
 
-        downloader_spec = (
-            context.descriptor.profile.downloader
-        )
+        downloader_spec = context.descriptor.profile.downloader
+        
+        download_strategy = context.descriptor.profile.download_strategy
 
         downloader = await self._manager.get(
             downloader_spec,
         )
+        strategy = self._strategy_factory.create(
+            strategy_type=download_strategy,
+            downloader=downloader,
+        )
 
-        download_result = await downloader.download(
+        download_result = await strategy.download(
             context,
         )
 

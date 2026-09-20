@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from application.bootstrap.registration.download import register_download
 from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
@@ -8,6 +9,7 @@ from core.provider import (
     ProviderBuilder,
     SingletonProvider,
 )
+from core.request.download.resume.base import ResumeStore
 from core.request.middleware.auth.resolver import AuthProviderResolver
 
 from .container import ApplicationContainer
@@ -102,6 +104,10 @@ class ApplicationContainerFactory:
         register_downloaders(
             builder,
         )
+        register_download(
+            builder,
+            config,          
+        )
         register_proxy_providers_resolver(
             builder,
             config,          
@@ -180,3 +186,11 @@ class ApplicationContainerFactory:
 
         for output_sink in out_resolver.values():
             lifecycle.register(output_sink)
+
+        resume_store = container.resolve(
+            ResumeStore,
+        )
+
+        lifecycle.register(
+            resume_store,
+        )

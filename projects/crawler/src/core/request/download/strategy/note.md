@@ -1,0 +1,5 @@
+SimpleDownloadStrategy
+ResumableDownloadStrategy
+StreamingDownloadStrategy
+ChunkedDownloadStrategy
+ParallelDownloadStrategy

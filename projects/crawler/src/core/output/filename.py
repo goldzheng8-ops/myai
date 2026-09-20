@@ -1,6 +1,6 @@
 from typing import Any
 
-from core.output.model import DownloadResult
+from core.output.model import DownloadArtifact
 from core.template.manager.base import TemplateManager
 
 
@@ -16,7 +16,7 @@ class DownloadFilenameResolver:
 
     def resolve(
         self,
-        download: DownloadResult,
+        download: DownloadArtifact,
     ) -> str:
 
         context: dict[str, Any] = {

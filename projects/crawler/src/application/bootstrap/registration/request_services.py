@@ -1,6 +1,7 @@
 
 from core.event import EventDispatcher
 from core.provider import ProviderBuilder
+from core.request.download.factory import DownloadStrategyFactory
 from core.request.downloader.manager import DownloaderManager
 from core.request.executor import RequestExecutor
 from core.request.executor.downloader import DownloaderRequestExecutor
@@ -17,6 +18,9 @@ def register_request_services(
         lambda resolver: DownloaderRequestExecutor(
             manager=resolver.resolve(
                 DownloaderManager,
+            ),
+            strategy_factory=resolver.resolve(
+                DownloadStrategyFactory,
             ),
         ),
 

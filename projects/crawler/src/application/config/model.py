@@ -17,6 +17,10 @@ from pydantic import  Field, model_validator
 
 from core.spider.config import  RequestKind, SpiderConfigUnion
 
+class ResumeConfig(BaseConfig):
+
+    directory: str = "data/resume"
+
 class EngineRuntimeConfig(BaseConfig):
     """
     Runtime configuration of the crawler engine.
@@ -95,6 +99,9 @@ class ApplicationConfig(BaseConfig):
     name: str = "ai-space"
     environment: str = "development"
 
+    resume: ResumeConfig = Field(
+        default_factory=ResumeConfig,
+    )
     runtime: RuntimeConfig = Field(
         default_factory=RuntimeConfig,
     )

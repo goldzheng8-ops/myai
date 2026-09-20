@@ -32,7 +32,7 @@ class OutputItem:
     )
 
 @dataclass(slots=True)
-class DownloadResult:
+class DownloadArtifact:
     url: str
 
     body: DownloadBody

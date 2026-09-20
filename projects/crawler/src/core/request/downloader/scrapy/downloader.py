@@ -1,5 +1,6 @@
 from __future__ import annotations
 from core.extraction.response.resolver import ResponseAdapterResolver
+from core.request.downloader.model import DownloaderCapabilities
 from scrapy.http import Response
 
 from core.request.downloader.scrapy.bridge import ScrapyRequestBridge
@@ -32,7 +33,12 @@ class ScrapyDownloader(
         self._response_adapter_resolver = response_adapter_resolver
         self._executor = executor
         self._bridge = bridge
-
+    @property
+    def capabilities(self) -> DownloaderCapabilities:
+        return DownloaderCapabilities(
+            supports_resumable=True,
+            supports_streaming=True,
+        )
     @property
     def executor(
         self,

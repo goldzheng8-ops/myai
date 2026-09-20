@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
+from core.request.downloader.model import DownloaderCapabilities
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
     Browser,
@@ -40,7 +41,12 @@ class PlaywrightDownloader(
         self._response_adapter_resolver = response_adapter_resolver
         self._playwright: Playwright | None = None
         self._browser: Browser | None = None
-
+    @property
+    def capabilities(self) -> DownloaderCapabilities:
+        return DownloaderCapabilities(
+            supports_resumable=False,
+            supports_streaming=False,
+        )
     async def start(
         self,
     ) -> None:

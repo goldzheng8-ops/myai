@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Mapping
 
 import httpx
@@ -46,7 +46,16 @@ class RequestResponse:
             encoding,
             errors="replace",
         )
+    def with_body(
+        self,
+        body: bytes,
+    ) -> RequestResponse:
 
+        return replace(
+            self,
+            body=body,
+        )
+    
 @dataclass(frozen=True, slots=True)
 class BrowserResponse(RequestResponse):
     """

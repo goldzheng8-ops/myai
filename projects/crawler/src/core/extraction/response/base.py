@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 from collections.abc import Mapping, Sequence
@@ -125,4 +126,10 @@ class ResponseAdapter(ABC):
     @abstractmethod
     def encoding(self) -> str | None:
         raise NotImplementedError
-    
+
+    @abstractmethod
+    def with_body(
+        self,
+        body: bytes,
+    ) -> ResponseAdapter:
+        ...

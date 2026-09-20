@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from core.output.model import DownloadResult
+from core.request.downloader.result import DownloadResult
 from core.request.context import RequestContext
 
 

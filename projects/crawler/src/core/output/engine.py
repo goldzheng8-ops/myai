@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.output.model import DownloadResult, OutputItem
+from core.output.model import DownloadArtifact, OutputItem
 from core.output.output_resolver import OutputResolver
 
 
@@ -24,7 +24,7 @@ class OutputEngine:
 
     async def write_download(
         self,
-        download: DownloadResult,
+        download: DownloadArtifact,
         outputs: Sequence[str],
     ) -> None:
 

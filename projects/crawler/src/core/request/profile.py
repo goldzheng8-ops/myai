@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from core.request.download.typing import DownloadStrategyType
 from core.request.downloader.config import DownloaderSpecUnion
 
 from .typing import(
@@ -18,3 +19,7 @@ class RequestProfile:
     downloader: DownloaderSpecUnion
 
     response_format: ResponseFormat
+
+    download_strategy: DownloadStrategyType = (
+        DownloadStrategyType.SIMPLE
+    )

@@ -1,17 +1,12 @@
 from __future__ import annotations
-from typing import Literal, TypeVar, TYPE_CHECKING, Any
-from collections.abc import Awaitable, Callable
+from typing import Literal, TypeVar, TYPE_CHECKING
+
 
 if TYPE_CHECKING:
-    from core.request.context import RequestContext
+
     from core.request.downloader.config import DownloaderConfig
-    from .request import DownloadRequest
-    from .result import DownloadResult
-else:
-    RequestContext = Any
-    DownloaderConfig = object
-    DownloadRequest = object
-    DownloadResult = object
+
+
 
 
 ConfigT = TypeVar(
@@ -19,22 +14,6 @@ ConfigT = TypeVar(
     bound="DownloaderConfig",
 )
 
-DownloadHandler = Callable[
-    ["RequestContext"],
-    Awaitable["DownloadResult"],
-]
-
-
-DownloadRequestBuilder = Callable[
-    ["RequestContext"],
-    "DownloadRequest",
-]
-
-
-DownloadResultHandler = Callable[
-    ["RequestContext"],
-    Awaitable["DownloadResult"],
-]
 
 WaitUntilState = Literal[
     "commit",

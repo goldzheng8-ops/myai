@@ -4,6 +4,7 @@ from abc import ABC
 from typing import Generic
 
 from core.request.context import RequestContext
+from core.request.downloader.model import DownloaderCapabilities
 
 
 from .plugin import DownloaderPlugin
@@ -30,6 +31,9 @@ class BaseDownloader(
 
         self._config = config
 
+    @property
+    def capabilities(self) -> DownloaderCapabilities:
+        return DownloaderCapabilities()
     @property
     def config(
         self,
