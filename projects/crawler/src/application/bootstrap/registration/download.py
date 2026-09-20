@@ -1,6 +1,6 @@
 from application.config.model import ApplicationConfig
 from core.request.download.factory import DownloadStrategyFactory
-from core.request.download.resume.base import ResumeStore
+from core.request.download.resume.store import ResumeStore
 from core.provider import ProviderBuilder
 from core.request.download.resume.local import LocalResumeStore
 from core.request.middleware.fingerprint.provider import FingerprintProvider

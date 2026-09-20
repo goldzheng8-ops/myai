@@ -103,3 +103,72 @@ class ResumeStore(Protocol):
 
 暂时不要加入过多方法。
 这一层次现在已经比较稳定了。 下一步如果继续扩展，我建议不是再增加 Downloader，而是把 ResumableDownloadStrategy 的 ETag / Last-Modified / .part 元数据一致性补上。这样断点续传才真正从“能续”变成“安全地续”
+不要现在同时写三个。
+
+按照这个顺序：
+
+第一步
+
+先完成：
+
+Chunk model
+ChunkPlanner
+
+也就是：
+
+DownloadChunk
+FixedChunkPlanner
+第二步
+
+完成：
+
+ChunkStore
+LocalChunkStore
+第三步
+
+完成：
+
+ChunkDownloader
+
+它只负责：
+
+Request + Range
+        ↓
+Response
+        ↓
+校验 Content-Range
+第四步
+
+实现：
+
+ChunkedDownloadStrategy
+
+验证：
+
+0 → 1 → 2 → 3
+
+能够正确合并。
+
+第五步
+
+把：
+
+Chunked
+
+改成：
+
+Parallel
+
+只增加：
+
+Semaphore
+asyncio.gather()
+第六步
+
+最后实现：
+
+StreamingDownloadStrategy
+
+因为它实际上需要你进一步改造 HttpxDownloader 的响应读取方式，复杂度反而最高。
+
+所以现在最合适的下一步不是直接写 StreamingDownloadStrategy，而是先把 DownloadChunk + ChunkPlanner + ChunkStore + ChunkDownloader 这四个基础件建立起来。 这样 Chunked 和 Parallel 会自然成为同一套基础设施上的两个 Strategy，而不会形成两套重复的 Range 下载逻辑。

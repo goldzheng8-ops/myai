@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import Generic
+from typing import AsyncIterator, Generic
 
 from core.request.context import RequestContext
 from core.request.downloader.model import DownloaderCapabilities
@@ -41,7 +41,11 @@ class BaseDownloader(
 
         return self._config
 
-
+    async def stream(
+        self,
+        context: RequestContext,
+    ) -> AsyncIterator[bytes]:
+        raise NotImplementedError
 
     def build_request(
         self,

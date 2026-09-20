@@ -6,3 +6,4 @@ class DownloaderCapabilities:
 
     supports_resumable: bool = False
     supports_streaming: bool = False
+    supports_range: bool = False

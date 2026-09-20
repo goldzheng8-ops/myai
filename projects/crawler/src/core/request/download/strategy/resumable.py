@@ -1,10 +1,10 @@
 from __future__ import annotations
-import re
 from dataclasses import replace
 from typing import Any
 
 from core.request.download.exception import DownloadError, DownloadIncompleteError
-from core.request.download.resume.base import ResumeStore
+from core.request.download.range.parser import RangeParser
+from core.request.download.resume.store import ResumeStore
 from core.request.download.strategy.base import DownloadStrategy
 from core.extraction.response import ResponseAdapter
 from core.request.downloader.result import DownloadResult
@@ -17,6 +17,12 @@ from core.request.middleware.fingerprint.provider import FingerprintProvider
 class ResumableDownloadStrategy(
     DownloadStrategy,
 ):
+    """
+    Download strategy with HTTP Range-based resume support.
+
+    The strategy stores incomplete response bodies in ResumeStore
+    and resumes the download by issuing a Range request.
+    """
 
     def __init__(
         self,
@@ -24,7 +30,6 @@ class ResumableDownloadStrategy(
         resume_store: ResumeStore,
         fingerprint_provider: FingerprintProvider,
     ) -> None:
-
         self._downloader = downloader
         self._resume_store = resume_store
         self._fingerprint_provider = (
@@ -58,30 +63,21 @@ class ResumableDownloadStrategy(
             request_context,
         )
 
-        # if not result.success:
-        #     raise DownloadError(
-        #         "Download failed.",
-        #         url=context.descriptor.url,
-        #         cause=result.error,
-        #     )
         if not result.success:
             return result
 
         response = result.response
 
-        # if response is None:
-        #     raise DownloadError(
-        #         "Download completed without a response.",
-        #         url=context.descriptor.url,
-        #     )
         if response is None:
-            return DownloadResult(
-                success=False,
+            return self._failure(
+                url=context.descriptor.url,
                 error=DownloadError(
                     "Download completed without a response.",
                     url=context.descriptor.url,
                 ),
+                metadata=result.meta,
             )
+
         return await self._process_response(
             context=context,
             response=response,
@@ -89,7 +85,6 @@ class ResumableDownloadStrategy(
             downloaded=downloaded,
             metadata=result.meta,
         )
-
 
     async def _process_response(
         self,
@@ -106,6 +101,7 @@ class ResumableDownloadStrategy(
         if downloaded > 0:
 
             if status == 206:
+
                 await self._validate_partial_response(
                     response=response,
                     offset=downloaded,
@@ -117,11 +113,12 @@ class ResumableDownloadStrategy(
                 )
 
             elif status == 200:
-                # Server ignored Range.
+                # Server ignored the Range header.
                 #
-                # The existing partial file is no longer
-                # compatible with this response, so restart
+                # The existing partial data can no longer
+                # be combined with this response, so restart
                 # the download from zero.
+
                 await self._resume_store.delete(
                     resume_key,
                 )
@@ -131,38 +128,30 @@ class ResumableDownloadStrategy(
                     response.body,
                 )
 
+                downloaded = 0
+
             else:
-                # raise DownloadError(
-                #     f"Unexpected HTTP status {status} "
-                #     f"while resuming.",
-                #     url=context.descriptor.url,
-                # )
-                return DownloadResult(
-                    success=False,
+                return self._failure(
+                    url=context.descriptor.url,
                     error=DownloadError(
                         f"Unexpected HTTP status {status} "
-                        f"while resuming.",
+                        "while resuming.",
                         url=context.descriptor.url,
                     ),
-                    meta=metadata,
-                )       
+                    metadata=metadata,
+                )
 
         else:
 
             if status not in {200, 206}:
-                # raise DownloadError(
-                #     f"Unexpected HTTP status {status} "
-                #     f"for download.",
-                #     url=context.descriptor.url,
-                # )
-                return DownloadResult(
-                    success=False,
+                return self._failure(
+                    url=context.descriptor.url,
                     error=DownloadError(
                         f"Unexpected HTTP status {status} "
-                        f"for download.",
+                        "for download.",
                         url=context.descriptor.url,
                     ),
-                    meta=metadata,
+                    metadata=metadata,
                 )
 
             await self._resume_store.append(
@@ -170,50 +159,38 @@ class ResumableDownloadStrategy(
                 response.body,
             )
 
-        total_size = (
-            await self._resume_store.size(
-                resume_key,
-            )
+        total_size = await self._resume_store.size(
+            resume_key,
         )
 
-        expected = self._expected_size(
+        expected_size = self._expected_size(
             response=response,
             downloaded=downloaded,
         )
 
-        if expected is not None:
+        if expected_size is not None:
 
-            if total_size > expected:
-                # raise DownloadError(
-                #     f"Downloaded data exceeds expected "
-                #     f"size: {total_size} > {expected}.",
-                #     url=context.descriptor.url,
-                # )
-                return DownloadResult(
-                    success=False,
+            if total_size > expected_size:
+                return self._failure(
+                    url=context.descriptor.url,
                     error=DownloadError(
                         "Downloaded data exceeds "
                         f"expected size: "
-                        f"{total_size} > {expected}.",
+                        f"{total_size} > {expected_size}.",
                         url=context.descriptor.url,
                     ),
-                    meta=metadata,
+                    metadata=metadata,
                 )
 
-            if total_size < expected:
-                # raise DownloadIncompleteError(
-                #     url=context.descriptor.url,
-                #     downloaded=total_size,
-                #     expected=expected,
-                # )
-                return DownloadResult(
-                    success=False,
+            if total_size < expected_size:
+                return self._failure(
+                    url=context.descriptor.url,
                     error=DownloadIncompleteError(
                         url=context.descriptor.url,
                         downloaded=total_size,
-                        expected=expected,
+                        expected=expected_size,
                     ),
-                    meta=metadata,
+                    metadata=metadata,
                 )
 
         body_bytes = await self._resume_store.read(
@@ -227,6 +204,7 @@ class ResumableDownloadStrategy(
         complete_response = response.with_body(
             body_bytes,
         )
+
         return DownloadResult(
             response=complete_response,
             success=True,
@@ -251,44 +229,47 @@ class ResumableDownloadStrategy(
                 url=response.url,
             )
 
-        range_start = self._parse_range_start(
-            content_range,
+        byte_range = (
+            RangeParser.parse_content_range(
+                content_range,
+            )
         )
 
-        if range_start is None:
+        if byte_range is None:
             raise DownloadError(
                 f"Invalid Content-Range: "
                 f"{content_range!r}",
                 url=response.url,
             )
 
-        if range_start != offset:
+        if byte_range.start != offset:
             raise DownloadError(
                 "Invalid resume offset: "
                 f"requested={offset}, "
-                f"received={range_start}.",
+                f"received={byte_range.start}.",
                 url=response.url,
             )
 
-        expected_chunk_size = (
-            self._parse_range_chunk_size(
-                content_range,
+        length = byte_range.size
+
+        if length is None:
+            raise DownloadError(
+                "Content-Range does not contain "
+                "a valid byte range.",
+                url=response.url,
             )
+
+        actual_size = len(
+            response.body,
         )
 
-        if expected_chunk_size is not None:
-
-            actual_chunk_size = len(
-                response.body,
+        if actual_size != length:
+            raise DownloadError(
+                "Partial response size mismatch: "
+                f"expected={length}, "
+                f"actual={actual_size}.",
+                url=response.url,
             )
-
-            if actual_chunk_size != expected_chunk_size:
-                raise DownloadError(
-                    "Partial response size mismatch: "
-                    f"expected={expected_chunk_size}, "
-                    f"actual={actual_chunk_size}.",
-                    url=response.url,
-                )
 
     def _with_range(
         self,
@@ -303,7 +284,9 @@ class ResumableDownloadStrategy(
         )
 
         headers["Range"] = (
-            f"bytes={offset}-"
+            RangeParser.build_range(
+                offset,
+            )
         )
 
         descriptor = replace(
@@ -329,12 +312,17 @@ class ResumableDownloadStrategy(
 
         if content_range:
 
-            total = self._parse_total_size(
-                content_range,
+            byte_range = (
+                RangeParser.parse_content_range(
+                    content_range,
+                )
             )
 
-            if total is not None:
-                return total
+            if (
+                byte_range is not None
+                and byte_range.total is not None
+            ):
+                return byte_range.total
 
         content_length = response.headers.get(
             "content-length",
@@ -348,63 +336,26 @@ class ResumableDownloadStrategy(
         except ValueError:
             return None
 
-        # When resuming, Content-Length describes
-        # the remaining response body, not the whole file.
+        if length < 0:
+            return None
+
+        # When resuming, Content-Length represents
+        # the remaining response body.
         if downloaded > 0:
             return downloaded + length
 
         return length
 
     @staticmethod
-    def _parse_total_size(
-        value: str,
-    ) -> int | None:
+    def _failure(
+        *,
+        url: str,
+        error: Exception,
+        metadata: dict[str, Any],
+    ) -> DownloadResult:
 
-        if "/" not in value:
-            return None
-
-        total = value.rsplit(
-            "/",
-            1,
-        )[1].strip()
-
-        if total == "*":
-            return None
-
-        try:
-            return int(total)
-        except ValueError:
-            return None
-
-    @staticmethod
-    def _parse_range_start(
-        value: str,
-    ) -> int | None:
-
-        match = re.fullmatch(
-            r"bytes\s+(\d+)-(\d+)/(\d+|\*)",
-            value.strip(),
+        return DownloadResult(
+            success=False,
+            error=error,
+            meta=metadata,
         )
-
-        if match is None:
-            return None
-
-        return int(match.group(1))
-
-    @staticmethod
-    def _parse_range_chunk_size(
-        value: str,
-    ) -> int | None:
-
-        match = re.fullmatch(
-            r"bytes\s+(\d+)-(\d+)/(\d+|\*)",
-            value.strip(),
-        )
-
-        if match is None:
-            return None
-
-        start = int(match.group(1))
-        end = int(match.group(2))
-
-        return end - start + 1

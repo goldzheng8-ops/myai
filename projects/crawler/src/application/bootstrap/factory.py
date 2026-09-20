@@ -9,7 +9,7 @@ from core.provider import (
     ProviderBuilder,
     SingletonProvider,
 )
-from core.request.download.resume.base import ResumeStore
+from core.request.download.resume.store import ResumeStore
 from core.request.middleware.auth.resolver import AuthProviderResolver
 
 from .container import ApplicationContainer

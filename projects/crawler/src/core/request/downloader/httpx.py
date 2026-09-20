@@ -42,6 +42,7 @@ class HttpxDownloader(
         return DownloaderCapabilities(
             supports_resumable=True,
             supports_streaming=True,
+            supports_range=True,
         )
     async def start(
         self,

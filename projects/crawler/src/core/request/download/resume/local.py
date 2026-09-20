@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from core.request.download.resume.base import ResumeStore
+from core.request.download.resume.store import ResumeStore
 
 
 class LocalResumeStore(

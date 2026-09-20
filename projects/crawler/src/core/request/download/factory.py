@@ -1,7 +1,7 @@
 from typing import Any
 
 from core.request.download.exception import DownloadError
-from core.request.download.resume.base import ResumeStore
+from core.request.download.resume.store import ResumeStore
 from core.request.download.strategy.base import DownloadStrategy
 from core.request.download.strategy.resumable import ResumableDownloadStrategy
 from core.request.download.strategy.simple import SimpleDownloadStrategy

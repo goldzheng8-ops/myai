@@ -38,6 +38,7 @@ class ScrapyDownloader(
         return DownloaderCapabilities(
             supports_resumable=True,
             supports_streaming=True,
+            supports_range=True,
         )
     @property
     def executor(

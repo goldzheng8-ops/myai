@@ -46,6 +46,7 @@ class PlaywrightDownloader(
         return DownloaderCapabilities(
             supports_resumable=False,
             supports_streaming=False,
+            supports_range=False,
         )
     async def start(
         self,
