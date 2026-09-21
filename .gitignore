@@ -6,6 +6,10 @@ __pycache__/
 .venv/
 **/.venv/
 
+# 数据
+datasets
+**/data/
+
 # IDE
 .vscode/
 

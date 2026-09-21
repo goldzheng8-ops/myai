@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from core.extraction.response.base import ResponseAdapter
+from core.request.download.range.model import ByteRange
 from core.request.downloader.result import DownloadResult
 from core.request.context import RequestContext
 from core.request.download.chunk.downloader import ChunkDownloader
@@ -22,6 +24,25 @@ class BaseChunkDownloadStrategy(
     DownloadStrategy,
     ABC,
 ):
+    """
+    Base implementation for range-based chunk downloads.
+
+    The base class owns the complete lifecycle:
+
+        probe
+          ↓
+        determine range support
+          ↓
+        build ChunkPlan
+          ↓
+        download chunks
+          ↓
+        assemble chunks
+          ↓
+        build final response
+
+    Subclasses only decide how chunks are downloaded.
+    """
 
     def __init__(
         self,
@@ -31,6 +52,11 @@ class BaseChunkDownloadStrategy(
         fingerprint_provider: FingerprintProvider,
         chunk_size: int,
     ) -> None:
+
+        if chunk_size <= 0:
+            raise ValueError(
+                "chunk_size must be greater than zero.",
+            )
 
         self._chunk_downloader = chunk_downloader
         self._chunk_planner = chunk_planner
@@ -45,10 +71,8 @@ class BaseChunkDownloadStrategy(
         context: RequestContext,
     ) -> DownloadResult:
 
-        key = (
-            self._fingerprint_provider.fingerprint(
-                context.descriptor,
-            )
+        key = self._fingerprint_provider.fingerprint(
+            context.descriptor,
         )
 
         probe_response, probe_range, ranges_supported = (
@@ -58,97 +82,139 @@ class BaseChunkDownloadStrategy(
         )
 
         try:
-
-            # If ranges are not supported, return the full probe
-            # response body as the downloaded content.
             if not ranges_supported:
-
-                # The probe_response already contains the full body.
-                response = probe_response
-
-                return DownloadResult(
-                    response=response,
-                    success=True,
-                    meta={
-                        "download_strategy": self.strategy_name,
-                        "chunk_count": 1,
-                        "total_size": probe_range.total,
-                        "ranges_supported": False,
-                    },
+                return await self._handle_non_range_response(
+                    response=probe_response,
+                    byte_range=probe_range,
                 )
 
-            total_size = probe_range.total
-
-            if total_size is None:
-                raise DownloadError(
-                    "Content-Range does not contain "
-                    "a known total size.",
-                    url=context.descriptor.url,
-                )
-
-            plan = self._chunk_planner.plan(
-                total_size=total_size,
-                chunk_size=self._chunk_size,
+            return await self._download_range_based(
+                context=context,
+                key=key,
+                probe_response=probe_response,
+                probe_range=probe_range,
             )
-
-            try:
-                await self._download_chunks(
-                    context=context,
-                    key=key,
-                    plan=plan,
-                )
-
-                body = await self._assemble(
-                    url=context.descriptor.url,
-                    key=key,
-                    plan=plan,
-                )
-
-                response = probe_response.with_body(
-                    body,
-                )
-
-                await probe_response.close()
-
-                return DownloadResult(
-                    response=response,
-                    success=True,
-                    meta={
-                        "download_strategy": self.strategy_name,
-                        "chunk_count": plan.count,
-                        "total_size": plan.total_size,
-                    },
-                )
-
-            except DownloadError:
-                # If chunked download fails (for example server
-                # returns 206 but chunk responses lack Content-Range),
-                # fall back to a single full GET.
-                try:
-                    full_response = await self._chunk_downloader.fetch_full(
-                        context=context,
-                    )
-
-                    return DownloadResult(
-                        response=full_response,
-                        success=True,
-                        meta={
-                            "download_strategy": self.strategy_name,
-                            "chunk_count": 1,
-                            "total_size": total_size,
-                            "ranges_supported": False,
-                        },
-                    )
-
-                finally:
-                    await self._chunk_store.delete(key)
-
-        except Exception:
-            await probe_response.close()
-            raise
 
         finally:
             await self._chunk_store.delete(key)
+
+    async def _handle_non_range_response(
+        self,
+        *,
+        response: ResponseAdapter,
+        byte_range: ByteRange,
+    ) -> DownloadResult:
+
+        return DownloadResult(
+            response=response,
+            success=True,
+            meta={
+                "download_strategy": self.strategy_name,
+                "chunk_count": 1,
+                "total_size": byte_range.total,
+                "ranges_supported": False,
+            },
+        )
+
+    async def _download_range_based(
+        self,
+        *,
+        context: RequestContext,
+        key: str,
+        probe_response: ResponseAdapter,
+        probe_range: ByteRange,
+    ) -> DownloadResult:
+
+        total_size = probe_range.total
+
+        if total_size is None:
+            raise DownloadError(
+                "Content-Range does not contain "
+                "a known total size.",
+                url=context.descriptor.url,
+            )
+
+        plan = self._chunk_planner.plan(
+            total_size=total_size,
+            chunk_size=self._chunk_size,
+        )
+
+        try:
+            await self._download_chunks(
+                context=context,
+                key=key,
+                plan=plan,
+            )
+
+            body = await self._assemble(
+                url=context.descriptor.url,
+                key=key,
+                plan=plan,
+            )
+
+            return self._build_result(
+                response=probe_response,
+                body=body,
+                plan=plan,
+            )
+
+        except DownloadError:
+            return await self._fallback_to_full_download(
+                context=context,
+                probe_response=probe_response,
+                total_size=total_size,
+            )
+
+    async def _fallback_to_full_download(
+        self,
+        *,
+        context: RequestContext,
+        probe_response: ResponseAdapter,
+        total_size: int,
+    ) -> DownloadResult:
+
+        await probe_response.close()
+
+        full_response = await (
+            self._chunk_downloader.fetch_full(
+                context=context,
+            )
+        )
+
+        return DownloadResult(
+            response=full_response,
+            success=True,
+            meta={
+                "download_strategy": self.strategy_name,
+                "chunk_count": 1,
+                "total_size": total_size,
+                "ranges_supported": False,
+                "fallback": True,
+            },
+        )
+
+    def _build_result(
+        self,
+        *,
+        response: ResponseAdapter,
+        body: bytes,
+        plan: ChunkPlan,
+    ) -> DownloadResult:
+
+        complete_response = response.with_body(
+            body,
+        )
+
+        return DownloadResult(
+            response=complete_response,
+            success=True,
+            meta={
+                "download_strategy": self.strategy_name,
+                "chunk_count": plan.count,
+                "total_size": plan.total_size,
+                "ranges_supported": True,
+            },
+        )
 
     @property
     @abstractmethod
@@ -184,16 +250,18 @@ class BaseChunkDownloadStrategy(
                 chunk,
             )
 
-            if len(body) != chunk.size:
+            actual_size = len(body)
+
+            if actual_size != chunk.size:
                 raise DownloadIncompleteError(
                     url=url,
-                    downloaded=total + len(body),
+                    downloaded=total + actual_size,
                     expected=plan.total_size,
                 )
 
             parts.append(body)
 
-            total += len(body)
+            total += actual_size
 
         if total != plan.total_size:
             raise DownloadIncompleteError(
