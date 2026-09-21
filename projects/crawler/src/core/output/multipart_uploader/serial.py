@@ -1,14 +1,13 @@
-import asyncio
-from collections.abc import AsyncIterable
 from typing import Any
 
-from core.output.multipart_uploader.base import MultipartUploader
+from core.output.model import BinaryStream
+from core.output.multipart_uploader.base import BaseMultipartUploader
 from core.output.multipart_uploader.protocol import S3ClientProtocol
 from core.output.stream.accumulator import StreamChunkAccumulator
 
 
 class SerialMultipartUploader(
-    MultipartUploader,
+    BaseMultipartUploader,
 ):
 
     def __init__(
@@ -24,7 +23,7 @@ class SerialMultipartUploader(
         bucket: str,
         key: str,
         upload_id: str,
-        source: AsyncIterable[bytes],
+        source: BinaryStream,
     ) -> list[dict[str, Any]]:
 
         parts: list[dict[str, Any]] = []
@@ -50,35 +49,3 @@ class SerialMultipartUploader(
 
         return parts
 
-    @staticmethod
-    async def _upload_part(
-        *,
-        client: S3ClientProtocol,
-        bucket: str,
-        key: str,
-        upload_id: str,
-        part_number: int,
-        body: bytes,
-    ) -> dict[str, Any]:
-
-        response = await asyncio.to_thread(
-            client.upload_part,
-            Bucket=bucket,
-            Key=key,
-            UploadId=upload_id,
-            PartNumber=part_number,
-            Body=body,
-        )
-
-        etag = response.get("ETag")
-
-        if not isinstance(etag, str):
-            raise RuntimeError(
-                "S3 upload_part response does not "
-                "contain a valid ETag.",
-            )
-
-        return {
-            "PartNumber": part_number,
-            "ETag": etag,
-        }

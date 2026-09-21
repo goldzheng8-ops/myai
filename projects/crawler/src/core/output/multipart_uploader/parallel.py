@@ -1,19 +1,20 @@
 import asyncio
-from collections.abc import AsyncIterable
 from typing import Any
 
-from core.output.multipart_uploader.base import MultipartUploader
+from core.output.model import BinaryStream
+from core.output.multipart_uploader.base import BaseMultipartUploader, MultipartPart
 from core.output.multipart_uploader.protocol import S3ClientProtocol
 from core.output.stream.accumulator import StreamChunkAccumulator
 
 class ParallelMultipartUploader(
-    MultipartUploader,
+    BaseMultipartUploader,
 ):
 
     def __init__(
         self,
         accumulator: StreamChunkAccumulator,
-        concurrency: int = 4,
+        concurrency: int,
+        queue_size: int | None = None,
     ) -> None:
 
         if concurrency <= 0:
@@ -24,6 +25,17 @@ class ParallelMultipartUploader(
         self._accumulator = accumulator
         self._concurrency = concurrency
 
+        self._queue_size = (
+            queue_size
+            if queue_size is not None
+            else concurrency * 2
+        )
+
+        if self._queue_size <= 0:
+            raise ValueError(
+                "queue_size must be greater than zero.",
+            )
+
     async def upload(
         self,
         *,
@@ -31,78 +43,45 @@ class ParallelMultipartUploader(
         bucket: str,
         key: str,
         upload_id: str,
-        source: AsyncIterable[bytes],
+        source: BinaryStream,
     ) -> list[dict[str, Any]]:
 
-        pending: set[
-            asyncio.Task[dict[str, Any]]
-        ] = set()
+        queue: asyncio.Queue[
+            MultipartPart | None
+        ] = asyncio.Queue(
+            maxsize=self._queue_size,
+        )
 
-        parts: list[dict[str, Any]] = []
+        async with asyncio.TaskGroup() as group:
 
-        part_number = 1
+            producer_task = group.create_task(
+                self._produce(
+                    source=source,
+                    queue=queue,
+                ),
+            )
 
-        try:
-
-            async for chunk in (
-                self._accumulator.accumulate(source)
-            ):
-
-                task = asyncio.create_task(
-                    self._upload_part(
+            consumer_tasks = [
+                group.create_task(
+                    self._consume(
                         client=client,
                         bucket=bucket,
                         key=key,
                         upload_id=upload_id,
-                        part_number=part_number,
-                        body=chunk,
+                        queue=queue,
                     ),
                 )
+                for _ in range(self._concurrency)
+            ]
 
-                pending.add(task)
+        # producer_task.result() makes producer
+        # exceptions explicit to the type checker.
+        producer_task.result()
 
-                part_number += 1
+        parts: list[dict[str, Any]] = []
 
-                if len(pending) >= self._concurrency:
-
-                    done, pending = await asyncio.wait(
-                        pending,
-                        return_when=(
-                            asyncio.FIRST_COMPLETED
-                        ),
-                    )
-
-                    for task in done:
-                        parts.append(
-                            task.result(),
-                        )
-
-            while pending:
-
-                done, pending = await asyncio.wait(
-                    pending,
-                    return_when=(
-                        asyncio.FIRST_COMPLETED
-                    ),
-                )
-
-                for task in done:
-                    parts.append(
-                        task.result(),
-                    )
-
-        except BaseException:
-
-            for task in pending:
-                task.cancel()
-
-            if pending:
-                await asyncio.gather(
-                    *pending,
-                    return_exceptions=True,
-                )
-
-            raise
+        for task in consumer_tasks:
+            parts.extend(task.result())
 
         parts.sort(
             key=lambda part: part["PartNumber"],
@@ -110,35 +89,66 @@ class ParallelMultipartUploader(
 
         return parts
 
-    @staticmethod
-    async def _upload_part(
+    async def _produce(
+        self,
+        *,
+        source: BinaryStream,
+        queue: asyncio.Queue[
+            MultipartPart | None
+        ],
+    ) -> None:
+
+        part_number = 1
+
+        async for chunk in self._accumulator.accumulate(
+            source,
+        ):
+
+            await queue.put(
+                MultipartPart(
+                    number=part_number,
+                    body=chunk,
+                ),
+            )
+
+            part_number += 1
+
+        for _ in range(self._concurrency):
+            await queue.put(None)
+
+    async def _consume(
+        self,
         *,
         client: S3ClientProtocol,
         bucket: str,
         key: str,
         upload_id: str,
-        part_number: int,
-        body: bytes,
-    ) -> dict[str, Any]:
+        queue: asyncio.Queue[
+            MultipartPart | None
+        ],
+    ) -> list[dict[str, Any]]:
 
-        response = await asyncio.to_thread(
-            client.upload_part,
-            Bucket=bucket,
-            Key=key,
-            UploadId=upload_id,
-            PartNumber=part_number,
-            Body=body,
-        )
+        parts: list[dict[str, Any]] = []
 
-        etag = response.get("ETag")
+        while True:
 
-        if not isinstance(etag, str):
-            raise RuntimeError(
-                "S3 upload_part response does not "
-                "contain a valid ETag.",
-            )
+            part = await queue.get()
 
-        return {
-            "PartNumber": part_number,
-            "ETag": etag,
-        }
+            try:
+
+                if part is None:
+                    return parts
+
+                result = await self._upload_part(
+                    client=client,
+                    bucket=bucket,
+                    key=key,
+                    upload_id=upload_id,
+                    part_number=part.number,
+                    body=part.body,
+                )
+
+                parts.append(result)
+
+            finally:
+                queue.task_done()

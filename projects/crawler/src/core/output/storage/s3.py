@@ -41,10 +41,6 @@ class S3Storage(Storage):
 
         self._client: S3ClientProtocol | None = None
 
-        self._accumulator = StreamChunkAccumulator(
-            target_size=config.multipart_part_size,
-        )
-
         self._multipart_uploader = (
             self._create_multipart_uploader()
         )
@@ -120,7 +116,22 @@ class S3Storage(Storage):
         return True
 
     async def close(self) -> None:
+
+        client = self._client
+
+        if client is None:
+            return
+
         self._client = None
+
+        close = getattr(
+            client,
+            "close",
+            None,
+        )
+
+        if close is not None:
+            await asyncio.to_thread(close)
 
     def _create_client(self) -> S3ClientProtocol:
 
@@ -212,13 +223,11 @@ class S3Storage(Storage):
 
         try:
 
-            upload_id = (
-                await self._create_multipart_upload(
-                    client=client,
-                    key=object_key,
-                    content_type=content_type,
-                    metadata=metadata,
-                )
+            upload_id = await self._create_multipart_upload(
+                client=client,
+                key=object_key,
+                content_type=content_type,
+                metadata=metadata,
             )
 
             parts = await self._multipart_uploader.upload(
@@ -230,8 +239,7 @@ class S3Storage(Storage):
             )
 
             if not parts:
-
-                await self._abort_multipart_upload(
+                await self._safe_abort_multipart_upload(
                     client=client,
                     key=object_key,
                     upload_id=upload_id,
@@ -260,19 +268,33 @@ class S3Storage(Storage):
 
         except BaseException:
 
-            if upload_id is not None:
-
-                try:
-                    await self._abort_multipart_upload(
-                        client=client,
-                        key=object_key,
-                        upload_id=upload_id,
-                    )
-                except Exception:
-                    pass
+            await self._safe_abort_multipart_upload(
+                client=client,
+                key=object_key,
+                upload_id=upload_id,
+            )
 
             raise
 
+    async def _safe_abort_multipart_upload(
+        self,
+        *,
+        client: S3ClientProtocol,
+        key: str,
+        upload_id: str | None,
+    ) -> None:
+
+        if upload_id is None:
+            return
+
+        try:
+            await self._abort_multipart_upload(
+                client=client,
+                key=key,
+                upload_id=upload_id,
+            )
+        except Exception:
+            pass
     async def _create_multipart_upload(
         self,
         *,
@@ -308,37 +330,6 @@ class S3Storage(Storage):
 
         return upload_id
 
-    async def _upload_part(
-        self,
-        *,
-        client: S3ClientProtocol,
-        key: str,
-        upload_id: str,
-        part_number: int,
-        body: bytes,
-    ) -> dict[str, Any]:
-
-        response = await asyncio.to_thread(
-            client.upload_part,
-            Bucket=self._config.bucket,
-            Key=key,
-            UploadId=upload_id,
-            PartNumber=part_number,
-            Body=body,
-        )
-
-        etag = response.get("ETag")
-
-        if not isinstance(etag, str):
-            raise RuntimeError(
-                "S3 upload_part response does not "
-                "contain a valid ETag.",
-            )
-
-        return {
-            "PartNumber": part_number,
-            "ETag": etag,
-        }
 
     async def _complete_multipart_upload(
         self,
@@ -378,14 +369,20 @@ class S3Storage(Storage):
         self,
     ) -> MultipartUploader:
 
-        if self._config.multipart_concurrency <= 1:
+        accumulator = StreamChunkAccumulator(
+            target_size=self._config.multipart_part_size,
+        )
+
+        concurrency = (
+            self._config.multipart_concurrency
+        )
+
+        if concurrency <= 1:
             return SerialMultipartUploader(
-                self._accumulator,
+                accumulator,
             )
 
         return ParallelMultipartUploader(
-            self._accumulator,
-            concurrency=(
-                self._config.multipart_concurrency
-            ),
+            accumulator,
+            concurrency=concurrency,
         )
