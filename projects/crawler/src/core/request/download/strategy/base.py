@@ -51,13 +51,31 @@ class BaseChunkDownloadStrategy(
             )
         )
 
-        probe_response, probe_range = (
+        probe_response, probe_range, ranges_supported = (
             await self._chunk_downloader.probe(
                 context=context,
             )
         )
 
         try:
+
+            # If ranges are not supported, return the full probe
+            # response body as the downloaded content.
+            if not ranges_supported:
+
+                # The probe_response already contains the full body.
+                response = probe_response
+
+                return DownloadResult(
+                    response=response,
+                    success=True,
+                    meta={
+                        "download_strategy": self.strategy_name,
+                        "chunk_count": 1,
+                        "total_size": probe_range.total,
+                        "ranges_supported": False,
+                    },
+                )
 
             total_size = probe_range.total
 
@@ -73,33 +91,57 @@ class BaseChunkDownloadStrategy(
                 chunk_size=self._chunk_size,
             )
 
-            await self._download_chunks(
-                context=context,
-                key=key,
-                plan=plan,
-            )
+            try:
+                await self._download_chunks(
+                    context=context,
+                    key=key,
+                    plan=plan,
+                )
 
-            body = await self._assemble(
-                url=context.descriptor.url,
-                key=key,
-                plan=plan,
-            )
+                body = await self._assemble(
+                    url=context.descriptor.url,
+                    key=key,
+                    plan=plan,
+                )
 
-            response = probe_response.with_body(
-                body,
-            )
+                response = probe_response.with_body(
+                    body,
+                )
 
-            await probe_response.close()
+                await probe_response.close()
 
-            return DownloadResult(
-                response=response,
-                success=True,
-                meta={
-                    "download_strategy": self.strategy_name,
-                    "chunk_count": plan.count,
-                    "total_size": plan.total_size,
-                },
-            )
+                return DownloadResult(
+                    response=response,
+                    success=True,
+                    meta={
+                        "download_strategy": self.strategy_name,
+                        "chunk_count": plan.count,
+                        "total_size": plan.total_size,
+                    },
+                )
+
+            except DownloadError:
+                # If chunked download fails (for example server
+                # returns 206 but chunk responses lack Content-Range),
+                # fall back to a single full GET.
+                try:
+                    full_response = await self._chunk_downloader.fetch_full(
+                        context=context,
+                    )
+
+                    return DownloadResult(
+                        response=full_response,
+                        success=True,
+                        meta={
+                            "download_strategy": self.strategy_name,
+                            "chunk_count": 1,
+                            "total_size": total_size,
+                            "ranges_supported": False,
+                        },
+                    )
+
+                finally:
+                    await self._chunk_store.delete(key)
 
         except Exception:
             await probe_response.close()

@@ -115,7 +115,7 @@ spiders:
       downloader:
         type: scrapy
       response_format: html
-      download_strategy: resumable
+      download_strategy: simple
 
 
     middlewares:
@@ -290,6 +290,7 @@ spiders:
 
 
       response_format: html
+      download_strategy: parallel
 
 
 
