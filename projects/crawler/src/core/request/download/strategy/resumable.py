@@ -29,13 +29,14 @@ class ResumableDownloadStrategy(
         downloader: BaseDownloader[Any],
         resume_store: ResumeStore,
         fingerprint_provider: FingerprintProvider,
+        range_parser: RangeParser,
     ) -> None:
         self._downloader = downloader
         self._resume_store = resume_store
         self._fingerprint_provider = (
             fingerprint_provider
         )
-
+        self._range_parser = range_parser
     async def download(
         self,
         context: RequestContext,
@@ -230,7 +231,7 @@ class ResumableDownloadStrategy(
             )
 
         byte_range = (
-            RangeParser.parse_content_range(
+            self._range_parser.parse_content_range(
                 content_range,
             )
         )
@@ -284,7 +285,7 @@ class ResumableDownloadStrategy(
         )
 
         headers["Range"] = (
-            RangeParser.build_range(
+            self._range_parser.build_range(
                 offset,
             )
         )
@@ -313,7 +314,7 @@ class ResumableDownloadStrategy(
         if content_range:
 
             byte_range = (
-                RangeParser.parse_content_range(
+                self._range_parser.parse_content_range(
                     content_range,
                 )
             )

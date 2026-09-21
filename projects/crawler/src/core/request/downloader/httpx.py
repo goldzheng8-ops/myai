@@ -116,8 +116,17 @@ class HttpxDownloader(
         )
 
         try:
+            req = httpx.Request(
+                method=request.method.value,
+                url=request.url,
+                headers=dict(request.headers),
+                cookies=dict(request.cookies),
+                params=dict(request.params),
+                content=request.body,
+            )
+
             response = await client.send(
-                request,
+                req,
                 stream=True,
             )
 

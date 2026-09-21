@@ -17,9 +17,17 @@ from pydantic import  Field, model_validator
 
 from core.spider.config import  RequestKind, SpiderConfigUnion
 
+
+class DownloadStrategyConfig(BaseConfig):
+    chunk_size: int = 8 * 1024 * 1024
+    parallel_max_concurrency: int = 4
+
 class ResumeConfig(BaseConfig):
 
     directory: str = "data/resume"
+class ChunkConfig(BaseConfig):
+
+    directory: str = "data/chunk"
 
 class EngineRuntimeConfig(BaseConfig):
     """
@@ -102,6 +110,13 @@ class ApplicationConfig(BaseConfig):
     resume: ResumeConfig = Field(
         default_factory=ResumeConfig,
     )
+    chunk: ChunkConfig = Field(
+        default_factory=ChunkConfig,
+    )
+    download_strategy: DownloadStrategyConfig = Field(
+        default_factory=DownloadStrategyConfig,
+    )
+
     runtime: RuntimeConfig = Field(
         default_factory=RuntimeConfig,
     )
