@@ -283,3 +283,13 @@ filename: "{{ download.filename or request.url | basename }}"
 filename: "{{ download.metadata.get('hash') }}.{{ download.metadata.get('extension') }}"
 
 filename: "{{ download.body_bytes | sha256 }}.bin"
+
+下一步我建议不要马上做 S3 并发 multipart。 先把现在这个串行 multipart 跑通，因为它正好能验证你刚刚建立的整条：
+
+StreamingDownloadStrategy
+→ BinaryStream
+→ OutputEngine
+→ BinaryFileOutputSink
+→ Storage.write_stream
+
+链路。等这条链路稳定以后，再单独增加 ParallelMultipartUploader，那时 S3 的并发上传和你前面的 ParallelDownloadStrategy 就可以形成两个完全独立的并发模块。

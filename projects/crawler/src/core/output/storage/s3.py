@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Protocol, cast
+from typing import Any, cast
 
 import boto3
 from botocore.client import BaseClient
@@ -7,78 +7,19 @@ from botocore.exceptions import ClientError
 
 from core.output.config import S3StorageConfig
 from core.output.model import BinaryStream
+from core.output.multipart_uploader.base import MultipartUploader
+from core.output.multipart_uploader.parallel import ParallelMultipartUploader
+from core.output.multipart_uploader.protocol import S3ClientProtocol
+from core.output.multipart_uploader.serial import SerialMultipartUploader
 from core.output.storage.base import Storage
 from core.output.stream.accumulator import StreamChunkAccumulator
 
 
-class S3ClientProtocol(Protocol):
 
-    def put_object(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-        Body: bytes,
-        ContentType: str | None = None,
-        Metadata: dict[str, str] | None = None,
-    ) -> Any:
-        ...
-
-    def head_object(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-    ) -> Any:
-        ...
-
-    def create_multipart_upload(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-        ContentType: str | None = None,
-        Metadata: dict[str, str] | None = None,
-    ) -> Any:
-        ...
-
-    def upload_part(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-        UploadId: str,
-        PartNumber: int,
-        Body: bytes,
-    ) -> Any:
-        ...
-
-    def complete_multipart_upload(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-        UploadId: str,
-        MultipartUpload: dict[str, Any],
-    ) -> Any:
-        ...
-
-    def abort_multipart_upload(
-        self,
-        *,
-        Bucket: str,
-        Key: str,
-        UploadId: str,
-    ) -> Any:
-        ...
-
-    _MIN_MULTIPART_SIZE = 5 * 1024 * 1024
-    _DEFAULT_PART_SIZE = 8 * 1024 * 1024
 
 S3_MIN_MULTIPART_PART_SIZE = (
     5 * 1024 * 1024
 )
-
 
 class S3Storage(Storage):
 
@@ -100,12 +41,12 @@ class S3Storage(Storage):
 
         self._client: S3ClientProtocol | None = None
 
-        self._accumulator = (
-            StreamChunkAccumulator(
-                target_size=(
-                    config.multipart_part_size
-                ),
-            )
+        self._accumulator = StreamChunkAccumulator(
+            target_size=config.multipart_part_size,
+        )
+
+        self._multipart_uploader = (
+            self._create_multipart_uploader()
         )
 
     @property
@@ -280,23 +221,16 @@ class S3Storage(Storage):
                 )
             )
 
-            parts: list[dict[str, Any]] = []
-
-            async for chunk in (
-                self._accumulator.accumulate(body)
-            ):
-
-                part = await self._upload_part(
-                    client=client,
-                    key=object_key,
-                    upload_id=upload_id,
-                    part_number=len(parts) + 1,
-                    body=chunk,
-                )
-
-                parts.append(part)
+            parts = await self._multipart_uploader.upload(
+                client=client,
+                bucket=self._config.bucket,
+                key=object_key,
+                upload_id=upload_id,
+                source=body,
+            )
 
             if not parts:
+
                 await self._abort_multipart_upload(
                     client=client,
                     key=object_key,
@@ -438,4 +372,20 @@ class S3Storage(Storage):
             Bucket=self._config.bucket,
             Key=key,
             UploadId=upload_id,
+        )
+
+    def _create_multipart_uploader(
+        self,
+    ) -> MultipartUploader:
+
+        if self._config.multipart_concurrency <= 1:
+            return SerialMultipartUploader(
+                self._accumulator,
+            )
+
+        return ParallelMultipartUploader(
+            self._accumulator,
+            concurrency=(
+                self._config.multipart_concurrency
+            ),
         )

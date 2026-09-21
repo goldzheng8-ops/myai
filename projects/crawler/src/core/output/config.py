@@ -30,6 +30,7 @@ class S3StorageConfig(StorageConfig):
 
     prefix: str = ""
     multipart_part_size: int = 8 * 1024 * 1024
+    multipart_concurrency: int = 1
 
 StorageConfigUnion = Annotated[
     LocalStorageConfig | S3StorageConfig,
