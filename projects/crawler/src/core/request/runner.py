@@ -50,7 +50,7 @@ class RequestRunner:
         )
 
         chain = await self._middleware.build(
-            context.configs,
+            context.config.middlewares,
         )
         try:
 

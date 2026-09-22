@@ -29,6 +29,19 @@ class ChunkConfig(BaseConfig):
 
     directory: str = "data/chunk"
 
+class Aria2Config(BaseConfig):
+    rpc_url: str = "http://127.0.0.1:6800/jsonrpc"
+
+    rpc_secret: str | None = None
+
+    rpc_timeout: float | None = 30.0
+
+    poll_interval: float = 0.5
+
+    monitor_timeout: float | None = None
+
+    download_directory: str = "data/aria2_downloads"
+
 class EngineRuntimeConfig(BaseConfig):
     """
     Runtime configuration of the crawler engine.
@@ -115,6 +128,10 @@ class ApplicationConfig(BaseConfig):
     )
     download_strategy: DownloadStrategyConfig = Field(
         default_factory=DownloadStrategyConfig,
+    )
+
+    aria2: Aria2Config = Field(
+        default_factory=Aria2Config,
     )
 
     runtime: RuntimeConfig = Field(

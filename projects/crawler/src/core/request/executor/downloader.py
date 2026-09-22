@@ -34,9 +34,10 @@ class DownloaderRequestExecutor(
         context: RequestContext,
     ) -> RequestContext:
 
-        downloader_spec = context.descriptor.profile.downloader
-        
-        download_strategy = context.descriptor.profile.download_strategy
+        downloader_spec = context.config.profile.downloader
+        print(downloader_spec.type)
+        download_strategy = context.config.profile.download_strategy
+        print(download_strategy)
 
         downloader = await self._manager.get(
             downloader_spec,

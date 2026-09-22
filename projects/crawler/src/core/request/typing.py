@@ -27,6 +27,7 @@ class DownloaderType(str, Enum):
     SCRAPY = "scrapy"
     PLAYWRIGHT = "playwright"
     HTTPX="httpx"
+    ARIA2="aria2"
     
 
 class ResponseFormat(str, Enum):

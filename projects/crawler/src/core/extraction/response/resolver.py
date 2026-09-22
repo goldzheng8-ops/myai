@@ -1,3 +1,4 @@
+from core.extraction.response.aria2 import Aria2ResponseAdapter
 from core.extraction.response.httpx import HttpxResponseAdapter
 from core.extraction.response.playwright import PlaywrightResponseAdapter
 from core.extraction.response.scrapy import ScrapyResponseAdapter
@@ -27,6 +28,9 @@ class ResponseAdapterResolver:
 
         if downloader == DownloaderType.PLAYWRIGHT:
             return PlaywrightResponseAdapter(response)
+
+        if downloader == DownloaderType.ARIA2:
+            return Aria2ResponseAdapter(response)
 
         raise TypeError(
             "Unsupported downloader type: "

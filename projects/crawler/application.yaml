@@ -286,11 +286,11 @@ spiders:
 
     profile:
       downloader:
-        type: scrapy
+        type: aria2
 
 
       response_format: html
-      download_strategy: parallel
+      download_strategy: simple
 
 
 

@@ -74,3 +74,11 @@ class HttpxResponse(RequestResponse):
 @dataclass(frozen=True, slots=True)
 class ScrapyResponse(RequestResponse):
     raw: Response | None = None
+
+@dataclass(frozen=True, slots=True)
+class Aria2Response(RequestResponse):
+    """
+    Response snapshot produced by Aria2Downloader.
+    """
+
+    path: str | None = None

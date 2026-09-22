@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from collections.abc import Sequence
 
-from core.request.middleware.config import  MiddlewareSpecUnion
+
+
 from core.request.result import RequestResult
 from core.runtime import RuntimeContext
+from core.spider.config import SpiderConfigUnion
 
 from .descriptor import RequestDescriptor
 from .state import RequestState
@@ -18,7 +19,7 @@ class RequestContext:
 
     descriptor: RequestDescriptor
 
-    configs: Sequence[MiddlewareSpecUnion]
+    config: SpiderConfigUnion
     runtime: RuntimeContext = field(
         default_factory=RuntimeContext,
     )

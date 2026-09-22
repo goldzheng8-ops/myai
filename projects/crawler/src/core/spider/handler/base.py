@@ -128,7 +128,7 @@ class TemplateRequestHandler(
         )
 
         request_context = RequestContext(
-            configs=spider_config.middlewares,
+            config=spider_config,
             descriptor=descriptor,
             runtime=spider_context.runtime,
             fingerprint=item.fingerprint,

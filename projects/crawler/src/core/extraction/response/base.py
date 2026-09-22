@@ -46,7 +46,7 @@ class ResponseAdapter(ABC):
                     f"Unsupported selector type: {selector.type!r}",
                 )
             
-    @abstractmethod
+
     async def select_nodes(
         self,
         selector: SelectorConfigUnion,

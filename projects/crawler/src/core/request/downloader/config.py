@@ -65,6 +65,28 @@ class ScrapyDownloaderConfig(
 
     download_timeout: float | None = None
 
+class Aria2DownloaderConfig(
+    DownloaderConfig,
+):
+    """
+    Configuration for Aria2Downloader.
+    """
+
+    max_concurrency: int = 4
+
+    continue_download: bool = True
+
+    allow_overwrite: bool = True
+
+    auto_file_renaming: bool = False
+
+    check_integrity: bool = False
+
+    proxy: str | None = None
+
+    connect_timeout: float | None = 60
+
+    download_directory: str = "data/aria2_download"
 
 class HttpxDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.HTTPX] = DownloaderType.HTTPX
@@ -77,12 +99,16 @@ class PlaywrightDownloaderSpec(BaseConfig):
 class ScrapyDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.SCRAPY] = DownloaderType.SCRAPY
     config: ScrapyDownloaderConfig=Field(default_factory=ScrapyDownloaderConfig)
+class Aria2DownloaderSpec(BaseConfig):
+    type: Literal[DownloaderType.ARIA2] = DownloaderType.ARIA2
+    config: Aria2DownloaderConfig=Field(default_factory=Aria2DownloaderConfig)
 
 DownloaderSpecUnion = Annotated[
     (
         HttpxDownloaderSpec
         | PlaywrightDownloaderSpec
         | ScrapyDownloaderSpec
+        | Aria2DownloaderSpec
     ),
     Field(discriminator="type"),
 ]
