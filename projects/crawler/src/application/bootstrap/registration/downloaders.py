@@ -4,6 +4,7 @@ from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder, ProviderResolver
 from core.request.downloader.aria2.client import Aria2Client
+from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor
 from core.request.downloader.aria2.options import Aria2OptionsBuilder
 from core.request.downloader.factory import build_aria2_downloader_factory, build_scrapy_downloader_factory, build_httpx_downloader_factory, build_playwright_downloader_factory
@@ -18,6 +19,14 @@ def register_downloaders(
     config: ApplicationConfig,
 ) -> None:
 
+    builder.add_factory(
+        Aria2ProcessLauncher,
+        lambda resolver: Aria2ProcessLauncher(
+            rpc_url=config.aria2.rpc_url,
+            executable=config.aria2.executable,
+            rpc_secret=config.aria2.rpc_secret,
+        ),
+    )
     builder.add_factory(
         Aria2Client,
         lambda resolver: Aria2Client(
@@ -41,7 +50,7 @@ def register_downloaders(
     builder.add_factory(
         Aria2OptionsBuilder,
         lambda resolver: Aria2OptionsBuilder(
-            directory=config.aria2.download_directory,
+
         ),
     )
 

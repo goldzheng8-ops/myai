@@ -80,5 +80,3 @@ class Aria2Response(RequestResponse):
     """
     Response snapshot produced by Aria2Downloader.
     """
-
-    path: str | None = None

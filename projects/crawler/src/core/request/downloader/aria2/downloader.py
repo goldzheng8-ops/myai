@@ -1,8 +1,11 @@
 import asyncio
 from pathlib import Path
+import shutil
+import tempfile
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.download.exception import DownloadError
+from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.model import Aria2DownloadResult, Aria2Status
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor
 from core.request.downloader.aria2.options import Aria2OptionsBuilder
@@ -28,6 +31,7 @@ class Aria2Downloader(
         client: Aria2Client,
         monitor: Aria2DownloadMonitor,
         options_builder: Aria2OptionsBuilder,
+        launcher: Aria2ProcessLauncher,
         config: Aria2DownloaderConfig | None = None,
     ) -> None:
 
@@ -44,6 +48,8 @@ class Aria2Downloader(
         self._client = client
         self._monitor = monitor
         self._options_builder = options_builder
+        self._launcher = launcher
+        self._temp_directory: Path | None = None
 
     @property
     def capabilities(
@@ -57,30 +63,143 @@ class Aria2Downloader(
         )
 
     async def start(self) -> None:
+
+        await self._launcher.start()
         await self._client.start()
 
-        directory = Path(
-            self.config.download_directory,
-        )
-        await asyncio.to_thread(
-            directory.mkdir,
-            parents=True,
-            exist_ok=True,
+        if self._temp_directory is not None:
+            return
+
+        self._temp_directory = Path(
+            tempfile.mkdtemp(
+                prefix="ai-space-aria2-",
+            ),
         )
 
     async def close(self) -> None:
         await self._client.close()
+        await self._launcher.close()
+        directory = self._temp_directory
+
+        self._temp_directory = None
+
+        if directory is not None:
+            await asyncio.to_thread(
+                shutil.rmtree,
+                directory,
+                ignore_errors=True,
+            )
 
     async def download(
         self,
         context: RequestContext,
     ) -> DownloadResult:
 
-        options = self._options_builder.build(
-            context,
+        directory = self._require_temp_directory()
+
+        task_directory = Path(
+            tempfile.mkdtemp(
+                prefix="download-",
+                dir=directory,
+            ),
         )
 
         try:
+
+            return await self._download_from_aria2(
+                context=context,
+                task_directory=task_directory,
+            )
+
+        finally:
+
+            await asyncio.to_thread(
+                shutil.rmtree,
+                task_directory,
+                ignore_errors=True,
+            )
+
+
+    def _require_temp_directory(self) -> Path:
+
+        directory = self._temp_directory
+
+        if directory is None:
+            raise RuntimeError(
+                "Aria2Downloader is not started.",
+            )
+
+        return directory
+
+    async def _build_response(
+        self,
+        *,
+        context: RequestContext,
+        result: Aria2DownloadResult,
+    ) -> ResponseAdapter:
+
+        if not result.files:
+            raise DownloadError(
+                "Aria2 completed without producing a file.",
+                url=context.descriptor.url,
+            )
+
+        if len(result.files) != 1:
+            raise DownloadError(
+                "Aria2 download produced "
+                f"{len(result.files)} files; "
+                "single-file download expected.",
+                url=context.descriptor.url,
+            )
+
+        file = result.files[0]
+
+        path = Path(file.path)
+
+        if not path.is_file():
+            raise DownloadError(
+                "Aria2 output file does not exist: "
+                f"{path}",
+                url=context.descriptor.url,
+            )
+
+        body = await asyncio.to_thread(
+            path.read_bytes,
+        )
+
+        response = Aria2Response(
+            url=context.descriptor.url,
+            status_code=200,
+            headers={
+                "content-length": str(len(body)),
+            },
+            body=body,
+            encoding=None,
+            reason="OK",
+        )
+
+        return self._response_adapter_resolver.resolve(
+            profile=context.descriptor.profile,
+            response=response,
+        )
+
+
+    async def _download_from_aria2(
+        self,
+        *,
+        context: RequestContext,
+        task_directory: Path,
+    ) -> DownloadResult:
+
+        options = self._options_builder.build(
+            context,
+            directory=str(task_directory),
+        )
+
+        gid: str | None = None
+
+        try:
+
             gid = await self._client.add_uri(
                 uri=context.descriptor.url,
                 options=options.to_rpc_options(),
@@ -95,6 +214,10 @@ class Aria2Downloader(
             return DownloadResult(
                 success=False,
                 error=exc,
+                meta={
+                    "download_strategy": "aria2",
+                    "gid": gid,
+                },
             )
 
         if result.status.status != Aria2Status.COMPLETE:
@@ -108,9 +231,7 @@ class Aria2Downloader(
                 ),
                 meta={
                     "gid": gid,
-                    "aria2_error_code": (
-                        result.error_code
-                    ),
+                    "aria2_error_code": result.error_code,
                 },
             )
 
@@ -142,65 +263,4 @@ class Aria2Downloader(
                 "gid": gid,
                 "download_strategy": "aria2",
             },
-        )
-
-    async def _build_response(
-        self,
-        *,
-        context: RequestContext,
-        result: Aria2DownloadResult,
-    ) -> ResponseAdapter:
-
-        if not result.files:
-
-            raise DownloadError(
-                "Aria2 completed without "
-                "producing a file.",
-                url=context.descriptor.url,
-            )
-
-        if len(result.files) != 1:
-
-            raise DownloadError(
-                "Aria2 download produced "
-                f"{len(result.files)} files; "
-                "single-file download expected.",
-                url=context.descriptor.url,
-            )
-
-        file = result.files[0]
-
-        path = Path(
-            file.path,
-        )
-
-        if not path.is_file():
-
-            raise DownloadError(
-                "Aria2 output file does not exist: "
-                f"{path}",
-                url=context.descriptor.url,
-            )
-
-        body = await asyncio.to_thread(
-            path.read_bytes,
-        )
-
-        response = Aria2Response(
-            url=context.descriptor.url,
-            status_code=200,
-            headers={
-                "content-length": str(
-                    len(body),
-                ),
-            },
-            body=body,
-            encoding=None,
-            reason="OK",
-            path=str(path),
-        )
-
-        return self._response_adapter_resolver.resolve(
-            profile=context.descriptor.profile,
-            response=response,
         )

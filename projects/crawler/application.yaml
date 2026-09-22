@@ -5,6 +5,8 @@ crawl:
   start_requests:
     - url: https://books.toscrape.com/
 
+aria2:
+  executable: "D:/program/aria2/aria2c.exe"
 runtime:
 
   engine:
@@ -287,6 +289,7 @@ spiders:
     profile:
       downloader:
         type: aria2
+        
 
 
       response_format: html

@@ -152,16 +152,15 @@ class Aria2OptionsBuilder:
     def __init__(
         self,
         *,
-        directory: str | None = None,
         timeout: float | None = None,
     ) -> None:
-
-        self._directory = directory
         self._timeout = timeout
 
     def build(
         self,
         context: RequestContext,
+        *,
+        directory: str,
     ) -> Aria2Options:
 
         descriptor = context.descriptor
@@ -184,7 +183,7 @@ class Aria2OptionsBuilder:
             proxy = descriptor.proxy.as_url()
 
         return Aria2Options(
-            dir=self._directory,
+            dir=directory,
             headers=headers,
             cookies=cookies,
             proxy=proxy,

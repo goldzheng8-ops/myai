@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
@@ -30,6 +31,10 @@ class ChunkConfig(BaseConfig):
     directory: str = "data/chunk"
 
 class Aria2Config(BaseConfig):
+    executable: str = Field(
+        default_factory=lambda: os.environ.get("ARIA2C_PATH", "aria2c"),
+    )
+
     rpc_url: str = "http://127.0.0.1:6800/jsonrpc"
 
     rpc_secret: str | None = None
@@ -40,7 +45,7 @@ class Aria2Config(BaseConfig):
 
     monitor_timeout: float | None = None
 
-    download_directory: str = "data/aria2_downloads"
+
 
 class EngineRuntimeConfig(BaseConfig):
     """

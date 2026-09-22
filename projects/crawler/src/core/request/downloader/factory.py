@@ -5,6 +5,7 @@ from core.extraction.response.resolver import ResponseAdapterResolver
 from core.provider import ProviderResolver
 from core.request.downloader.aria2.client import Aria2Client
 from core.request.downloader.aria2.downloader import Aria2Downloader
+from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor
 from core.request.downloader.aria2.options import Aria2OptionsBuilder
 from core.request.downloader.config import Aria2DownloaderConfig, HttpxDownloaderConfig, PlaywrightDownloaderConfig, ScrapyDownloaderConfig
@@ -82,7 +83,9 @@ def build_playwright_downloader_factory(
 
 def build_aria2_downloader_factory(
     resolver: ProviderResolver[Any, Any],
-) -> DownloaderFactory[Aria2DownloaderConfig]:
+) -> DownloaderFactory[
+    Aria2DownloaderConfig
+]:
 
     def factory(
         config: Aria2DownloaderConfig | None = None,
@@ -100,6 +103,9 @@ def build_aria2_downloader_factory(
             ),
             options_builder=resolver.resolve(
                 Aria2OptionsBuilder,
+            ),
+            launcher=resolver.resolve(
+                Aria2ProcessLauncher,
             ),
             config=config,
         )

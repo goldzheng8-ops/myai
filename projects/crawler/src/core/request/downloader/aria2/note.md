@@ -1,3 +1,6 @@
+# 安装 aria2c
+
+
 aria2 本质上不是 HTTP response source，而是 download artifact source。
 
 所以如果你的 ResponseAdapter 强制要求：
