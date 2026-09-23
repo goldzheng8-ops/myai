@@ -59,7 +59,7 @@ class Aria2Downloader(
         return DownloaderCapabilities(
             supports_resumable=True,
             supports_streaming=False,
-            supports_range=True,
+            supports_range=False,
         )
 
     async def start(self) -> None:

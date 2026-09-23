@@ -86,7 +86,7 @@ class Aria2DownloaderConfig(
 
     connect_timeout: float | None = 60
 
-    download_directory: str = "data/aria2_download"
+
 
 class HttpxDownloaderSpec(BaseConfig):
     type: Literal[DownloaderType.HTTPX] = DownloaderType.HTTPX

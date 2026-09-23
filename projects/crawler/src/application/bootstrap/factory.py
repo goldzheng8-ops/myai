@@ -1,10 +1,9 @@
 from __future__ import annotations
-import asyncio
-from pathlib import Path
+
 
 from application.bootstrap.registration.download import register_download
 from application.bootstrap.registration.outputs import register_outputs
-from application.config.model import ApplicationConfig, Aria2Config
+from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
 from core.output.output_resolver import OutputResolver
 from core.provider import (
@@ -38,19 +37,7 @@ from .registration import (
     register_template,
     register_transforms,
 )
-async def initialize_aria2(
-    config: Aria2Config,
-) -> None:
 
-    directory = Path(
-        config.download_directory,
-    )
-
-    await asyncio.to_thread(
-        directory.mkdir,
-        parents=True,
-        exist_ok=True,
-    )
 class ApplicationContainerFactory:
     """
     Composition root of the application.
@@ -209,4 +196,4 @@ class ApplicationContainerFactory:
         lifecycle.register(
             resume_store,
         )
-        # initialize_aria2(config.aria2)
+
