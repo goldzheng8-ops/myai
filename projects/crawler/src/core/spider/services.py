@@ -5,7 +5,7 @@ from core.request.discovery.engine import DiscoveryEngine
 from core.extraction.extractor.executor import ExtractExecutor
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
-
+from core.request.browser.interaction.base import BrowserInteractionEngine
 
 
 
@@ -24,3 +24,5 @@ class SpiderServices:
     fingerprint_provider: FingerprintProvider
 
     output_engine:OutputEngine
+
+    browser_interaction_engine: BrowserInteractionEngine

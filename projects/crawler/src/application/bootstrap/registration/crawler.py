@@ -13,6 +13,7 @@ from core.spider.executor import CrawlerExecutor
 from core.spider.handler.download_request import DownloadRequestHandler
 from core.spider.handler.base import RequestKindHandler
 from core.spider.handler.registry import RequestKindHandlerRegistry
+from core.spider.handler.search import SearchRequestHandler
 from core.spider.handler.spider_request import SpiderRequestHandler
 from core.spider.runner import CrawlerRunner
 from application.config.registry import SpiderConfigRegistry
@@ -48,6 +49,7 @@ def create_request_kind_handler_registry(
     handlers: tuple[RequestKindHandler, ...] = (
         resolver.resolve(SpiderRequestHandler),
         resolver.resolve(DownloadRequestHandler),
+        resolver.resolve(SearchRequestHandler),
     )
 
     for handler in handlers:

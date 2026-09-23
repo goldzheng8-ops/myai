@@ -7,12 +7,15 @@ from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
     from core.spider.config import SpiderConfig
 
-
+       
 class SpiderTemplate(str, Enum):
     PLAIN = "plain"
     EXTRACTION = "extraction"
     DOWNLOAD = "download"
-
+    LOGIN = "login"
+    SEARCH = "search"
+    FORM = "form"
+    UPLOAD = "upload"
 
 class SpiderStatus(str, Enum):
     PENDING = "pending"

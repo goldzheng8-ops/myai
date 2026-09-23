@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal
 
 
+from core.request.browser.interaction.model import BrowserAction
 from core.request.middleware.config import MiddlewareSpecUnion
 from pydantic import Field, field_validator
 
@@ -64,8 +65,33 @@ class DownloadSpiderConfig(SpiderConfig):
 class PlainSpiderConfig(SpiderConfig):
     template: Literal[SpiderTemplate.PLAIN] = SpiderTemplate.PLAIN
 
+class LoginSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.LOGIN] = SpiderTemplate.LOGIN
+
+class FormSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.FORM] = SpiderTemplate.FORM
+
+class UploadFieldConfig(BaseConfig):
+    name: str
+    path: str
+    filename: str | None = None
+    content_type: str | None = None
+
+class UploadSpiderConfig(SpiderConfig):
+    template: Literal[SpiderTemplate.UPLOAD] = SpiderTemplate.UPLOAD
+
+    files: tuple[UploadFieldConfig, ...] = ()
+
+class SearchSpiderConfig(
+    SpiderConfig,
+):
+
+    template: Literal[
+        SpiderTemplate.SEARCH
+    ] = SpiderTemplate.SEARCH
 
 
+    actions: tuple[BrowserAction, ...] = ()
 
 
 SpiderConfigUnion = Annotated[
@@ -73,7 +99,10 @@ SpiderConfigUnion = Annotated[
         ExtractConSpiderConfig
         | DownloadSpiderConfig
         | PlainSpiderConfig
+        | LoginSpiderConfig
+        | SearchSpiderConfig
+        | FormSpiderConfig
+        | UploadSpiderConfig
     ),
     Field(discriminator="template"),
 ]
-

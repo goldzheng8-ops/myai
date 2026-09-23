@@ -8,6 +8,7 @@ from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
 from core.runtime import RuntimeContext
 from core.spider.handler.download_request import DownloadRequestHandler
+from core.spider.handler.search import SearchRequestHandler
 from core.spider.handler.spider_request import SpiderRequestHandler
 from core.spider.registry import SpiderRegistry
 from core.spider.services import SpiderServices
@@ -15,7 +16,8 @@ from core.provider import ProviderBuilder, ProviderResolver
 from core.spider.factory import (
     build_download_template_factory,
     build_extraction_template_factory,
-    build_plain_template_factory
+    build_plain_template_factory,
+    build_search_template_factory
 )
 from core.spider.typing import SpiderTemplate
 
@@ -26,6 +28,16 @@ def register_spider_components(
     
     builder.add_type(RuntimeContext)
 
+
+    builder.add_factory(
+        SearchRequestHandler,
+        lambda resolver: SearchRequestHandler(
+            services=resolver.resolve(SpiderServices),
+            spider_registry=resolver.resolve(SpiderRegistry),
+            spider_config_registry=resolver.resolve(SpiderConfigRegistry),
+            runtime=resolver.resolve(RuntimeContext),
+        ),
+    )
 
     builder.add_factory(
         SpiderRequestHandler,
@@ -87,6 +99,12 @@ def create_spider_registry(
     registry.register(
         SpiderTemplate.PLAIN,
         build_plain_template_factory(
+            resolver,
+        ),
+    )
+    registry.register(
+        SpiderTemplate.SEARCH,
+        build_search_template_factory(
             resolver,
         ),
     )

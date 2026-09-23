@@ -8,6 +8,7 @@ from core.spider.template.extraction import RequestTemplate
 from core.spider.template.download import DownloadRequestTemplate
 from core.spider.template.plain import PlainRequestTemplate
 from core.spider.template.extraction import ExtractionRequestTemplate
+from core.spider.template.search import SearchRequestTemplate
 
 
 SpiderFactory = Callable[
@@ -50,6 +51,20 @@ def build_download_template_factory(
     def factory() -> DownloadRequestTemplate:
 
         return DownloadRequestTemplate(
+            resolver.resolve(
+                SpiderServices,
+            ),
+        )
+
+    return factory
+
+def build_search_template_factory(
+    resolver: ProviderResolver[Any, Any],
+) -> SpiderFactory:
+
+    def factory() -> SearchRequestTemplate:
+
+        return SearchRequestTemplate(
             resolver.resolve(
                 SpiderServices,
             ),

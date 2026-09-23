@@ -163,7 +163,7 @@ class ApplicationConfig(BaseConfig):
 
         if self.crawl.entry_spider not in names:
             raise ValueError(
-                f"Default spider {self.crawl.entry_spider!r} "
+                f"Entry spider {self.crawl.entry_spider!r} "
                 "is not registered."
             )
         output_names = {

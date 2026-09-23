@@ -16,7 +16,7 @@ async def main() -> None:
     )
 
     application = bootstrap.create(
-        "application.yaml",
+        "search.yaml",
     )
 
     try:
