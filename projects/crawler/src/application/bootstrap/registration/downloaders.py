@@ -3,6 +3,8 @@ from typing import Any
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
 from core.provider import ProviderBuilder, ProviderResolver
+from core.request.browser.interaction.base import BrowserInteractionEngine
+from core.request.browser.interaction.playwright import PlaywrightBrowserInteractionEngine
 from core.request.downloader.aria2.client import Aria2Client
 from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor
@@ -18,7 +20,7 @@ def register_downloaders(
     builder: ProviderBuilder,
     config: ApplicationConfig,
 ) -> None:
-
+    builder.add_type(BrowserInteractionEngine,PlaywrightBrowserInteractionEngine)
     builder.add_factory(
         Aria2ProcessLauncher,
         lambda resolver: Aria2ProcessLauncher(

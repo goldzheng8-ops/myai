@@ -1,9 +1,9 @@
 name: ai-space
 environment: development
 crawl:
-  entry_spider: "search"
+  entry_spider: "duckduckgo-search"
   start_requests:
-    - url: https://books.toscrape.com/
+    - url: https://html.duckduckgo.com/html/
 
 aria2:
   executable: "D:/program/aria2/aria2c.exe"
@@ -20,7 +20,7 @@ proxies:
   - name: default
     type: static
     proxy:
-      url: socks5://127.0.0.1:1080
+      url: socks5h://127.0.0.1:1080
 
   - name: france
     type: country
@@ -73,7 +73,7 @@ auth_providers:
 
   - name: oauth_api
     type: oauth2_client_credentials
-    token_url: "https://example.com/oauth/token"
+    token_url: "https://www.google.com"
     client_id: "crawler"
     client_secret: "secret"
     scope: "read"
@@ -109,13 +109,13 @@ output_sinks:
   #   table: news
 spiders:
 
-  - name: search
+  - name: duckduckgo-search
     template: search
     kind: search
 
     profile:
       downloader:
-        type: scrapy
+        type: playwright
       response_format: html
       download_strategy: simple
 
@@ -221,5 +221,22 @@ spiders:
     #       attribute: src
     #     transforms:
     #       - type: url_resolve
+
+    actions:
+      - type: fill
+        selector: 'input[name="q"]'
+        value: 'Python web scraping'
+
+      - type: click
+        selector: 'input[type="submit"]'
+
+      - type: wait_for_load_state
+        value: 'domcontentloaded'
+
+      - type: wait_for_selector
+        selector: '#links'
+        timeout: 10
+
+    outputs: []
 
 

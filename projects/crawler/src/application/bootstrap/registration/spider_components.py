@@ -3,6 +3,7 @@ from typing import Any
 from application.config.registry import SpiderConfigRegistry
 from core.extraction.extractor.executor import ExtractExecutor
 from core.output.engine import OutputEngine
+from core.request.browser.interaction.base import BrowserInteractionEngine
 from core.request.discovery.engine import DiscoveryEngine
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.runner import RequestRunner
@@ -67,6 +68,7 @@ def register_spider_components(
             discovery_engine=resolver.resolve(DiscoveryEngine),
             fingerprint_provider=resolver.resolve(FingerprintProvider),
             output_engine=resolver.resolve(OutputEngine),
+            browser_interaction_engine=resolver.resolve(BrowserInteractionEngine),
         ),
     )
 

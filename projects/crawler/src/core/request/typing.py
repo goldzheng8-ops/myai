@@ -17,9 +17,12 @@ class RequestKind(str, Enum):
 
     LIST = "list"
     DETAIL = "detail"
-    LOGIN = "login"
     DOWNLOAD = "download"
     API = "api"
+    LOGIN = "login"
+    SEARCH = "search"
+    FORM = "form"
+    UPLOAD = "upload"
 
 
 class DownloaderType(str, Enum):

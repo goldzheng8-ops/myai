@@ -9,6 +9,7 @@ from typing import Any, Self
 from core.merger.mapping import MappingMerger
 from core.request.config import RequestConfig
 from core.request.meta import RequestMeta
+from core.request.middleware.proxy.config import ProxyConfig
 
 from .descriptor import RequestDescriptor
 from .patch import RequestPatch
@@ -54,6 +55,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -67,6 +69,7 @@ class RequestBuilder:
             cookies=dict[str, str](cookies or {}),
             params=dict[str, Any](params or {}),
             body=deepcopy(body),
+            proxy=proxy,
             meta=deepcopy(meta)
             if meta is not None
             else RequestMeta(),
@@ -88,6 +91,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -101,6 +105,7 @@ class RequestBuilder:
             cookies=cookies,
             params=params,
             body=body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -116,6 +121,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -129,6 +135,7 @@ class RequestBuilder:
             cookies=cookies,
             params=params,
             body=body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -144,6 +151,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -157,6 +165,7 @@ class RequestBuilder:
             cookies=cookies,
             params=params,
             body=body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -172,6 +181,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -185,6 +195,7 @@ class RequestBuilder:
             cookies=cookies,
             params=params,
             body=body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -200,6 +211,7 @@ class RequestBuilder:
         cookies: Mapping[str, str] | None = None,
         params: Mapping[str, Any] | None = None,
         body: Any = None,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -213,6 +225,7 @@ class RequestBuilder:
             cookies=cookies,
             params=params,
             body=body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -231,6 +244,7 @@ class RequestBuilder:
         kind: RequestKind,
         profile: RequestProfile,
         target_spider: str,
+        proxy: ProxyConfig | None = None,
         meta: RequestMeta | None = None,
     ) -> RequestDescriptor:
 
@@ -244,6 +258,7 @@ class RequestBuilder:
             cookies=request.cookies,
             params=request.params,
             body=request.body,
+            proxy=proxy,
             meta=meta,
         )
 
@@ -390,6 +405,12 @@ class RequestBuilder:
                 if patch.has_body()
                 else descriptor.body
             ),
+            proxy=(
+                deepcopy(patch.proxy)
+                if patch.proxy is not None
+                else descriptor.proxy
+            ),
+
             meta=deepcopy(
                 descriptor.meta,
             ),
