@@ -1,0 +1,2 @@
+class NoOpBrowserInterventionEngine:
+    pass

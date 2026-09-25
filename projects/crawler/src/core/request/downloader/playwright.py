@@ -1,18 +1,14 @@
 from __future__ import annotations
 
 from core.extraction.response.resolver import ResponseAdapterResolver
+from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.context import RequestContext
 from core.request.downloader.model import DownloaderCapabilities
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
-    Browser,
     BrowserContext,
-    BrowserType,
     Page,
-    Playwright,
-    ProxySettings,
     Response,
-    async_playwright,
 )
 
 from core.request.typing import DownloaderType
@@ -25,11 +21,13 @@ from .result import DownloadResult
 class PlaywrightDownloader(
     BaseDownloader[PlaywrightDownloaderConfig],
 ):
+
     type = DownloaderType.PLAYWRIGHT
 
     def __init__(
         self,
         response_adapter_resolver: ResponseAdapterResolver,
+        browser_runtime: BrowserRuntimeManager,
         config: PlaywrightDownloaderConfig | None = None,
     ) -> None:
 
@@ -38,107 +36,97 @@ class PlaywrightDownloader(
             if config is not None
             else PlaywrightDownloaderConfig(),
         )
-        self._response_adapter_resolver = response_adapter_resolver
-        self._playwright: Playwright | None = None
-        self._browser: Browser | None = None
+
+        self._response_adapter_resolver = (
+            response_adapter_resolver
+        )
+
+        self._browser_runtime = browser_runtime
+
     @property
-    def capabilities(self) -> DownloaderCapabilities:
+    def capabilities(
+        self,
+    ) -> DownloaderCapabilities:
+
         return DownloaderCapabilities(
             supports_resumable=False,
             supports_streaming=False,
             supports_range=False,
         )
-    async def start(
-        self,
-    ) -> None:
 
-        if self._browser is not None:
-            return
+    async def start(self) -> None:
 
-        self._playwright = (
-            await async_playwright().start()
-        )
-
-        browser_type = self._get_browser_type()
-
-        self._browser = await browser_type.launch(
-            headless=self.config.headless,
-        )
+        await self._browser_runtime.start()
 
     async def download(
         self,
         context: RequestContext,
     ) -> DownloadResult:
 
-        if self._browser is None:
-            await self.start()
-
-        assert self._browser is not None
-
-        request = self.build_request(
-            context,
-        )
-
-        browser_context = (
-            await self._browser.new_context(
-                locale=self.config.locale,
-                user_agent=self.config.user_agent,
-                java_script_enabled=self.config.javascript,
-                proxy=self._build_proxy(context),
-            )
-        )
-
         try:
 
-            page = await browser_context.new_page()
-
-            response = await self._navigate(
-                page,
-                request,
+            session_id = self._require_session_id(
+                context,
             )
 
-            if response is None:
-                return DownloadResult(
-                    success=False,
+            session = (
+                await self._browser_runtime.get_session(
+                    session_id=session_id,
+                    proxy=context.descriptor.proxy,
+                )
+            )
+
+            request = self.build_request(
+                context,
+            )
+
+            async with session.lock:
+
+                response = await self._navigate(
+                    session.page,
+                    request,
                 )
 
-            normalized = await self._build_response(
-                response,
-                page,
-                browser_context,
+                if response is None:
+                    return DownloadResult(
+                        success=False,
+                    )
+
+                normalized = (
+                    await self._build_response(
+                        response=response,
+                        page=session.page,
+                        browser_context=session.context,
+                    )
+                )
+
+            adapter = (
+                self._response_adapter_resolver.resolve(
+                    profile=context.descriptor.profile,
+                    response=normalized,
+                )
             )
-            adapter = self._response_adapter_resolver.resolve(
-                profile=context.descriptor.profile,
-                response=normalized,
-            )
+
             return DownloadResult(
                 response=adapter,
-                success=200 <= normalized.status_code < 400,
+                success=(
+                    200
+                    <= normalized.status_code
+                    < 400
+                ),
             )
 
         except Exception as exc:
-
-            await browser_context.close()
 
             return DownloadResult(
                 success=False,
                 error=exc,
             )
 
-    def _get_browser_type(
-        self,
-    ) -> BrowserType:
-
-        assert self._playwright is not None
-
-        if self.config.browser == "chromium":
-            return self._playwright.chromium
-
-        if self.config.browser == "firefox":
-            return self._playwright.firefox
-
-        return self._playwright.webkit
-
+    async def close(self) -> None:
+        # BrowserRuntimeManager is owned by
+        # LifecycleManager.
+        return
 
     def _timeout_ms(
         self,
@@ -180,37 +168,13 @@ class PlaywrightDownloader(
             page=page,
             browser_context=browser_context
         )
-
-    async def close(
-        self,
-    ) -> None:
-
-        if self._browser is not None:
-            await self._browser.close()
-            self._browser = None
-
-        if self._playwright is not None:
-            await self._playwright.stop()
-            self._playwright = None
-            
-    def _build_proxy(
+    def _require_session_id(
         self,
         context: RequestContext,
-    ) -> ProxySettings | None:
+    ) -> str:
+        session_id= context.session_id
+        if session_id is None:
+            raise RuntimeError("require session id")
+        return session_id
 
-        proxy = context.descriptor.proxy
-
-        if proxy is None:
-            return None
-
-        result: ProxySettings = {
-            "server": proxy.url,
-        }
-
-        if proxy.username is not None:
-            result["username"] = proxy.username
-
-        if proxy.password is not None:
-            result["password"] = proxy.password
-
-        return result
+            

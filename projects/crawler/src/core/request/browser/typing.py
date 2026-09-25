@@ -45,3 +45,39 @@ class BrowserActionType(str, Enum):
 
     # Screenshot / debugging
     SCREENSHOT = "screenshot"
+
+    #####
+    HUMAN_INTERVENTION = "human_intervention"
+
+
+class BrowserPageState(str, Enum):
+
+    NORMAL = "normal"
+
+    CHALLENGE = "challenge"
+
+    LOGIN_REQUIRED = "login_required"
+
+    ACCESS_DENIED = "access_denied"
+
+    NOT_FOUND = "not_found"
+
+    SERVER_ERROR = "server_error"
+
+    EMPTY = "empty"
+
+    CAPTCHA = "captcha"
+
+    BLOCKED = "blocked"
+
+    LOADING = "loading"
+
+    UNKNOWN = "unknown"
+
+    class BrowserSessionState(str, Enum):
+
+        READY = "ready"
+        RUNNING = "running"
+        CHALLENGE = "challenge"
+        WAITING_FOR_HUMAN = "waiting_for_human"
+        CLOSED = "closed"

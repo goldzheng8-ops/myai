@@ -1,8 +1,9 @@
 from __future__ import annotations
-
+import logging
 
 from .protocol import LifecycleParticipant
 
+logger=logging.getLogger(__name__)
 
 class LifecycleManager:
 

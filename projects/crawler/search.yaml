@@ -20,7 +20,7 @@ proxies:
   - name: default
     type: static
     proxy:
-      url: socks5h://127.0.0.1:1080
+      url: socks5://127.0.0.1:1080
 
   - name: france
     type: country
@@ -229,13 +229,16 @@ spiders:
 
       - type: click
         selector: 'input[type="submit"]'
+      # - type: click
+      #   selector: 'input[type="submit"]'
 
-      - type: wait_for_load_state
-        value: 'domcontentloaded'
+      # - type: press
+      #   selector: 'input[name="q"]'
+      #   value: "Enter"
 
-      - type: wait_for_selector
-        selector: '#links'
-        timeout: 10
+      # - type: wait_for_selector
+      #   selector: '#links'
+      #   timeout: 10
 
     outputs: []
 

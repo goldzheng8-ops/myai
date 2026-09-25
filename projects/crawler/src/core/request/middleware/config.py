@@ -99,7 +99,7 @@ class RobotMiddlewareConfig(
 class SessionMiddlewareConfig(
     MiddlewareConfig,
 ):
-    default_session_id: str | None = None
+    default_session_id: str | None = "default_session_id_1253417895434672"
     create_if_missing: bool = True
     save_after_request: bool = True
 

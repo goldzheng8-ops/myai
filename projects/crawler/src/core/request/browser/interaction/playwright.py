@@ -1,10 +1,10 @@
-from typing import Literal, cast
+from typing import Any, Literal, cast
 
 from core.extraction.response.playwright import PlaywrightResponseAdapter
 from core.request.browser.interaction.base import BrowserInteractionEngine
 from core.request.browser.interaction.context import BrowserInteractionContext
 from core.request.browser.interaction.model import BrowserAction
-from core.request.browser.typing import BrowserActionType
+from core.request.browser.typing import BrowserActionType, BrowserPageState
 from core.request.context import RequestContext
 from playwright.async_api import Page
 from core.spider.config import SearchSpiderConfig
@@ -30,13 +30,40 @@ class PlaywrightBrowserInteractionEngine(
         page = self._get_page(
             response,
         )
+        session = self._get_session(
+            context.request,
+        )
 
+        browser = await self._browser_runtime_manager.get_or_create(
+            session,
+        )
+
+        page = browser.page
         for action in context.config.actions:
+
+            print(
+                "\n========== ACTION =========="
+            )
+            print("type:", action.type)
+            print("selector:", action.selector)
+            print("value:", action.value)            
             await self._execute_action(
                 page,
                 action,
             )
+            await self._handle_page_state(
+                context,
+                page,
+            )
 
+            print("URL:", page.url)
+            print("TITLE:", await page.title())
+
+            if action.type == BrowserActionType.CLICK:
+                print(
+                    "#links count:",
+                    await page.locator("#links").count(),
+                )
     async def _execute_action(
         self,
         page: Page,
@@ -78,12 +105,27 @@ class PlaywrightBrowserInteractionEngine(
                 )
 
             case BrowserActionType.CLICK:
+                print(
+                    "before click:",
+                    page.url,
+                )
                 await self._click(
                     page,
                     action,
                     timeout,
                 )
+                print(
+                    "after click:",
+                    page.url,
+                )
 
+                print(
+                    "search q:",
+                    await page.locator(
+                        'input[name="q"]'
+                    ).input_value(),
+                )
+                print(await page.content())
             case BrowserActionType.DOUBLE_CLICK:
                 await self._double_click(
                     page,
@@ -657,3 +699,58 @@ class PlaywrightBrowserInteractionEngine(
             )
 
         return timeout * 1000
+
+    async def _handle_page_state(
+        self,
+        context: BrowserInteractionContext[Any],
+        page: Page,
+    ) -> None:
+
+        inspection = await self._inspector.inspect(
+            page,
+        )
+
+        if inspection.state not in {
+            BrowserPageState.CHALLENGE,
+            BrowserPageState.CAPTCHA,
+        }:
+            return
+
+        await self._human_intervention.intervene(
+            context,
+            inspection,
+        )
+
+        await self._wait_until_recovered(
+            page,
+        )
+
+    async def _wait_until_recovered(
+        self,
+        page: Page,
+    ) -> None:
+
+        deadline = (
+            asyncio.get_running_loop().time()
+            + 120
+        )
+
+        while True:
+
+            inspection = await self._inspector.inspect(
+                page,
+            )
+
+            if inspection.state == BrowserPageState.NORMAL:
+                return
+
+            if (
+                asyncio.get_running_loop().time()
+                >= deadline
+            ):
+                raise TimeoutError(
+                    "Browser page did not recover "
+                    "after human intervention."
+                )
+
+            await asyncio.sleep(1)

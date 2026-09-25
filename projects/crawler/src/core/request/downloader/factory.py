@@ -3,6 +3,7 @@ from typing import Any, Protocol
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.provider import ProviderResolver
+from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.downloader.aria2.client import Aria2Client
 from core.request.downloader.aria2.downloader import Aria2Downloader
 from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
@@ -75,6 +76,9 @@ def build_playwright_downloader_factory(
         return PlaywrightDownloader(
             response_adapter_resolver=resolver.resolve(
                 ResponseAdapterResolver,
+            ),
+            browser_runtime=resolver.resolve(
+                BrowserRuntimeManager,
             ),
             config=config,
         )

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 
+from application.bootstrap.registration.browser_components import register_browser_components
 from application.bootstrap.registration.download import register_download
 from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
@@ -10,6 +11,7 @@ from core.provider import (
     ProviderBuilder,
     SingletonProvider,
 )
+from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.download.resume.store import ResumeStore
 from core.request.middleware.auth.resolver import AuthProviderResolver
 
@@ -110,6 +112,10 @@ class ApplicationContainerFactory:
             builder,
             config,          
         )
+        register_browser_components(
+            builder,
+            config,          
+        )
         register_proxy_providers_resolver(
             builder,
             config,          
@@ -178,22 +184,27 @@ class ApplicationContainerFactory:
         auth_resolver:AuthProviderResolver = container.resolve(
             AuthProviderResolver,
         )
-
         for provider in auth_resolver.values():
             lifecycle.register(provider)
+
 
         out_resolver:OutputResolver = container.resolve(
             OutputResolver,
         )
-
         for output_sink in out_resolver.values():
             lifecycle.register(output_sink)
+
 
         resume_store = container.resolve(
             ResumeStore,
         )
-
         lifecycle.register(
             resume_store,
+        )
+        browser_runtime_manager = container.resolve(
+            BrowserRuntimeManager,
+        )
+        lifecycle.register(
+            browser_runtime_manager,
         )
 

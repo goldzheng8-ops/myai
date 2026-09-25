@@ -4,6 +4,7 @@ from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.output.config import OutputConfigUnion
+from core.request.browser.config import BrowserContextConfig, BrowserRuntimeConfig
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.auth.config import AuthProviderConfigUnion
@@ -134,9 +135,15 @@ class ApplicationConfig(BaseConfig):
     download_strategy: DownloadStrategyConfig = Field(
         default_factory=DownloadStrategyConfig,
     )
-
+    
     aria2: Aria2Config = Field(
         default_factory=Aria2Config,
+    )
+    browser_context: BrowserContextConfig = Field(
+        default_factory=BrowserContextConfig,
+    )
+    browser_runtime: BrowserRuntimeConfig = Field(
+        default_factory=BrowserRuntimeConfig,
     )
 
     runtime: RuntimeConfig = Field(
