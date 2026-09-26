@@ -32,7 +32,6 @@ class ScrapyDownloader(
             else ScrapyDownloaderConfig(),
             response_adapter_resolver,
         )
-        self._response_adapter_resolver = response_adapter_resolver
         self._executor = executor
         self._bridge = bridge
     @property

@@ -35,8 +35,6 @@ class HttpxDownloader(
             else HttpxDownloaderConfig(),
             response_adapter_resolver,
         )
-        self._response_adapter_resolver = response_adapter_resolver
-
         self._clients: dict[
             str | None,
             httpx.AsyncClient,

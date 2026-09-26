@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from core.extraction.response.resolver import ResponseAdapterResolver
+from core.request.browser.cookie_sink import SessionCookieSink
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.context import RequestContext
 
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.downloader.model import DownloaderCapabilities
+from core.request.middleware.session.middleware import SESSION_RUNTIME_KEY
+from core.request.middleware.session.model import Session
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
     BrowserContext,
@@ -37,11 +40,6 @@ class PlaywrightDownloader(
             else PlaywrightDownloaderConfig(),
             response_adapter_resolver,
         )
-
-        self._response_adapter_resolver = (
-            response_adapter_resolver
-        )
-
         self._browser_runtime = browser_runtime
 
     @property
@@ -66,30 +64,44 @@ class PlaywrightDownloader(
 
         try:
 
-            session_id = self._require_session_id(
-                context,
+            session_id = (
+                self._require_session_id(
+                    context,
+                )
             )
 
-            session = (
+            framework_session = (
+                self._get_framework_session(
+                    context,
+                )
+            )
+
+            cookie_sink = SessionCookieSink(
+                framework_session,
+            )
+
+            browser_session = (
                 await self._browser_runtime.get_session(
                     session_id=session_id,
                     proxy=context.descriptor.proxy,
+                    cookie_sink=cookie_sink,
                 )
             )
+
             request = self.build_request(
                 context,
             )
 
-            async with session.lock:
+            async with browser_session.lock:
 
                 await self._browser_runtime.apply_cookies(
-                    session=session,
+                    session=browser_session,
                     cookies=context.descriptor.cookies,
                     url=context.descriptor.url,
                 )
 
                 response = await self._navigate(
-                    session.page,
+                    browser_session.page,
                     request,
                 )
 
@@ -101,12 +113,17 @@ class PlaywrightDownloader(
                 normalized = (
                     await self._build_response(
                         response=response,
-                        page=session.page,
-                        browser_context=session.context,
+                        page=browser_session.page,
+                        browser_context=(
+                            browser_session.context
+                        ),
                     )
                 )
 
-            return self._set_result(context,normalized)
+            return self._set_result(
+                context,
+                normalized,
+            )
 
         except Exception as exc:
 
@@ -170,4 +187,17 @@ class PlaywrightDownloader(
                 "Playwright request requires a session_id.",
             )
         return session_id
+    def _get_framework_session(
+        self,
+        context: RequestContext,       
+    ) -> Session:
+        session = context.runtime.get(
+            SESSION_RUNTIME_KEY,
+        )
 
+        if not isinstance(session, Session):
+            raise RuntimeError(
+                "Playwright request requires an active Session.",
+            )
+
+        return session

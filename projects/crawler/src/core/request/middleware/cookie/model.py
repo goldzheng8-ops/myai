@@ -1,15 +1,18 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from ipaddress import ip_address
+from typing import Iterable, Iterator
 from urllib.parse import urlparse
 from typing import Literal
-from datetime import datetime, timezone
-from collections.abc import Iterable, Iterator
+
 
 SameSite = Literal[
     "lax",
     "strict",
     "none",
 ]
-
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Cookie:
@@ -30,8 +33,6 @@ class Cookie:
     same_site: SameSite | None = None
 
     partition_key: str | None = None
-
-
 
 
 class CookieJar:
@@ -101,7 +102,10 @@ class CookieJar:
         if not host:
             return ()
 
-        path = parsed.path or "/"
+        request_path = (
+            parsed.path
+            or "/"
+        )
 
         secure = (
             parsed.scheme.lower()
@@ -114,12 +118,17 @@ class CookieJar:
 
         matched: list[Cookie] = []
 
-        for cookie in self._cookies.values():
+        expired_keys: list[
+            tuple[str, str, str]
+        ] = []
+
+        for key, cookie in self._cookies.items():
 
             if self._is_expired(
                 cookie,
                 now,
             ):
+                expired_keys.append(key)
                 continue
 
             if not self._domain_matches(
@@ -130,7 +139,7 @@ class CookieJar:
 
             if not self._path_matches(
                 cookie.path,
-                path,
+                request_path,
             ):
                 continue
 
@@ -139,8 +148,15 @@ class CookieJar:
 
             matched.append(cookie)
 
-        # RFC cookie ordering:
-        # longer paths first.
+        # RFC 6265 recommends evicting expired
+        # cookies when encountered.
+        for key in expired_keys:
+            self._cookies.pop(
+                key,
+                None,
+            )
+
+        # Longer paths first.
         matched.sort(
             key=lambda cookie: len(
                 cookie.path,
@@ -166,7 +182,7 @@ class CookieJar:
         return len(self._cookies)
 
     # ---------------------------------------------------------
-    # helpers
+    # identity
     # ---------------------------------------------------------
 
     @staticmethod
@@ -180,13 +196,19 @@ class CookieJar:
             cookie.name,
         )
 
+    # ---------------------------------------------------------
+    # expiration
+    # ---------------------------------------------------------
+
     @staticmethod
     def _is_expired(
         cookie: Cookie,
         now: datetime | None = None,
     ) -> bool:
 
-        if cookie.expires is None:
+        expires = cookie.expires
+
+        if expires is None:
             return False
 
         if now is None:
@@ -194,7 +216,16 @@ class CookieJar:
                 timezone.utc,
             )
 
-        return cookie.expires <= now
+        if expires.tzinfo is None:
+            expires = expires.replace(
+                tzinfo=timezone.utc,
+            )
+
+        return expires <= now
+
+    # ---------------------------------------------------------
+    # domain matching
+    # ---------------------------------------------------------
 
     @staticmethod
     def _domain_matches(
@@ -211,12 +242,48 @@ class CookieJar:
         if cookie.host_only:
             return host == cookie_domain
 
-        return (
-            host == cookie_domain
-            or host.endswith(
-                f".{cookie_domain}",
-            )
+        return CookieJar._domain_match(
+            host,
+            cookie_domain,
         )
+
+    @staticmethod
+    def _domain_match(
+        host: str,
+        domain: str,
+    ) -> bool:
+
+        if host == domain:
+            return True
+
+        if CookieJar._is_ip_address(host):
+            return False
+
+        if not host.endswith(domain):
+            return False
+
+        index = len(host) - len(domain) - 1
+
+        return (
+            index >= 0
+            and host[index] == "."
+        )
+
+    @staticmethod
+    def _is_ip_address(
+        host: str,
+    ) -> bool:
+
+        try:
+            ip_address(host)
+        except ValueError:
+            return False
+
+        return True
+
+    # ---------------------------------------------------------
+    # path matching
+    # ---------------------------------------------------------
 
     @staticmethod
     def _path_matches(
@@ -230,20 +297,30 @@ class CookieJar:
         if not request_path:
             request_path = "/"
 
-        if cookie_path == "/":
+        # RFC 6265 section 5.1.4:
+        #
+        # 1. identical paths
+        if cookie_path == request_path:
             return True
 
-        if request_path == cookie_path:
-            return True
-
+        # Cookie path must be a prefix.
         if not request_path.startswith(
             cookie_path,
         ):
             return False
 
+        # 2. Cookie path ends with "/"
+        if cookie_path.endswith("/"):
+            return True
+
+        # 3. The first character of request_path
+        #    after cookie_path must be "/".
+        if len(request_path) <= len(cookie_path):
+            return False
+
         return (
-            cookie_path.endswith("/")
-            or request_path[
-                len(cookie_path):
-            ].startswith("/")
+            request_path[
+                len(cookie_path)
+            ]
+            == "/"
         )

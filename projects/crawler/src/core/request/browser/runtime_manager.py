@@ -1,9 +1,11 @@
 from __future__ import annotations
-
+from playwright.async_api import Response
 import asyncio
 from dataclasses import dataclass, field
-from typing import Literal, cast
+from typing import Callable, Literal, cast
 
+from core.request.browser.cookie_sink import BrowserCookieSink
+from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.downloader.serializer.playwright import PlaywrightCookieSerializer
 from playwright.async_api import (
     Browser,
@@ -23,29 +25,51 @@ from core.request.middleware.cookie.model import Cookie
 ColorScheme = Literal['dark', 'light', 'no-preference', 'null']
 
 
-
-
-
 @dataclass(slots=True)
 class BrowserSessionRuntime:
-    """
-    Runtime state owned by one logical browser session.
-
-    A session owns exactly one BrowserContext and its default Page.
-    """
-
     session_id: str
     context: BrowserContext
     page: Page
+
     proxy: ProxyConfig | None = None
-    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+    cookie_sink: BrowserCookieSink | None = None
+
+    lock: asyncio.Lock = field(
+        default_factory=asyncio.Lock,
+    )
+
+    cookie_tasks: set[
+        asyncio.Task[None]
+    ] = field(
+        default_factory=set,
+    )
+    response_handler: (
+        Callable[[Response], None] | None
+    ) = None
 
     async def close(self) -> None:
+
+        if self.response_handler is not None:
+            self.context.remove_listener(
+                "response",
+                self.response_handler,
+            )
+
+        tasks = tuple(self.cookie_tasks)
+
+        self.cookie_tasks.clear()
+
+        if tasks:
+            await asyncio.gather(
+                *tasks,
+                return_exceptions=True,
+            )
+
         if not self.page.is_closed():
             await self.page.close()
 
         await self.context.close()
-
 
 class BrowserRuntimeManager(LifecycleParticipant):
     """
@@ -115,23 +139,34 @@ class BrowserRuntimeManager(LifecycleParticipant):
         *,
         session_id: str,
         proxy: ProxyConfig | None = None,
+        cookie_sink: BrowserCookieSink | None = None,
     ) -> BrowserSessionRuntime:
-        """
-        Get or create a logical browser session.
 
-        A session is bound to its proxy for its entire lifetime.
-        """
         await self.start()
 
         async with self._lock:
-            session = self._sessions.get(session_id)
+
+            session = self._sessions.get(
+                session_id,
+            )
 
             if session is not None:
-                if not self._same_proxy(session.proxy, proxy):
+
+                if not self._same_proxy(
+                    session.proxy,
+                    proxy,
+                ):
                     raise RuntimeError(
-                        "Browser session proxy cannot be changed "
-                        f"after creation: {session_id!r}",
+                        "Browser session proxy cannot "
+                        "be changed after creation: "
+                        f"{session_id!r}",
                     )
+
+                if (
+                    cookie_sink is not None
+                    and session.cookie_sink is None
+                ):
+                    session.cookie_sink = cookie_sink
 
                 return session
 
@@ -142,6 +177,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
 
             try:
                 page = await context.new_page()
+
             except Exception:
                 await context.close()
                 raise
@@ -151,6 +187,11 @@ class BrowserRuntimeManager(LifecycleParticipant):
                 context=context,
                 page=page,
                 proxy=proxy,
+                cookie_sink=cookie_sink,
+            )
+
+            self._install_cookie_listener(
+                session,
             )
 
             self._sessions[session_id] = session
@@ -308,3 +349,57 @@ class BrowserRuntimeManager(LifecycleParticipant):
             )
 
         return browser
+
+    def _install_cookie_listener(
+        self,
+        session: BrowserSessionRuntime,
+    ) -> None:
+
+        def handler(
+            response: Response,
+        ) -> None:
+
+            task = asyncio.create_task(
+                self._process_response_cookies(
+                    session,
+                    response,
+                )
+            )
+
+            session.cookie_tasks.add(task)
+
+            task.add_done_callback(
+                session.cookie_tasks.discard,
+            )
+
+        session.response_handler = handler
+
+        session.context.on(
+            "response",
+            handler,
+        )
+
+
+    async def _process_response_cookies(
+        self,
+        session: BrowserSessionRuntime,
+        response: Response,
+    ) -> None:
+
+        sink = session.cookie_sink
+
+        if sink is None:
+            return
+
+        cookies = await (
+            PlaywrightCookieExtractor.extract(
+                response,
+            )
+        )
+
+        if not cookies:
+            return
+
+        await sink.update(
+            cookies,
+        )
