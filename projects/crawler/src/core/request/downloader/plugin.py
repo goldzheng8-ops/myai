@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import ClassVar
 
 from core.plugin import Plugin
@@ -14,7 +14,6 @@ from .result import DownloadResult
 
 class DownloaderPlugin(
     Plugin,
-    ABC,
 ):
     """
     Public contract implemented by all request downloaders.

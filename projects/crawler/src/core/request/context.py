@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 
 
+from core.request.response import RequestResponse
 from core.request.result import RequestResult
 from core.runtime import RuntimeContext
 from core.spider.config import SpiderConfigUnion
@@ -33,4 +34,6 @@ class RequestContext:
         default_factory=RequestState,
     )
 
+    transport_response: RequestResponse | None = None
+    
     result: RequestResult | None = None

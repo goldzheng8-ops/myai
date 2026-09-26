@@ -67,7 +67,22 @@ class BrowserSessionRuntime:
         await page.close()
 
     async def close(self) -> None:
+        pages = tuple(
+            self.pages.values(),
+        )
 
         self.pages.clear()
+
+        await asyncio.gather(
+            *(
+                page.close()
+                for page in pages
+                if not page.is_closed()
+            ),
+            return_exceptions=True,
+        )
+
+        if not self.page.is_closed():
+            await self.page.close()
 
         await self.context.close()

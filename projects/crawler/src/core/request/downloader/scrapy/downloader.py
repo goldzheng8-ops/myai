@@ -1,5 +1,6 @@
 from __future__ import annotations
 from core.extraction.response.resolver import ResponseAdapterResolver
+from core.request.downloader.extractor.scrapy import ScrapyCookieExtractor
 from core.request.downloader.model import DownloaderCapabilities
 from scrapy.http import Response
 
@@ -29,6 +30,7 @@ class ScrapyDownloader(
             config
             if config is not None
             else ScrapyDownloaderConfig(),
+            response_adapter_resolver,
         )
         self._response_adapter_resolver = response_adapter_resolver
         self._executor = executor
@@ -81,15 +83,7 @@ class ScrapyDownloader(
             response,
         )
 
-        adapter = self._response_adapter_resolver.resolve(
-            profile=context.descriptor.profile,
-            response=normalized,
-        )
-
-        return DownloadResult(
-            response=adapter,
-            success=200 <= response.status < 400,
-        )
+        return self._set_result(context,normalized)
 
     async def close(
         self,
@@ -110,7 +104,7 @@ class ScrapyDownloader(
                 response,
             ),
             body=response.body,
-            cookies={},
+            cookies=ScrapyCookieExtractor.extract(response),
             encoding=None,
             reason=None,
             raw=response,

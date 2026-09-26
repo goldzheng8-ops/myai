@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from core.request.middleware.cookie.model import Cookie
 from core.request.middleware.proxy.config import ProxyConfig
 
 from .meta import RequestMeta
@@ -9,7 +10,6 @@ from .profile import RequestProfile
 from .typing import (
     HttpMethod,
     RequestBody,
-    RequestCookies,
     RequestHeaders,
     RequestParams,
     RequestKind,
@@ -33,9 +33,7 @@ class RequestDescriptor:
         default_factory=dict,
     )
 
-    cookies: RequestCookies = field(
-        default_factory=dict,
-    )
+    cookies: tuple[Cookie, ...] = ()
 
     params: RequestParams = field(
         default_factory=dict,

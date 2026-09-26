@@ -1,6 +1,7 @@
 
 from typing import Any
 
+from core.request.middleware.cookie.model import Cookie
 from core.request.typing import HttpMethod
 from core.typing.config import BaseConfig
 from pydantic import Field
@@ -9,7 +10,7 @@ from pydantic import Field
 class RequestConfig(BaseConfig):
     url: str
     headers: dict[str, str] = Field(default_factory=dict)
-    cookies: dict[str, str] = Field(default_factory=dict)
+    cookies: tuple[Cookie, ...] = ()
     params: dict[str, str] = Field(default_factory=dict)
     method: HttpMethod = HttpMethod.GET
     body: Any = None

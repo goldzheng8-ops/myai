@@ -38,4 +38,12 @@ def create_scrapy_settings(
                 priority="project",
             )
 
+    # Framework owns cookie state.
+    result.set(
+        "COOKIES_ENABLED",
+        False,
+        priority="project",
+    )
+
+
     return result

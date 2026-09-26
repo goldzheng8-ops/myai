@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from core.request.middleware.cookie.model import CookieJar
+
 
 @dataclass(slots=True)
 class Session:
@@ -11,8 +13,8 @@ class Session:
 
     id: str
 
-    cookies: dict[str, str] = field(
-        default_factory=dict,
+    cookies: CookieJar = field(
+        default_factory=CookieJar,
     )
 
     metadata: dict[str, object] = field(

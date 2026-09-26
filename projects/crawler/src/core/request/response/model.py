@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Mapping
 
+from core.request.middleware.cookie.model import Cookie
 import httpx
 from playwright.async_api import BrowserContext, Page
 from scrapy.http import Response
@@ -31,9 +32,7 @@ class RequestResponse:
 
     body: bytes = b""
 
-    cookies: Mapping[str, str] = field(
-        default_factory=dict,
-    )
+    cookies: tuple[Cookie, ...]
 
     encoding: str | None = None
     reason: str | None = None

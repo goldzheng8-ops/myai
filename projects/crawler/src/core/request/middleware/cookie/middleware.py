@@ -67,9 +67,11 @@ class CookieMiddleware(
         if session is None:
             return
 
-        session_cookies = session.cookies
+        cookies = session.cookies.get_for_url(
+            context.descriptor.url,
+        )
 
-        if not session_cookies:
+        if not cookies:
             return
 
         context.descriptor = (
@@ -78,7 +80,7 @@ class CookieMiddleware(
                 context.descriptor,
             )
             .merge_cookies(
-                session_cookies,
+                cookies,
                 override=False,
             )
             .build()
@@ -107,12 +109,12 @@ class CookieMiddleware(
         if not result.success:
             return
 
-        response = result.response
+        transport_response = context.transport_response
 
-        if response is None:
+        if transport_response is None:
             return
 
-        cookies = response.cookies
+        cookies = transport_response.cookies
 
         if not cookies:
             return

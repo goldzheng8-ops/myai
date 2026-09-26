@@ -5,7 +5,7 @@ from copy import deepcopy
 from dataclasses import replace
 from typing import Any, Self
 
-
+from core.request.middleware.cookie.model import Cookie
 from core.merger.mapping import MappingMerger
 from core.request.config import RequestConfig
 from core.request.meta import RequestMeta
@@ -52,7 +52,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -66,7 +66,7 @@ class RequestBuilder:
             target_spider=target_spider,
             method=method,
             headers=dict[str, str](headers or {}),
-            cookies=dict[str, str](cookies or {}),
+            cookies=cookies,
             params=dict[str, Any](params or {}),
             body=deepcopy(body),
             proxy=proxy,
@@ -88,7 +88,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -118,7 +118,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -148,7 +148,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -178,7 +178,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -208,7 +208,7 @@ class RequestBuilder:
         target_spider: str,
         method: HttpMethod = HttpMethod.GET,
         headers: Mapping[str, str] | None = None,
-        cookies: Mapping[str, str] | None = None,
+        cookies: tuple[Cookie, ...] = (),
         params: Mapping[str, Any] | None = None,
         body: Any = None,
         proxy: ProxyConfig | None = None,
@@ -302,7 +302,7 @@ class RequestBuilder:
 
     def merge_cookies(
         self,
-        cookies: Mapping[str, str],
+        cookies: tuple[Cookie, ...],
         *,
         override: bool = False,
     ) -> Self:
@@ -320,7 +320,7 @@ class RequestBuilder:
             descriptor,
             cookies=merger.merge(
                 descriptor.cookies,
-                dict(cookies),
+                cookies,
             ),
         )
 

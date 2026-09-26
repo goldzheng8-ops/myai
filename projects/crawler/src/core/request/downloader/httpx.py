@@ -3,7 +3,9 @@ from typing import AsyncIterator
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
+from core.request.downloader.converter.httpx import HttpxCookieConverter
 from core.request.downloader.model import DownloaderCapabilities
+from core.request.downloader.serializer.httpx import HttpxCookieSerializer
 from core.request.middleware.proxy.config import ProxyConfig
 from core.request.response.model import HttpxResponse
 import httpx
@@ -31,6 +33,7 @@ class HttpxDownloader(
             config
             if config is not None
             else HttpxDownloaderConfig(),
+            response_adapter_resolver,
         )
         self._response_adapter_resolver = response_adapter_resolver
 
@@ -69,31 +72,22 @@ class HttpxDownloader(
                 method=request.method.value,
                 url=request.url,
                 headers=dict(request.headers),
-                cookies=dict(request.cookies),
+                cookies=HttpxCookieSerializer.serialize_many(request.cookies),
                 params=dict(request.params),
                 content=request.body,
             )
-
+            cookies=response.cookies
             normalized = HttpxResponse(
                 url=str(response.url),
                 status_code=response.status_code,
-                headers=dict(response.headers),
+                headers=dict(response.headers.multi_items()),
                 body=response.content,
-                cookies=dict(response.cookies),
+                cookies=HttpxCookieConverter.convert_many(cookies),
                 encoding=response.encoding,
                 reason=response.reason_phrase,
                 raw=response,
             )
-
-            adapter = self._response_adapter_resolver.resolve(
-                profile=context.descriptor.profile,
-                response=normalized,
-            )
-
-            return DownloadResult(
-                response=adapter,
-                success=response.is_success,
-            )
+            return self._set_result(context,normalized)
 
         except Exception as exc:
 
@@ -120,7 +114,7 @@ class HttpxDownloader(
                 method=request.method.value,
                 url=request.url,
                 headers=dict(request.headers),
-                cookies=dict(request.cookies),
+                cookies=HttpxCookieSerializer.serialize_many(request.cookies),
                 params=dict(request.params),
                 content=request.body,
             )
@@ -129,13 +123,13 @@ class HttpxDownloader(
                 req,
                 stream=True,
             )
-
+            cookies=response.cookies
             normalized = HttpxResponse(
                 url=str(response.url),
                 status_code=response.status_code,
                 headers=dict(response.headers),
                 body=b"",
-                cookies=dict(response.cookies),
+                cookies=HttpxCookieConverter.convert_many(cookies),
                 encoding=response.encoding,
                 reason=response.reason_phrase,
                 raw=response,

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from core.request.middleware.cookie.model import Cookie
 from core.request.middleware.proxy.config import ProxyConfig
 
 from .typing import (
     RequestBody,
     RequestParams,
-    RequestCookies,
     RequestHeaders,
 )
 
@@ -17,7 +17,7 @@ _UNSET = object()
 class RequestPatch:
     url: str | None = None
     headers: RequestHeaders | None = None
-    cookies: RequestCookies | None = None
+    cookies: tuple[Cookie, ...] = ()
     params: RequestParams | None = None
     body: RequestBody = _UNSET
     proxy: ProxyConfig | None = None

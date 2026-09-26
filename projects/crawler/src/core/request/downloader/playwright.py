@@ -3,6 +3,8 @@ from __future__ import annotations
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.context import RequestContext
+
+from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.downloader.model import DownloaderCapabilities
 from core.request.response.model import BrowserResponse
 from playwright.async_api import (
@@ -10,9 +12,7 @@ from playwright.async_api import (
     Page,
     Response,
 )
-
 from core.request.typing import DownloaderType
-
 from .base import BaseDownloader
 from .config import PlaywrightDownloaderConfig
 from .request import DownloadRequest
@@ -35,6 +35,7 @@ class PlaywrightDownloader(
             config
             if config is not None
             else PlaywrightDownloaderConfig(),
+            response_adapter_resolver,
         )
 
         self._response_adapter_resolver = (
@@ -75,12 +76,17 @@ class PlaywrightDownloader(
                     proxy=context.descriptor.proxy,
                 )
             )
-
             request = self.build_request(
                 context,
             )
 
             async with session.lock:
+
+                await self._browser_runtime.apply_cookies(
+                    session=session,
+                    cookies=context.descriptor.cookies,
+                    url=context.descriptor.url,
+                )
 
                 response = await self._navigate(
                     session.page,
@@ -100,21 +106,7 @@ class PlaywrightDownloader(
                     )
                 )
 
-            adapter = (
-                self._response_adapter_resolver.resolve(
-                    profile=context.descriptor.profile,
-                    response=normalized,
-                )
-            )
-
-            return DownloadResult(
-                response=adapter,
-                success=(
-                    200
-                    <= normalized.status_code
-                    < 400
-                ),
-            )
+            return self._set_result(context,normalized)
 
         except Exception as exc:
 
@@ -157,12 +149,12 @@ class PlaywrightDownloader(
     ) -> BrowserResponse:
 
         body = await response.body()
-
         return BrowserResponse(
             url=response.url,
             status_code=response.status,
             headers=await response.all_headers(),
             body=body,
+            cookies=await PlaywrightCookieExtractor.extract(response),
             encoding=None,
             reason=None,
             page=page,
@@ -174,7 +166,8 @@ class PlaywrightDownloader(
     ) -> str:
         session_id= context.session_id
         if session_id is None:
-            raise RuntimeError("require session id")
+            raise RuntimeError(
+                "Playwright request requires a session_id.",
+            )
         return session_id
 
-            

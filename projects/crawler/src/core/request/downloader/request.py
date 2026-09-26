@@ -4,10 +4,10 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 
 from core.request.context import RequestContext
+from core.request.middleware.cookie.model import Cookie
 from core.request.typing import (
     HttpMethod,
     RequestBody,
-    RequestCookies,
     RequestHeaders,
     RequestParams,
 )
@@ -30,9 +30,7 @@ class DownloadRequest:
         default_factory=dict,
     )
 
-    cookies: RequestCookies = field(
-        default_factory=dict,
-    )
+    cookies: tuple[Cookie, ...] = ()
 
     params: RequestParams = field(
         default_factory=dict,
@@ -54,9 +52,8 @@ class DownloadRequest:
             headers=dict(
                 descriptor.headers,
             ),
-            cookies=dict(
-                descriptor.cookies,
-            ),
+            cookies=descriptor.cookies,
+
             params=dict(
                 descriptor.params,
             ),

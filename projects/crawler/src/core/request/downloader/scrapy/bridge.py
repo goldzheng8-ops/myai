@@ -1,12 +1,12 @@
 from __future__ import annotations
-
+from scrapy.http import Request
 from collections.abc import Mapping
-from typing import Any, cast
+from typing import Any
 
 from core.request.descriptor import  RequestDescriptor
-from core.request.typing import RequestCookies
-from scrapy.http import Request
-from scrapy.http.request import CookiesT
+from core.request.downloader.serializer.scrapy import ScrapyCookieSerializer
+
+
 
 from core.request.context import RequestContext
 
@@ -23,16 +23,22 @@ class ScrapyRequestBridge:
     ) -> Request:
         request = context.descriptor
         meta = request.meta
+        headers = dict(
+            request.headers,
+        )
 
+        if request.cookies:
+            cookie_header = (
+                ScrapyCookieSerializer.serialize(
+                    request.cookies,
+                )
+            )
+
+            headers["Cookie"] = cookie_header
         return Request(
             url=request.url,
             method=request.method.value,
-            headers=self._build_headers(
-                request.headers,
-            ),
-            cookies=self._build_cookies(
-                request.cookies,
-            ),
+            headers=headers,
             body=request.body or b"",
             priority=meta.priority,
             dont_filter=meta.dont_filter,
@@ -53,15 +59,7 @@ class ScrapyRequestBridge:
             for name, value in headers.items()
         }
 
-    @staticmethod
-    def _build_cookies(
-        cookies: RequestCookies,
-    ) -> CookiesT:
 
-        return cast(
-            CookiesT,
-            cookies,
-        )
 
     @staticmethod
     def _build_meta(

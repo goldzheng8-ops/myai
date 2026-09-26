@@ -1,78 +1,110 @@
+from __future__ import annotations
+
 import asyncio
+from dataclasses import dataclass, field
 from typing import Literal, cast
 
-from core.lifecycle.protocol import LifecycleParticipant
-from core.request.browser.config import BrowserContextConfig, BrowserRuntimeConfig
-from core.request.browser.runtime import BrowserSessionRuntime
-from core.request.middleware.proxy.config import ProxyConfig
+from core.request.downloader.serializer.playwright import PlaywrightCookieSerializer
 from playwright.async_api import (
     Browser,
     BrowserContext,
     BrowserType,
-    ProxySettings,
+    Page,
     Playwright,
+    ProxySettings,
     async_playwright,
 )
 
+from core.lifecycle.protocol import LifecycleParticipant
+from core.request.browser.config import BrowserContextConfig, BrowserRuntimeConfig
+from core.request.middleware.proxy.config import ProxyConfig
+from core.request.middleware.cookie.model import Cookie
+
 ColorScheme = Literal['dark', 'light', 'no-preference', 'null']
 
-class BrowserRuntimeManager(
-    LifecycleParticipant,
-):
+
+
+
+
+@dataclass(slots=True)
+class BrowserSessionRuntime:
+    """
+    Runtime state owned by one logical browser session.
+
+    A session owns exactly one BrowserContext and its default Page.
+    """
+
+    session_id: str
+    context: BrowserContext
+    page: Page
+    proxy: ProxyConfig | None = None
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+
+    async def close(self) -> None:
+        if not self.page.is_closed():
+            await self.page.close()
+
+        await self.context.close()
+
+
+class BrowserRuntimeManager(LifecycleParticipant):
+    """
+    Owns the Playwright runtime lifecycle.
+
+    Responsibilities:
+    - Playwright lifecycle
+    - Browser lifecycle
+    - BrowserContext lifecycle
+    - logical browser session lifecycle
+    - browser-side cookie injection
+
+    This class does not know about:
+    - RequestContext
+    - RequestDescriptor
+    - Framework Middleware
+    - Session
+    - Downloader
+    """
 
     def __init__(
         self,
         config: BrowserRuntimeConfig,
         context_config: BrowserContextConfig,
     ) -> None:
-
         self._config = config
         self._context_config = context_config
 
         self._playwright: Playwright | None = None
         self._browser: Browser | None = None
 
-        self._sessions: dict[
-            str,
-            BrowserSessionRuntime,
-        ] = {}
+        self._sessions: dict[str, BrowserSessionRuntime] = {}
 
         self._lock = asyncio.Lock()
 
     @property
-    def config(
-        self,
-    ) -> BrowserRuntimeConfig:
-
+    def config(self) -> BrowserRuntimeConfig:
         return self._config
 
     async def start(self) -> None:
+        """
+        Start Playwright and the configured browser.
 
+        Safe to call multiple times.
+        """
         async with self._lock:
-
             if self._browser is not None:
                 return
 
-            playwright = (
-                await async_playwright().start()
-            )
+            playwright = await async_playwright().start()
 
             try:
-
-                browser_type = (
-                    self._get_browser_type(
-                        playwright,
-                    )
-                )
+                browser_type = self._get_browser_type(playwright)
 
                 browser = await browser_type.launch(
                     headless=self.config.headless,
                 )
-
             except Exception:
-
                 await playwright.stop()
-
                 raise
 
             self._playwright = playwright
@@ -84,23 +116,21 @@ class BrowserRuntimeManager(
         session_id: str,
         proxy: ProxyConfig | None = None,
     ) -> BrowserSessionRuntime:
-        await self.start()
-        async with self._lock:
+        """
+        Get or create a logical browser session.
 
-            session = self._sessions.get(
-                session_id,
-            )
+        A session is bound to its proxy for its entire lifetime.
+        """
+        await self.start()
+
+        async with self._lock:
+            session = self._sessions.get(session_id)
 
             if session is not None:
-
-                if not self._same_proxy(
-                    session.proxy,
-                    proxy,
-                ):
+                if not self._same_proxy(session.proxy, proxy):
                     raise RuntimeError(
-                        "Browser session proxy cannot "
-                        "be changed after creation: "
-                        f"{session_id!r}",
+                        "Browser session proxy cannot be changed "
+                        f"after creation: {session_id!r}",
                     )
 
                 return session
@@ -111,13 +141,9 @@ class BrowserRuntimeManager(
             )
 
             try:
-
                 page = await context.new_page()
-
             except Exception:
-
                 await context.close()
-
                 raise
 
             session = BrowserSessionRuntime(
@@ -131,14 +157,41 @@ class BrowserRuntimeManager(
 
             return session
 
+    async def apply_cookies(
+        self,
+        *,
+        session: BrowserSessionRuntime,
+        cookies: tuple[Cookie, ...],
+        url: str,
+    ) -> None:
+        """
+        Inject framework cookies into the BrowserContext.
+
+        Cookie lifecycle itself belongs to Framework Middleware.
+        This method only performs the transport-specific conversion
+        and injection into Playwright.
+        """
+        if not cookies:
+            return
+
+        serialized = PlaywrightCookieSerializer.serialize_many(
+            cookies,
+            url=url,
+        )
+
+        if not serialized:
+            return
+
+        await session.context.add_cookies(
+            list(serialized),
+        )
+
     async def close(self) -> None:
-
+        """
+        Close all sessions, Browser and Playwright.
+        """
         async with self._lock:
-
-            sessions = tuple(
-                self._sessions.values(),
-            )
-
+            sessions = tuple(self._sessions.values())
             self._sessions.clear()
 
             browser = self._browser
@@ -148,10 +201,7 @@ class BrowserRuntimeManager(
             self._playwright = None
 
         await asyncio.gather(
-            *(
-                session.close()
-                for session in sessions
-            ),
+            *(session.close() for session in sessions),
             return_exceptions=True,
         )
 
@@ -161,16 +211,14 @@ class BrowserRuntimeManager(
         if playwright is not None:
             await playwright.stop()
 
-
     async def _create_context(
         self,
         context_config: BrowserContextConfig,
         proxy_config: ProxyConfig | None = None,
     ) -> BrowserContext:
-
         browser = self._require_browser()
         config = context_config
-        
+
         return await browser.new_context(
             user_agent=config.user_agent,
             locale=config.locale,
@@ -186,12 +234,13 @@ class BrowserRuntimeManager(
                 )
                 else None
             ),
-            device_scale_factor=(
-                config.device_scale_factor
-            ),
+            device_scale_factor=config.device_scale_factor,
             is_mobile=config.is_mobile,
             has_touch=config.has_touch,
-            color_scheme=cast(ColorScheme,config.color_scheme),
+            color_scheme=cast(
+                ColorScheme,
+                config.color_scheme,
+            ),
             java_script_enabled=config.java_script_enabled,
             accept_downloads=config.accept_downloads,
             ignore_https_errors=config.ignore_https_errors,
@@ -201,13 +250,13 @@ class BrowserRuntimeManager(
                 else None
             ),
             storage_state=config.storage_state,
-            proxy=self._build_proxy(proxy_config)
+            proxy=self._build_proxy(proxy_config),
         )
+
     def _get_browser_type(
         self,
         playwright: Playwright,
     ) -> BrowserType:
-
         if self.config.browser == "chromium":
             return playwright.chromium
 
@@ -216,11 +265,10 @@ class BrowserRuntimeManager(
 
         return playwright.webkit
 
+    @staticmethod
     def _build_proxy(
-        self,
         proxy_config: ProxyConfig | None = None,
     ) -> ProxySettings | None:
-
         if proxy_config is None:
             return None
 
@@ -241,7 +289,6 @@ class BrowserRuntimeManager(
         left: ProxyConfig | None,
         right: ProxyConfig | None,
     ) -> bool:
-
         if left is None or right is None:
             return left is right
 
