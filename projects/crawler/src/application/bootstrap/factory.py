@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from application.bootstrap.registration.browser_components import register_browser_components
 from application.bootstrap.registration.download import register_download
+from application.bootstrap.registration.downloader_components import register_downloader_components
 from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
@@ -107,6 +108,9 @@ class ApplicationContainerFactory:
         register_downloaders(
             builder,
             config,
+        )
+        register_downloader_components(
+            builder,
         )
         register_download(
             builder,

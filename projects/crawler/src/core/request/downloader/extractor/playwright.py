@@ -1,12 +1,19 @@
-from core.request.downloader.extractor.parser import SetCookieParser
+from core.request.middleware.cookie.policy.parser import SetCookieParser
 from core.request.middleware.cookie.model import Cookie
 from playwright.async_api import Response
 
 
 class PlaywrightCookieExtractor:
 
-    @staticmethod
+    def __init__(
+        self,
+        set_cookie_parser: SetCookieParser,
+    ) -> None:
+        self._set_cookie_parser=set_cookie_parser
+
+
     async def extract(
+        self,
         response: Response,
     ) -> tuple[Cookie, ...]:
 
@@ -17,20 +24,10 @@ class PlaywrightCookieExtractor:
         if not headers:
             return ()
 
-        result: list[Cookie] = []
 
-        for header in headers:
+        cookies = self._set_cookie_parser.parse_many(
+            headers,
+            url=response.url,
+        )
 
-            cookie = (
-                SetCookieParser.parse(
-                    header,
-                    url=response.url,
-                )
-            )
-
-            if cookie is None:
-                continue
-
-            result.append(cookie)
-
-        return tuple(result)
+        return cookies
