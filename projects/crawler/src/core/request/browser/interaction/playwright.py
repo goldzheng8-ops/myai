@@ -1,20 +1,79 @@
+import asyncio
 from typing import Any, Literal, cast
 
-from core.extraction.response.playwright import PlaywrightResponseAdapter
-from core.request.browser.interaction.base import BrowserInteractionEngine
-from core.request.browser.interaction.context import BrowserInteractionContext
-from core.request.browser.interaction.model import BrowserAction
-from core.request.browser.typing import BrowserActionType, BrowserPageState
-from core.request.context import RequestContext
 from playwright.async_api import Page
+
+from core.extraction.response.playwright import (
+    PlaywrightResponseAdapter,
+)
+from core.request.browser.inspector.base import (
+    BrowserPageInspector,
+)
+from core.request.browser.interaction.base import (
+    BrowserInteractionEngine,
+)
+from core.request.browser.interaction.context import (
+    BrowserInteractionContext,
+)
+from core.request.browser.interaction.model import (
+    BrowserAction,
+)
+from core.request.browser.intervention.base import (
+    HumanInterventionEngine,
+)
+from core.request.browser.typing import (
+    BrowserActionType,
+    BrowserPageState,
+)
+from core.request.context import RequestContext
 from core.spider.config import SearchSpiderConfig
 
-LoadState = Literal['domcontentloaded', 'load', 'networkidle']
-SelectorState = Literal['attached', 'detached', 'hidden', 'visible']
+
+LoadState = Literal[
+    "domcontentloaded",
+    "load",
+    "networkidle",
+]
+
+SelectorState = Literal[
+    "attached",
+    "detached",
+    "hidden",
+    "visible",
+]
+
 
 class PlaywrightBrowserInteractionEngine(
     BrowserInteractionEngine,
 ):
+    """
+    Execute browser interaction actions against a Playwright page.
+
+    Responsibilities:
+    - dispatch BrowserAction
+    - execute Playwright page operations
+    - normalize action timeouts
+    - inspect browser page state
+    - invoke human intervention when required
+
+    This engine does not own:
+    - Browser
+    - BrowserContext
+    - Page lifecycle
+    - Request lifecycle
+    - Cookie lifecycle
+    """
+
+    RECOVERY_TIMEOUT = 120.0
+    RECOVERY_INTERVAL = 1.0
+
+    def __init__(
+        self,
+        inspector: BrowserPageInspector,
+        human_intervention: HumanInterventionEngine,
+    ) -> None:
+        self._inspector = inspector
+        self._human_intervention = human_intervention
 
     async def execute(
         self,
@@ -27,43 +86,24 @@ class PlaywrightBrowserInteractionEngine(
             context.request,
         )
 
-        page = self._get_page(
-            response,
-        )
-        session = self._get_session(
-            context.request,
-        )
+        page = response.page
 
-        browser = await self._browser_runtime_manager.get_or_create(
-            session,
-        )
-
-        page = browser.page
         for action in context.config.actions:
 
-            print(
-                "\n========== ACTION =========="
-            )
-            print("type:", action.type)
-            print("selector:", action.selector)
-            print("value:", action.value)            
             await self._execute_action(
                 page,
                 action,
             )
+
             await self._handle_page_state(
                 context,
                 page,
             )
 
-            print("URL:", page.url)
-            print("TITLE:", await page.title())
+    # =========================================================
+    # action dispatch
+    # =========================================================
 
-            if action.type == BrowserActionType.CLICK:
-                print(
-                    "#links count:",
-                    await page.locator("#links").count(),
-                )
     async def _execute_action(
         self,
         page: Page,
@@ -105,27 +145,12 @@ class PlaywrightBrowserInteractionEngine(
                 )
 
             case BrowserActionType.CLICK:
-                print(
-                    "before click:",
-                    page.url,
-                )
                 await self._click(
                     page,
                     action,
                     timeout,
                 )
-                print(
-                    "after click:",
-                    page.url,
-                )
 
-                print(
-                    "search q:",
-                    await page.locator(
-                        'input[name="q"]'
-                    ).input_value(),
-                )
-                print(await page.content())
             case BrowserActionType.DOUBLE_CLICK:
                 await self._double_click(
                     page,
@@ -195,18 +220,21 @@ class PlaywrightBrowserInteractionEngine(
                 )
 
             case BrowserActionType.GO_BACK:
-                await page.go_back(
-                    timeout=timeout,
+                await self._go_back(
+                    page,
+                    timeout,
                 )
 
             case BrowserActionType.GO_FORWARD:
-                await page.go_forward(
-                    timeout=timeout,
+                await self._go_forward(
+                    page,
+                    timeout,
                 )
 
             case BrowserActionType.RELOAD:
-                await page.reload(
-                    timeout=timeout,
+                await self._reload(
+                    page,
+                    timeout,
                 )
 
             case BrowserActionType.WAIT:
@@ -257,12 +285,16 @@ class PlaywrightBrowserInteractionEngine(
 
             case _:
                 raise ValueError(
-                    f"Unsupported browser action: "
+                    "Unsupported browser action: "
                     f"{action.type!r}",
                 )
 
+    # =========================================================
+    # response / page
+    # =========================================================
+
+    @staticmethod
     def _get_response(
-        self,
         request: RequestContext,
     ) -> PlaywrightResponseAdapter:
 
@@ -288,14 +320,9 @@ class PlaywrightBrowserInteractionEngine(
 
         return response
 
-    def _get_page(
-        self,
-        response: PlaywrightResponseAdapter,
-    ) -> Page:
-
-        page = response.page
-
-        return page
+    # =========================================================
+    # input actions
+    # =========================================================
 
     async def _fill(
         self,
@@ -304,11 +331,10 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-        value = self._require_value(action)
-
-        await page.locator(selector).fill(
-            value,
+        await page.locator(
+            self._require_selector(action),
+        ).fill(
+            self._require_value(action),
             timeout=timeout,
             force=action.force,
         )
@@ -320,11 +346,10 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-        value = self._require_value(action)
-
-        await page.locator(selector).press_sequentially(
-            value,
+        await page.locator(
+            self._require_selector(action),
+        ).press_sequentially(
+            self._require_value(action),
             timeout=timeout,
         )
 
@@ -335,11 +360,25 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).clear(
+        await page.locator(
+            self._require_selector(action),
+        ).clear(
             timeout=timeout,
             force=action.force,
+        )
+
+    async def _press(
+        self,
+        page: Page,
+        action: BrowserAction,
+        timeout: float | None,
+    ) -> None:
+
+        await page.locator(
+            self._require_selector(action),
+        ).press(
+            self._require_value(action),
+            timeout=timeout,
         )
 
     async def _click(
@@ -349,9 +388,9 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).click(
+        await page.locator(
+            self._require_selector(action),
+        ).click(
             timeout=timeout,
             force=action.force,
             no_wait_after=action.no_wait_after,
@@ -364,9 +403,9 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).dblclick(
+        await page.locator(
+            self._require_selector(action),
+        ).dblclick(
             timeout=timeout,
             force=action.force,
             no_wait_after=action.no_wait_after,
@@ -379,9 +418,9 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).hover(
+        await page.locator(
+            self._require_selector(action),
+        ).hover(
             timeout=timeout,
             force=action.force,
         )
@@ -393,9 +432,9 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).focus(
+        await page.locator(
+            self._require_selector(action),
+        ).focus(
             timeout=timeout,
         )
 
@@ -406,9 +445,9 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
-        await page.locator(selector).blur(
+        await page.locator(
+            self._require_selector(action),
+        ).blur(
             timeout=timeout,
         )
 
@@ -419,13 +458,13 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-        value = self._require_value(action)
-
-        await page.locator(selector).select_option(
-            value,
+        await page.locator(
+            self._require_selector(action),
+        ).select_option(
+            self._require_value(action),
             timeout=timeout,
         )
+
     async def _check(
         self,
         page: Page,
@@ -433,12 +472,8 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(
-            action,
-        )
-
         await page.locator(
-            selector,
+            self._require_selector(action),
         ).check(
             timeout=timeout,
         )
@@ -450,15 +485,15 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(
-            action,
-        )
-
         await page.locator(
-            selector,
+            self._require_selector(action),
         ).uncheck(
             timeout=timeout,
         )
+
+    # =========================================================
+    # keyboard
+    # =========================================================
 
     async def _keyboard_press(
         self,
@@ -466,10 +501,8 @@ class PlaywrightBrowserInteractionEngine(
         action: BrowserAction,
     ) -> None:
 
-        value = self._require_value(action)
-
         await page.keyboard.press(
-            value,
+            self._require_value(action),
         )
 
     async def _keyboard_type(
@@ -478,26 +511,13 @@ class PlaywrightBrowserInteractionEngine(
         action: BrowserAction,
     ) -> None:
 
-        value = self._require_value(action)
-
         await page.keyboard.type(
-            value,
+            self._require_value(action),
         )
 
-    async def _press(
-        self,
-        page: Page,
-        action: BrowserAction,
-        timeout: float | None,
-    ) -> None:
-
-        selector = self._require_selector(action)
-        value = self._require_value(action)
-
-        await page.locator(selector).press(
-            value,
-            timeout=timeout,
-        )
+    # =========================================================
+    # navigation
+    # =========================================================
 
     async def _goto(
         self,
@@ -517,6 +537,40 @@ class PlaywrightBrowserInteractionEngine(
             url,
             timeout=timeout,
         )
+
+    async def _go_back(
+        self,
+        page: Page,
+        timeout: float | None,
+    ) -> None:
+
+        await page.go_back(
+            timeout=timeout,
+        )
+
+    async def _go_forward(
+        self,
+        page: Page,
+        timeout: float | None,
+    ) -> None:
+
+        await page.go_forward(
+            timeout=timeout,
+        )
+
+    async def _reload(
+        self,
+        page: Page,
+        timeout: float | None,
+    ) -> None:
+
+        await page.reload(
+            timeout=timeout,
+        )
+
+    # =========================================================
+    # waiting
+    # =========================================================
 
     async def _wait(
         self,
@@ -540,10 +594,8 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
+        value = action.state or "visible"
 
-        value= action.state or "visible"
-        
         if value not in {
             "attached",
             "detached",
@@ -551,18 +603,17 @@ class PlaywrightBrowserInteractionEngine(
             "visible",
         }:
             raise ValueError(
-                "Invalid load state: "
-                f"{value!r}",
+                "Invalid selector state: "
+                f"{value!r}.",
             )
 
-        load_state = cast(
-            SelectorState,
-            value,
-        ) 
         await page.wait_for_selector(
-            selector,
+            self._require_selector(action),
             timeout=timeout,
-            state=load_state,
+            state=cast(
+                SelectorState,
+                value,
+            ),
         )
 
     async def _wait_for_url(
@@ -572,10 +623,8 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        value = self._require_value(action)
-
         await page.wait_for_url(
-            value,
+            self._require_value(action),
             timeout=timeout,
         )
 
@@ -595,17 +644,20 @@ class PlaywrightBrowserInteractionEngine(
         }:
             raise ValueError(
                 "Invalid load state: "
-                f"{value!r}",
+                f"{value!r}.",
             )
 
-        load_state = cast(
-            LoadState,
-            value,
-        )
         await page.wait_for_load_state(
-            load_state,  
+            cast(
+                LoadState,
+                value,
+            ),
             timeout=timeout,
         )
+
+    # =========================================================
+    # miscellaneous
+    # =========================================================
 
     async def _set_input_files(
         self,
@@ -614,8 +666,6 @@ class PlaywrightBrowserInteractionEngine(
         timeout: float | None,
     ) -> None:
 
-        selector = self._require_selector(action)
-
         path = action.path
 
         if path is None:
@@ -623,7 +673,9 @@ class PlaywrightBrowserInteractionEngine(
                 "set_input_files action requires a path.",
             )
 
-        await page.locator(selector).set_input_files(
+        await page.locator(
+            self._require_selector(action),
+        ).set_input_files(
             path,
             timeout=timeout,
         )
@@ -634,9 +686,9 @@ class PlaywrightBrowserInteractionEngine(
         action: BrowserAction,
     ) -> None:
 
-        value = self._require_value(action)
-
-        await page.evaluate(value)
+        await page.evaluate(
+            self._require_value(action),
+        )
 
     async def _screenshot(
         self,
@@ -654,6 +706,71 @@ class PlaywrightBrowserInteractionEngine(
         await page.screenshot(
             path=path,
         )
+
+    # =========================================================
+    # page state
+    # =========================================================
+
+    async def _handle_page_state(
+        self,
+        context: BrowserInteractionContext[Any],
+        page: Page,
+    ) -> None:
+
+        inspection = await self._inspector.inspect(
+            page,
+        )
+
+        if inspection not in {
+            BrowserPageState.CHALLENGE,
+            BrowserPageState.CAPTCHA,
+        }:
+            return
+
+        await self._human_intervention.intervene(
+            context,
+            inspection,
+        )
+
+        await self._wait_until_recovered(
+            page,
+        )
+
+    async def _wait_until_recovered(
+        self,
+        page: Page,
+    ) -> None:
+
+        deadline = (
+            asyncio.get_running_loop().time()
+            + self.RECOVERY_TIMEOUT
+        )
+
+        while True:
+
+            inspection = await self._inspector.inspect(
+                page,
+            )
+
+            if inspection.state == BrowserPageState.NORMAL:
+                return
+
+            if (
+                asyncio.get_running_loop().time()
+                >= deadline
+            ):
+                raise TimeoutError(
+                    "Browser page did not recover "
+                    "after human intervention.",
+                )
+
+            await asyncio.sleep(
+                self.RECOVERY_INTERVAL,
+            )
+
+    # =========================================================
+    # validation
+    # =========================================================
 
     @staticmethod
     def _require_selector(
@@ -699,58 +816,3 @@ class PlaywrightBrowserInteractionEngine(
             )
 
         return timeout * 1000
-
-    async def _handle_page_state(
-        self,
-        context: BrowserInteractionContext[Any],
-        page: Page,
-    ) -> None:
-
-        inspection = await self._inspector.inspect(
-            page,
-        )
-
-        if inspection.state not in {
-            BrowserPageState.CHALLENGE,
-            BrowserPageState.CAPTCHA,
-        }:
-            return
-
-        await self._human_intervention.intervene(
-            context,
-            inspection,
-        )
-
-        await self._wait_until_recovered(
-            page,
-        )
-
-    async def _wait_until_recovered(
-        self,
-        page: Page,
-    ) -> None:
-
-        deadline = (
-            asyncio.get_running_loop().time()
-            + 120
-        )
-
-        while True:
-
-            inspection = await self._inspector.inspect(
-                page,
-            )
-
-            if inspection.state == BrowserPageState.NORMAL:
-                return
-
-            if (
-                asyncio.get_running_loop().time()
-                >= deadline
-            ):
-                raise TimeoutError(
-                    "Browser page did not recover "
-                    "after human intervention."
-                )
-
-            await asyncio.sleep(1)

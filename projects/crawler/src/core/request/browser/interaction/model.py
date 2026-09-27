@@ -1,43 +1,110 @@
 from __future__ import annotations
+from dataclasses import dataclass
+from typing import Mapping
 from pydantic import model_validator
 
 
 from core.request.browser.typing import BrowserActionType
 from core.typing.config import BaseConfig
 
+@dataclass(frozen=True, slots=True)
+class BrowserActionSpec:
 
-_SELECTOR_ACTIONS = frozenset(
-    {
-        BrowserActionType.FILL,
-        BrowserActionType.TYPE,
-        BrowserActionType.CLEAR,
-        BrowserActionType.PRESS,
-        BrowserActionType.CLICK,
-        BrowserActionType.DOUBLE_CLICK,
-        BrowserActionType.HOVER,
-        BrowserActionType.FOCUS,
-        BrowserActionType.BLUR,
-        BrowserActionType.SELECT,
-        BrowserActionType.CHECK,
-        BrowserActionType.UNCHECK,
-        BrowserActionType.SET_INPUT_FILES,
-    }
-)
+    required: frozenset[str] = frozenset()
 
-_VALUE_ACTIONS = frozenset(
-    {
-        BrowserActionType.FILL,
-        BrowserActionType.TYPE,
-        BrowserActionType.PRESS,
-        BrowserActionType.SELECT,
-        BrowserActionType.KEYBOARD_PRESS,
-        BrowserActionType.KEYBOARD_TYPE,
-        BrowserActionType.WAIT_FOR_URL,
-        BrowserActionType.WAIT_FOR_LOAD_STATE,
-        BrowserActionType.EVALUATE,
-    }
-)
+    allowed: frozenset[str] = frozenset()
 
+_BROWSER_ACTION_SPECS: Mapping[
+    BrowserActionType,
+    BrowserActionSpec,
+] = {
+    BrowserActionType.CLICK: BrowserActionSpec(
+        required=frozenset({"selector"}),
+        allowed=frozenset({
+            "selector",
+            "timeout",
+            "force",
+            "no_wait_after",
+            "strict",
+        }),
+    ),
+
+    BrowserActionType.FILL: BrowserActionSpec(
+        required=frozenset({
+            "selector",
+            "value",
+        }),
+        allowed=frozenset({
+            "selector",
+            "value",
+            "timeout",
+            "force",
+            "no_wait_after",
+            "strict",
+        }),
+    ),
+
+    BrowserActionType.GOTO: BrowserActionSpec(
+        required=frozenset({"url"}),
+        allowed=frozenset({
+            "url",
+            "timeout",
+            "no_wait_after",
+        }),
+    ),
+
+    BrowserActionType.SELECT: BrowserActionSpec(
+        required=frozenset({
+            "selector",
+            "values",
+        }),
+        allowed=frozenset({
+            "selector",
+            "values",
+            "timeout",
+            "force",
+            "no_wait_after",
+            "strict",
+        }),
+    ),
+
+    BrowserActionType.SET_INPUT_FILES: BrowserActionSpec(
+        required=frozenset({
+            "selector",
+            "path",
+        }),
+        allowed=frozenset({
+            "selector",
+            "path",
+            "timeout",
+            "no_wait_after",
+        }),
+    ),
+
+    BrowserActionType.WAIT_FOR_URL: BrowserActionSpec(
+        required=frozenset({"value"}),
+        allowed=frozenset({
+            "value",
+            "timeout",
+        }),
+    ),
+
+    BrowserActionType.WAIT_FOR_LOAD_STATE: BrowserActionSpec(
+        required=frozenset({"state"}),
+        allowed=frozenset({
+            "state",
+            "timeout",
+        }),
+    ),
+
+    BrowserActionType.EVALUATE: BrowserActionSpec(
+        required=frozenset({"value"}),
+        allowed=frozenset({
+            "value",
+            "timeout",
+        }),
+    ),
+}
 class BrowserAction(BaseConfig):
 
     type: BrowserActionType
@@ -63,33 +130,82 @@ class BrowserAction(BaseConfig):
     strict: bool = False
 
     @model_validator(mode="after")
-    def validate_action(self) -> BrowserAction:
+    def validate_action(
+        self,
+    ) -> BrowserAction:
 
-        if self.type in _SELECTOR_ACTIONS:
-            if self.selector is None:
-                raise ValueError(
-                    f"{self.type.value!r} action requires "
-                    "a selector.",
-                )
+        spec = _BROWSER_ACTION_SPECS.get(
+            self.type,
+        )
 
-        if self.type in _VALUE_ACTIONS:
-            if self.value is None:
-                raise ValueError(
-                    f"{self.type.value!r} action requires "
-                    "a value.",
-                )
+        if spec is None:
+            raise ValueError(
+                f"Unsupported browser action: "
+                f"{self.type.value!r}.",
+            )
 
-        if self.type == BrowserActionType.SET_INPUT_FILES:
-            if self.path is None:
-                raise ValueError(
-                    "set_input_files action requires "
-                    "a path.",
-                )
+        provided = self._provided_fields()
 
-        if self.type == BrowserActionType.GOTO:
-            if self.url is None:
-                raise ValueError(
-                    "goto action requires a url.",
-                )
+        missing = (
+            spec.required - provided
+        )
+
+        if missing:
+            field = next(iter(missing))
+
+            raise ValueError(
+                f"{self.type.value!r} action requires "
+                f"a {field}.",
+            )
+
+        unsupported = (
+            provided - spec.allowed
+        )
+
+        if unsupported:
+            field = next(iter(unsupported))
+
+            raise ValueError(
+                f"{self.type.value!r} action does not "
+                f"support field {field!r}.",
+            )
 
         return self
+
+    def _provided_fields(
+        self,
+    ) -> set[str]:
+
+        result: set[str] = set()
+
+        if self.selector is not None:
+            result.add("selector")
+
+        if self.value is not None:
+            result.add("value")
+
+        if self.timeout is not None:
+            result.add("timeout")
+
+        if self.state is not None:
+            result.add("state")
+
+        if self.url is not None:
+            result.add("url")
+
+        if self.path is not None:
+            result.add("path")
+
+        if self.values:
+            result.add("values")
+
+        if self.force:
+            result.add("force")
+
+        if self.no_wait_after:
+            result.add("no_wait_after")
+
+        if self.strict:
+            result.add("strict")
+
+        return result

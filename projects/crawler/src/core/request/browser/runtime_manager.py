@@ -94,10 +94,11 @@ class BrowserRuntimeManager(LifecycleParticipant):
         self,
         config: BrowserRuntimeConfig,
         context_config: BrowserContextConfig,
+        cookie_extractor:PlaywrightCookieExtractor,
     ) -> None:
         self._config = config
         self._context_config = context_config
-
+        self._cookie_extractor=cookie_extractor
         self._playwright: Playwright | None = None
         self._browser: Browser | None = None
 
@@ -391,11 +392,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
         if sink is None:
             return
 
-        cookies = await (
-            PlaywrightCookieExtractor.extract(
-                response,
-            )
-        )
+        cookies = await self._cookie_extractor.extract(response)
 
         if not cookies:
             return

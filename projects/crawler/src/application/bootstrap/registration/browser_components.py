@@ -3,6 +3,7 @@
 from application.config.model import ApplicationConfig
 from core.provider import ProviderBuilder
 from core.request.browser.runtime_manager import BrowserRuntimeManager
+from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 
 def register_browser_components(
     builder: ProviderBuilder,
@@ -14,6 +15,7 @@ def register_browser_components(
         lambda resolver: BrowserRuntimeManager(
             config=config.browser_runtime,
             context_config=config.browser_context,
+            cookie_extractor=resolver.resolve(PlaywrightCookieExtractor)
 
         ),
     )

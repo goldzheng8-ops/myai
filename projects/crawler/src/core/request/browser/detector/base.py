@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
+from core.request.browser.inspector.model import BrowserPageInspection
 from core.request.browser.snapshot import BrowserPageSnapshot
-from core.request.browser.typing import BrowserPageState
 from playwright.async_api import Page
 
 
@@ -12,7 +12,7 @@ class BrowserPageStateDetector(ABC):
         self,
         page: Page,
         snapshot: BrowserPageSnapshot,      
-    ) -> BrowserPageState | None:
+    ) -> BrowserPageInspection | None:
         """
         Return a detected state, or None if this detector
         does not recognize the current page.

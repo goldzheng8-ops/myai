@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
+from playwright.async_api import Page
 
-from core.extraction.response.playwright import PlaywrightResponseAdapter
-from core.request.browser.typing import BrowserPageState
+from core.request.browser.inspector.model import BrowserPageInspection
 
 
 
@@ -10,15 +10,7 @@ class BrowserPageInspector(ABC):
     @abstractmethod
     async def inspect(
         self,
-        response: PlaywrightResponseAdapter,
-    ) -> BrowserPageState:
+        page: Page,
+    ) -> BrowserPageInspection:
         raise NotImplementedError
 
-# class BrowserPageInspector(ABC):
-
-#     @abstractmethod
-#     async def inspect(
-#         self,
-#         page: Page,
-#     ) -> BrowserPageInspection:
-#         raise NotImplementedError

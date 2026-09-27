@@ -176,3 +176,11 @@ page = session.page
 ② BrowserSessionRegistry
 ③ BrowserSessionConfig
 ④ PlaywrightDownloader 改成可以获取/复用 Session
+
+
+HumanInterventionEngine
+        │
+        ├── ManualSolveEngine
+        ├── WaitForHumanEngine
+        ├── ExternalBrowserEngine
+        └── ...
