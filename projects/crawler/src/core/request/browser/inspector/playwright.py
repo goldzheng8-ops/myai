@@ -1,72 +1,42 @@
-from core.extraction.response.playwright import PlaywrightResponseAdapter
+from core.request.browser.detector.registry import BrowserPageStateDetectorRegistry
 from core.request.browser.inspector.base import BrowserPageInspector
-from core.request.browser.snapshot import BrowserPageSnapshot
-from core.request.browser.typing import BrowserPageState
-
-
+from core.request.browser.inspector.model import BrowserPageInspection
+from core.request.browser.snapshot import BrowserPageSnapshotBuilder
+from playwright.async_api import Page
 
 
 class PlaywrightBrowserPageInspector(
     BrowserPageInspector,
 ):
 
-    async def inspect(
+    def __init__(
         self,
-        response: PlaywrightResponseAdapter,
-    ) -> BrowserPageState:
+        detector_registry:
+            BrowserPageStateDetectorRegistry,
+        snapshot_builder:
+            BrowserPageSnapshotBuilder,
+    ) -> None:
 
-        page = response.page
-
-        snapshot = BrowserPageSnapshot(
-            url=page.url,
-            title=await page.title(),
-            content=await page.content(),
-            status_code=response.status_code,
-        )
-
-        for detector in self._detectors:
-
-            state = await detector.detect(
-                page,
-                snapshot,
-            )
-
-            if state is not None:
-                return state
-
-        return BrowserPageState.NORMAL
-
-class PlaywrightBrowserPageInspector(
-    BrowserPageInspector,
-):
+        self._detectors = detector_registry
+        self._snapshot_builder = snapshot_builder
 
     async def inspect(
         self,
         page: Page,
     ) -> BrowserPageInspection:
 
-        url = page.url
-
-        title = await page.title()
-
-        if await self._is_challenge(page):
-            return BrowserPageInspection(
-                state=BrowserPageState.CHALLENGE,
-                url=url,
-                title=title,
-                reason="Browser challenge detected.",
-            )
-
-        if await self._is_captcha(page):
-            return BrowserPageInspection(
-                state=BrowserPageState.CAPTCHA,
-                url=url,
-                title=title,
-                reason="CAPTCHA detected.",
-            )
-
-        return BrowserPageInspection(
-            state=BrowserPageState.NORMAL,
-            url=url,
-            title=title,
+        snapshot = await self._snapshot_builder.build(
+            page,
         )
+
+        inspection = await self._detectors.detect(
+            page,
+            snapshot,
+        )
+
+        if inspection is None:
+            raise RuntimeError(
+                "Browser page state could not be detected.",
+            )
+
+        return inspection

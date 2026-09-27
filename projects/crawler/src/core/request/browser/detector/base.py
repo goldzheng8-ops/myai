@@ -7,14 +7,12 @@ from playwright.async_api import Page
 
 class BrowserPageStateDetector(ABC):
 
+    priority: int
+
     @abstractmethod
     async def detect(
         self,
         page: Page,
-        snapshot: BrowserPageSnapshot,      
+        snapshot: BrowserPageSnapshot,
     ) -> BrowserPageInspection | None:
-        """
-        Return a detected state, or None if this detector
-        does not recognize the current page.
-        """
         raise NotImplementedError

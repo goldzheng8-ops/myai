@@ -54,3 +54,10 @@ class BrowserRuntimeConfig(BaseConfig):
     ] = "chromium"
 
     headless: bool = True
+
+
+class BrowserPageSnapshotConfig(BaseConfig):
+
+    include_html: bool = False
+
+    max_text_length: int | None = None

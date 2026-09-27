@@ -1,5 +1,5 @@
 from enum import Enum
-
+from typing import Literal
 
 class BrowserActionType(str, Enum):
 
@@ -74,6 +74,10 @@ class BrowserPageState(str, Enum):
 
     UNKNOWN = "unknown"
 
+    CLOUDFLARE_CHALLENGE = "cloudflare_challenge"
+
+    TURNSTILE_CHALLENGE = "turnstile_challenge"
+
     class BrowserSessionState(str, Enum):
 
         READY = "ready"
@@ -81,3 +85,16 @@ class BrowserPageState(str, Enum):
         CHALLENGE = "challenge"
         WAITING_FOR_HUMAN = "waiting_for_human"
         CLOSED = "closed"
+
+LoadState = Literal[
+    "domcontentloaded",
+    "load",
+    "networkidle",
+]
+
+SelectorState = Literal[
+    "attached",
+    "detached",
+    "hidden",
+    "visible",
+]
