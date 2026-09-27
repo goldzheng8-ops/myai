@@ -23,6 +23,7 @@ class ScrapyDownloader(
         executor: ScrapyRequestExecutor,
         bridge: ScrapyRequestBridge,
         response_adapter_resolver: ResponseAdapterResolver,
+        cookie_extractor: ScrapyCookieExtractor,
         config: ScrapyDownloaderConfig | None = None,
     ) -> None:
 
@@ -34,6 +35,7 @@ class ScrapyDownloader(
         )
         self._executor = executor
         self._bridge = bridge
+        self._cookie_extractor=cookie_extractor
     @property
     def capabilities(self) -> DownloaderCapabilities:
         return DownloaderCapabilities(
@@ -95,7 +97,7 @@ class ScrapyDownloader(
         self,
         response: Response,
     ) -> ScrapyResponse:
-
+        cookies=self._cookie_extractor.extract(response)
         return ScrapyResponse(
             url=response.url,
             status_code=response.status,
@@ -103,7 +105,7 @@ class ScrapyDownloader(
                 response,
             ),
             body=response.body,
-            cookies=ScrapyCookieExtractor.extract(response),
+            cookies=cookies,
             encoding=None,
             reason=None,
             raw=response,

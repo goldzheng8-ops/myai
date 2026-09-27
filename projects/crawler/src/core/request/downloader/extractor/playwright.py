@@ -1,4 +1,4 @@
-from core.request.middleware.cookie.policy.parser import SetCookieParser
+from core.request.middleware.cookie.cookie_parser import SetCookieParser
 from core.request.middleware.cookie.model import Cookie
 from playwright.async_api import Response
 
@@ -9,8 +9,7 @@ class PlaywrightCookieExtractor:
         self,
         set_cookie_parser: SetCookieParser,
     ) -> None:
-        self._set_cookie_parser=set_cookie_parser
-
+        self._set_cookie_parser = set_cookie_parser
 
     async def extract(
         self,
@@ -23,7 +22,6 @@ class PlaywrightCookieExtractor:
 
         if not headers:
             return ()
-
 
         cookies = self._set_cookie_parser.parse_many(
             headers,

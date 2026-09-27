@@ -2,21 +2,20 @@ from scrapy.http import Response
 from scrapy.http.cookies import CookieJar as ScrapyCookieJar
 
 from core.request.middleware.cookie.model import Cookie
-from core.request.downloader.converter.http import HttpCookieConverter
+from core.request.middleware.cookie.cookie_converter import HttpCookieConverter
 
 
 
 class ScrapyCookieExtractor:
-    """
-    Extract framework cookies from a Scrapy response.
 
-    This extractor does not own cookie state.
-    It uses a temporary Scrapy CookieJar only
-    for parsing Set-Cookie response headers.
-    """
+    def __init__(
+        self,
+        converter: HttpCookieConverter,
+    ) -> None:
+        self._converter = converter
 
-    @staticmethod
     def extract(
+        self,
         response: Response,
     ) -> tuple[Cookie, ...]:
 
@@ -25,6 +24,8 @@ class ScrapyCookieExtractor:
         if request is None:
             return ()
 
+        request_url = request.url
+
         jar = ScrapyCookieJar()
 
         cookies = jar.make_cookies(
@@ -32,7 +33,7 @@ class ScrapyCookieExtractor:
             request,
         )
 
-        return HttpCookieConverter.convert_many(
+        return self._converter.convert_many(
             cookies,
+            request_url=request_url,
         )
-

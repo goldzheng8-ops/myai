@@ -10,6 +10,9 @@ from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor
 from core.request.downloader.aria2.options import Aria2OptionsBuilder
 from core.request.downloader.config import Aria2DownloaderConfig, HttpxDownloaderConfig, PlaywrightDownloaderConfig, ScrapyDownloaderConfig
+from core.request.downloader.extractor.httpx import HttpxCookieExtractor
+from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
+from core.request.downloader.extractor.scrapy import ScrapyCookieExtractor
 from core.request.downloader.httpx import HttpxDownloader
 from core.request.downloader.playwright import PlaywrightDownloader
 from core.request.downloader.scrapy.bridge import ScrapyRequestBridge
@@ -45,6 +48,9 @@ def build_scrapy_downloader_factory(
             response_adapter_resolver=resolver.resolve(
                 ResponseAdapterResolver,
             ),
+            cookie_extractor=resolver.resolve(
+                ScrapyCookieExtractor,
+            ),
             config=config,
         )
     
@@ -60,6 +66,9 @@ def build_httpx_downloader_factory(
         return HttpxDownloader(
             response_adapter_resolver=resolver.resolve(
                 ResponseAdapterResolver,
+            ),
+            cookie_extractor=resolver.resolve(
+                HttpxCookieExtractor,
             ),
             config=config,
         )
@@ -79,6 +88,9 @@ def build_playwright_downloader_factory(
             ),
             browser_runtime=resolver.resolve(
                 BrowserRuntimeManager,
+            ),
+            cookie_extractor=resolver.resolve(
+                PlaywrightCookieExtractor,
             ),
             config=config,
         )

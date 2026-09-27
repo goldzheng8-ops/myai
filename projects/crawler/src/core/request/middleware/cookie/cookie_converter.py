@@ -1,14 +1,24 @@
 from datetime import datetime, timezone
 from http.cookiejar import Cookie as StdlibCookie
 from typing import Iterable
+from urllib.parse import urlparse
 
 from core.request.middleware.cookie.model import Cookie, SameSite
+from core.request.middleware.cookie.policy.cookie_domain import CookieDomainPolicy
 
 class HttpCookieConverter:
 
-    @staticmethod
+    def __init__(
+        self,
+        domain_policy: CookieDomainPolicy,
+    ) -> None:
+        self._domain_policy = domain_policy
+
     def convert(
+        self,
         cookie: StdlibCookie,
+        *,
+        request_url: str,
     ) -> Cookie:
 
         name = cookie.name
@@ -26,24 +36,35 @@ class HttpCookieConverter:
                 "HTTP cookie domain is missing.",
             )
 
+        parsed_url = urlparse(request_url)
+        request_host = parsed_url.hostname
+
+        if not request_host:
+            raise ValueError(
+                f"HTTP cookie request URL has no host: "
+                f"{request_url!r}",
+            )
+
+        resolution = (
+            self._domain_policy.resolve_parsed_domain(
+                request_host=request_host,
+                domain=domain,
+                host_only=not cookie.domain_specified,
+            )
+        )
+
         return Cookie(
             name=name,
             value=value,
-            scope_domain=(
-                domain.lstrip(".")
-            ),
-            host_only=(
-                not cookie.domain_specified
-            ),
+            scope_domain=resolution.scope_domain,
+            host_only=resolution.host_only,
             path=(
                 cookie.path
                 if cookie.path
                 else "/"
             ),
-            expires=(
-                HttpCookieConverter._expires(
-                    cookie.expires,
-                )
+            expires=self._expires(
+                cookie.expires,
             ),
             secure=cookie.secure,
             http_only=(
@@ -51,21 +72,23 @@ class HttpCookieConverter:
                     "HttpOnly",
                 )
             ),
-            same_site=(
-                HttpCookieConverter._same_site(
-                    cookie,
-                )
+            same_site=self._same_site(
+                cookie,
             ),
+            partition_key=None,
         )
 
-    @staticmethod
     def convert_many(
+        self,
         cookies: Iterable[StdlibCookie],
+        *,
+        request_url: str,
     ) -> tuple[Cookie, ...]:
 
         return tuple(
-            HttpCookieConverter.convert(
+            self.convert(
                 cookie,
+                request_url=request_url,
             )
             for cookie in cookies
         )

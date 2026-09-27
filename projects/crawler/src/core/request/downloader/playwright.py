@@ -31,6 +31,7 @@ class PlaywrightDownloader(
         self,
         response_adapter_resolver: ResponseAdapterResolver,
         browser_runtime: BrowserRuntimeManager,
+        cookie_extractor: PlaywrightCookieExtractor,        
         config: PlaywrightDownloaderConfig | None = None,
     ) -> None:
 
@@ -41,7 +42,7 @@ class PlaywrightDownloader(
             response_adapter_resolver,
         )
         self._browser_runtime = browser_runtime
-
+        self._cookie_extractor=cookie_extractor
     @property
     def capabilities(
         self,
@@ -166,12 +167,13 @@ class PlaywrightDownloader(
     ) -> BrowserResponse:
 
         body = await response.body()
+        cookies=await self._cookie_extractor.extract(response)
         return BrowserResponse(
             url=response.url,
             status_code=response.status,
             headers=await response.all_headers(),
             body=body,
-            cookies=await PlaywrightCookieExtractor.extract(response),
+            cookies=cookies,
             encoding=None,
             reason=None,
             page=page,

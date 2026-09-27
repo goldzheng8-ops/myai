@@ -3,7 +3,8 @@ from typing import AsyncIterator
 
 from core.extraction.response.resolver import ResponseAdapterResolver
 from core.request.context import RequestContext
-from core.request.downloader.converter.httpx import HttpxCookieConverter
+
+from core.request.downloader.extractor.httpx import HttpxCookieExtractor
 from core.request.downloader.model import DownloaderCapabilities
 from core.request.downloader.serializer.httpx import HttpxCookieSerializer
 from core.request.middleware.proxy.config import ProxyConfig
@@ -26,6 +27,7 @@ class HttpxDownloader(
     def __init__(
         self,
         response_adapter_resolver: ResponseAdapterResolver,
+        cookie_extractor: HttpxCookieExtractor,
         config: HttpxDownloaderConfig | None = None,
     ) -> None:
 
@@ -35,6 +37,7 @@ class HttpxDownloader(
             else HttpxDownloaderConfig(),
             response_adapter_resolver,
         )
+        self._cookie_extractor=cookie_extractor
         self._clients: dict[
             str | None,
             httpx.AsyncClient,
@@ -74,13 +77,13 @@ class HttpxDownloader(
                 params=dict(request.params),
                 content=request.body,
             )
-            cookies=response.cookies
+            cookies=self._cookie_extractor.extract(response)
             normalized = HttpxResponse(
                 url=str(response.url),
                 status_code=response.status_code,
                 headers=dict(response.headers.multi_items()),
                 body=response.content,
-                cookies=HttpxCookieConverter.convert_many(cookies),
+                cookies=cookies,
                 encoding=response.encoding,
                 reason=response.reason_phrase,
                 raw=response,
@@ -121,13 +124,13 @@ class HttpxDownloader(
                 req,
                 stream=True,
             )
-            cookies=response.cookies
+            cookies=self._cookie_extractor.extract(response)
             normalized = HttpxResponse(
                 url=str(response.url),
                 status_code=response.status_code,
                 headers=dict(response.headers),
                 body=b"",
-                cookies=HttpxCookieConverter.convert_many(cookies),
+                cookies=cookies,
                 encoding=response.encoding,
                 reason=response.reason_phrase,
                 raw=response,

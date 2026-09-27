@@ -10,16 +10,11 @@ from core.request.middleware.cookie.policy.exception import InvalidCookieDomain
 
 
 class SetCookieParser:
-    """
-    Parse HTTP Set-Cookie headers directly into
-    framework Cookie objects.
-    """
 
     def __init__(
         self,
         domain_policy: CookieDomainPolicy,
     ) -> None:
-
         self._domain_policy = domain_policy
 
     def parse(
@@ -35,20 +30,14 @@ class SetCookieParser:
             return None
 
         parsed_url = urlparse(url)
+        request_host = parsed_url.hostname
 
-        host = parsed_url.hostname
-
-        if not host:
+        if not request_host:
             return None
 
-        request_path = (
-            parsed_url.path
-            or "/"
-        )
+        request_path = parsed_url.path or "/"
 
-        parts = self._split(
-            header,
-        )
+        parts = self._split(header)
 
         if not parts:
             return None
@@ -60,72 +49,44 @@ class SetCookieParser:
         if name is None or value is None:
             return None
 
-        if not self._valid_cookie_name(
-            name,
-        ):
+        if not self._valid_cookie_name(name):
             return None
 
-        attributes = (
-            self._parse_attributes(
-                parts[1:],
-            )
+        attributes = self._parse_attributes(
+            parts[1:],
         )
 
-        # -----------------------------------------------------
-        # Domain
-        # -----------------------------------------------------
+        domain_attribute = attributes.get(
+            "domain",
+        )
 
         try:
-            domain = self._domain_policy.resolve(
-                request_host=host,
-                domain_attribute=attributes.get(
-                    "domain",
-                ),
+            domain = self._domain_policy.resolve_set_cookie_domain(
+                request_host=request_host,
+                domain_attribute=domain_attribute,
             )
         except InvalidCookieDomain:
             return None
 
-        # -----------------------------------------------------
-        # Path
-        # -----------------------------------------------------
-
         path = self._resolve_path(
-            attributes.get("path"),
-            request_path,
-        )
-
-        # -----------------------------------------------------
-        # Expiration
-        # -----------------------------------------------------
-
-        expires = self._parse_expires(
-            attributes.get("expires"),
+            path_attribute=attributes.get("path"),
+            request_path=request_path,
         )
 
         max_age = self._parse_max_age(
             attributes.get("max-age"),
         )
 
-        if max_age is not None:
-
-            expires = (
-                datetime.now(timezone.utc)
-                + timedelta(
-                    seconds=max_age,
-                )
-            )
-
-        # -----------------------------------------------------
-        # SameSite
-        # -----------------------------------------------------
-
-        same_site = self._parse_same_site(
-            attributes.get("samesite"),
+        expires = self._parse_expires(
+            attributes.get("expires"),
         )
 
-        # -----------------------------------------------------
-        # Cookie
-        # -----------------------------------------------------
+        # Max-Age takes precedence over Expires.
+        if max_age is not None:
+            expires = (
+                datetime.now(timezone.utc)
+                + timedelta(seconds=max_age)
+            )
 
         return Cookie(
             name=name,
@@ -136,7 +97,9 @@ class SetCookieParser:
             expires=expires,
             secure="secure" in attributes,
             http_only="httponly" in attributes,
-            same_site=same_site,
+            same_site=self._parse_same_site(
+                attributes.get("samesite"),
+            ),
             partition_key=None,
         )
 
@@ -150,43 +113,36 @@ class SetCookieParser:
         result: list[Cookie] = []
 
         for header in headers:
-
             cookie = self.parse(
                 header,
                 url=url,
             )
 
-            if cookie is None:
-                continue
-
-            result.append(cookie)
+            if cookie is not None:
+                result.append(cookie)
 
         return tuple(result)
-
-    # ---------------------------------------------------------
-    # cookie pair
-    # ---------------------------------------------------------
 
     @staticmethod
     def _split(
         header: str,
-    ) -> tuple[str, ...]:
+    ) -> list[str]:
 
-        return tuple(
+        return [
             part.strip()
             for part in header.split(";")
             if part.strip()
-        )
+        ]
 
     @staticmethod
     def _parse_pair(
-        part: str,
+        pair: str,
     ) -> tuple[str | None, str | None]:
 
-        if "=" not in part:
+        if "=" not in pair:
             return None, None
 
-        name, value = part.split(
+        name, value = pair.split(
             "=",
             1,
         )
@@ -201,15 +157,13 @@ class SetCookieParser:
 
     @staticmethod
     def _parse_attributes(
-        parts: tuple[str, ...],
+        parts: Iterable[str],
     ) -> dict[str, str]:
 
         result: dict[str, str] = {}
 
         for part in parts:
-
             if "=" in part:
-
                 name, value = part.split(
                     "=",
                     1,
@@ -218,53 +172,20 @@ class SetCookieParser:
                 name = name.strip().lower()
                 value = value.strip()
 
-                if not name:
-                    continue
-
-                # Last attribute wins.
-                result[name] = value
+                if name:
+                    result[name] = value
 
             else:
-
                 name = part.strip().lower()
 
-                if not name:
-                    continue
-
-                result[name] = ""
+                if name:
+                    result[name] = ""
 
         return result
 
-    # ---------------------------------------------------------
-    # cookie name
-    # ---------------------------------------------------------
-
-    @staticmethod
-    def _valid_cookie_name(
-        name: str,
-    ) -> bool:
-
-        # RFC 6265 cookie-name is a token.
-        #
-        # RFC 7230 token characters are:
-        # !#$%&'*+-.^_`|~ plus alphanumeric.
-        #
-        return all(
-            (
-                "A" <= char <= "Z"
-                or "a" <= char <= "z"
-                or "0" <= char <= "9"
-                or char in "!#$%&'*+-.^_`|~"
-            )
-            for char in name
-        )
-
-    # ---------------------------------------------------------
-    # path
-    # ---------------------------------------------------------
-
     @staticmethod
     def _resolve_path(
+        *,
         path_attribute: str | None,
         request_path: str,
     ) -> str:
@@ -297,37 +218,6 @@ class SetCookieParser:
 
         return request_path[:index]
 
-    # ---------------------------------------------------------
-    # expiration
-    # ---------------------------------------------------------
-
-    @staticmethod
-    def _parse_expires(
-        value: str | None,
-    ) -> datetime | None:
-
-        if not value:
-            return None
-
-        try:
-            parsed = parsedate_to_datetime(
-                value,
-            )
-        except (
-            TypeError,
-            ValueError,
-        ):
-            return None
-
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(
-                tzinfo=timezone.utc,
-            )
-
-        return parsed.astimezone(
-            timezone.utc,
-        )
-
     @staticmethod
     def _parse_max_age(
         value: str | None,
@@ -336,26 +226,41 @@ class SetCookieParser:
         if value is None:
             return None
 
-        value = value.strip()
-
-        if not value:
-            return None
-
         try:
-            return int(value)
+            return int(value.strip())
         except ValueError:
             return None
 
-    # ---------------------------------------------------------
-    # SameSite
-    # ---------------------------------------------------------
+    @staticmethod
+    def _parse_expires(
+        value: str | None,
+    ) -> datetime | None:
+
+        if value is None:
+            return None
+
+        try:
+            result = parsedate_to_datetime(
+                value,
+            )
+        except (TypeError, ValueError, OverflowError):
+            return None
+
+        if result.tzinfo is None:
+            result = result.replace(
+                tzinfo=timezone.utc,
+            )
+
+        return result.astimezone(
+            timezone.utc,
+        )
 
     @staticmethod
     def _parse_same_site(
         value: str | None,
     ) -> SameSite | None:
 
-        if not value:
+        if value is None:
             return None
 
         value = value.strip().lower()
@@ -370,3 +275,18 @@ class SetCookieParser:
             return "none"
 
         return None
+
+    @staticmethod
+    def _valid_cookie_name(
+        name: str,
+    ) -> bool:
+
+        return all(
+            (
+                "A" <= char <= "Z"
+                or "a" <= char <= "z"
+                or "0" <= char <= "9"
+                or char in "!#$%&'*+-.^_`|~"
+            )
+            for char in name
+        )

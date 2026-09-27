@@ -5,6 +5,7 @@ from copy import deepcopy
 from dataclasses import replace
 from typing import Any, Self
 
+from core.merger.cookie import CookieMerger
 from core.request.middleware.cookie.model import Cookie
 from core.merger.mapping import MappingMerger
 from core.request.config import RequestConfig
@@ -312,7 +313,7 @@ class RequestBuilder:
 
         descriptor = self.descriptor
 
-        merger = MappingMerger(
+        merger = CookieMerger(
             override=override,
         )
 
@@ -390,11 +391,8 @@ class RequestBuilder:
                 if patch.headers is not None
                 else descriptor.headers
             ),
-            cookies=(
-                dict(patch.cookies)
-                if patch.cookies is not None
-                else descriptor.cookies
-            ),
+            cookies=patch.cookies,
+
             params=(
                 dict(patch.params)
                 if patch.params is not None
@@ -429,7 +427,7 @@ class RequestBuilder:
         return replace(
             descriptor,
             headers=dict(descriptor.headers),
-            cookies=dict(descriptor.cookies),
+            cookies=descriptor.cookies,
             params=dict(descriptor.params),
             body=deepcopy(descriptor.body),
             meta=replace(

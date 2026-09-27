@@ -6,68 +6,103 @@ from core.request.middleware.cookie.policy.model import CookieDomainResolution
 from core.request.middleware.cookie.policy.protocol import PublicSuffixMatcher
 
 
-
-
-
 class CookieDomainPolicy:
 
     def __init__(
         self,
         public_suffix_matcher: PublicSuffixMatcher,
     ) -> None:
+        self._public_suffix_matcher = public_suffix_matcher
 
-        self._public_suffix_matcher = (
-            public_suffix_matcher
-        )
-
-    def resolve(
+    def resolve_set_cookie_domain(
         self,
         *,
         request_host: str,
         domain_attribute: str | None,
     ) -> CookieDomainResolution:
+        """
+        Resolve the Domain attribute of a raw Set-Cookie header.
 
-        host = self._normalize_host(
-            request_host,
-        )
+        domain_attribute=None means that the Domain attribute
+        was not present and therefore produces a host-only cookie.
+        """
 
-        # -----------------------------------------------------
-        # No Domain attribute
-        #
-        # Host-only cookie.
-        # -----------------------------------------------------
+        host = self._normalize_host(request_host)
 
         if domain_attribute is None:
-
             return CookieDomainResolution(
                 scope_domain=host,
                 host_only=True,
             )
 
-        # -----------------------------------------------------
-        # Domain attribute
-        # -----------------------------------------------------
-
         domain = self._normalize_domain(
             domain_attribute,
         )
 
+        # The Domain attribute is present but invalid.
         if domain is None:
             raise InvalidCookieDomain(
-                "Invalid Cookie Domain attribute.",
+                f"Invalid cookie domain: {domain_attribute!r}",
             )
 
-        # -----------------------------------------------------
-        # IP address
-        # -----------------------------------------------------
+        return self._resolve_explicit_domain(
+            host=host,
+            domain=domain,
+        )
+
+    def resolve_parsed_domain(
+        self,
+        *,
+        request_host: str,
+        domain: str,
+        host_only: bool,
+    ) -> CookieDomainResolution:
+        """
+        Resolve the domain information of an already parsed
+        stdlib http.cookiejar.Cookie.
+
+        Unlike Set-Cookie parsing, the Domain attribute has already
+        been interpreted by the transport library.
+
+        Therefore:
+        - host_only=True means the original cookie was host-only
+        - host_only=False means the original cookie had a Domain attribute
+        """
+
+        host = self._normalize_host(request_host)
+
+        normalized_domain = self._normalize_domain(
+            domain,
+        )
+
+        if normalized_domain is None:
+            raise InvalidCookieDomain(
+                f"Invalid parsed cookie domain: {domain!r}",
+            )
+
+        if host_only:
+            return CookieDomainResolution(
+                scope_domain=host,
+                host_only=True,
+            )
+
+        return self._resolve_explicit_domain(
+            host=host,
+            domain=normalized_domain,
+        )
+
+    def _resolve_explicit_domain(
+        self,
+        *,
+        host: str,
+        domain: str,
+    ) -> CookieDomainResolution:
 
         if self._is_ip_address(host):
-
             if domain != host:
                 raise InvalidCookieDomain(
-                    "Cookie Domain does not match "
-                    f"request host: {domain!r} "
-                    f"!= {host!r}",
+                    f"Cookie domain {domain!r} "
+                    f"does not match IP host {host!r}.",
                 )
 
             return CookieDomainResolution(
@@ -75,42 +110,29 @@ class CookieDomainPolicy:
                 host_only=False,
             )
 
-        # -----------------------------------------------------
-        # Domain must include request host.
-        # -----------------------------------------------------
-
         if not self._domain_matches(
             host,
             domain,
         ):
             raise InvalidCookieDomain(
-                "Cookie Domain does not match "
-                f"request host: {domain!r} / {host!r}",
+                f"Cookie domain {domain!r} "
+                f"does not match host {host!r}.",
             )
-
-        # -----------------------------------------------------
-        # Public suffix.
-        #
-        # If the Domain itself equals the request host,
-        # RFC 6265 permits treating it as host-only.
-        #
-        # Otherwise reject it.
-        # -----------------------------------------------------
 
         if self._public_suffix_matcher.is_public_suffix(
             domain,
         ):
-
+            # A public suffix equal to the request host is treated
+            # as host-only.
             if domain == host:
-
                 return CookieDomainResolution(
                     scope_domain=host,
                     host_only=True,
                 )
 
             raise InvalidCookieDomain(
-                "Cookie Domain is a public suffix: "
-                f"{domain!r}",
+                f"Cookie domain {domain!r} "
+                "is a public suffix.",
             )
 
         return CookieDomainResolution(
@@ -118,104 +140,86 @@ class CookieDomainPolicy:
             host_only=False,
         )
 
-    # ---------------------------------------------------------
-    # normalization
-    # ---------------------------------------------------------
-
     @staticmethod
     def _normalize_host(
         host: str,
     ) -> str:
-
-        host = host.strip().lower()
-
-        if not host:
-            raise InvalidCookieDomain(
-                "Request host is empty.",
-            )
-
-        if host.endswith("."):
-            host = host[:-1]
+        host = host.strip().rstrip(".")
 
         if not host:
             raise InvalidCookieDomain(
-                "Request host is invalid.",
+                "Cookie request host is empty.",
             )
 
-        return host
+        # IP addresses must not go through IDNA.
+        if CookieDomainPolicy._is_ip_address(host):
+            return host.lower()
+
+        return CookieDomainPolicy._normalize_idna(
+            host,
+        )
 
     @staticmethod
     def _normalize_domain(
-        value: str,
+        domain: str,
     ) -> str | None:
 
-        domain = value.strip().lower()
+        domain = domain.strip()
 
         if not domain:
             return None
 
-        # RFC 6265:
-        #
-        # A leading dot is ignored.
-        if domain.startswith("."):
-            domain = domain[1:]
+        # Leading dot in Domain= is ignored.
+        domain = domain.lstrip(".")
 
-        if not domain:
-            return None
-
-        # IMPORTANT:
-        #
-        # A trailing dot causes the Domain attribute
-        # to be ignored. It must NOT be silently removed.
+        # A trailing dot is not silently removed.
+        # It represents an invalid Domain attribute.
         if domain.endswith("."):
             return None
 
-        return domain
+        if not domain:
+            return None
 
-    # ---------------------------------------------------------
-    # domain matching
-    # ---------------------------------------------------------
+        if CookieDomainPolicy._is_ip_address(domain):
+            return domain.lower()
+
+        try:
+            return CookieDomainPolicy._normalize_idna(
+                domain,
+            )
+        except UnicodeError:
+            return None
 
     @staticmethod
-    def _domain_matches(
-        host: str,
-        domain: str,
-    ) -> bool:
-
-        if host == domain:
-            return True
-
-        if CookieDomainPolicy._is_ip_address(
-            host,
-        ):
-            return False
-
-        if not host.endswith(domain):
-            return False
-
-        boundary = (
-            len(host)
-            - len(domain)
-            - 1
-        )
-
+    def _normalize_idna(
+        value: str,
+    ) -> str:
         return (
-            boundary >= 0
-            and host[boundary] == "."
+            value
+            .encode("idna")
+            .decode("ascii")
+            .lower()
         )
-
-    # ---------------------------------------------------------
-    # IP
-    # ---------------------------------------------------------
 
     @staticmethod
     def _is_ip_address(
         value: str,
     ) -> bool:
-
         try:
             ip_address(value)
         except ValueError:
             return False
 
         return True
+
+    @staticmethod
+    def _domain_matches(
+        host: str,
+        domain: str,
+    ) -> bool:
+        if host == domain:
+            return True
+
+        return host.endswith(
+            f".{domain}",
+        )

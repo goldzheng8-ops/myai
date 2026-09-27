@@ -34,11 +34,20 @@ class Cookie:
 
     partition_key: str | None = None
 
+    def identity(
+        self,
+    ) -> tuple[str, bool, str, str]:
+        return (
+            self.scope_domain.lower(),
+            self.host_only,
+            self.path,
+            self.name,
+        )
 
 class CookieJar:
 
     _cookies: dict[
-        tuple[str, str, str],
+        tuple[str, bool, str, str],
         Cookie,
     ]
 
@@ -119,7 +128,7 @@ class CookieJar:
         matched: list[Cookie] = []
 
         expired_keys: list[
-            tuple[str, str, str]
+            tuple[str, bool, str, str]
         ] = []
 
         for key, cookie in self._cookies.items():
@@ -188,13 +197,9 @@ class CookieJar:
     @staticmethod
     def _key(
         cookie: Cookie,
-    ) -> tuple[str, str, str]:
+    ) -> tuple[str, bool, str, str]:
 
-        return (
-            cookie.scope_domain,
-            cookie.path,
-            cookie.name,
-        )
+        return cookie.identity()
 
     # ---------------------------------------------------------
     # expiration
