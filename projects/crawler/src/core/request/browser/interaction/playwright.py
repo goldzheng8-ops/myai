@@ -1,7 +1,10 @@
 import asyncio
 from typing import Any
 
+from core.request.browser.exception import BrowserPageRecoveryTimeoutError
 from core.request.browser.executor.registry import BrowserActionExecutorRegistry
+from core.request.browser.interaction.model import BrowserAction
+from core.request.browser.intervention.registry import HumanInterventionEngineRegistry
 from playwright.async_api import Page
 
 from core.extraction.response.playwright import (
@@ -16,12 +19,6 @@ from core.request.browser.interaction.base import (
 from core.request.browser.interaction.context import (
     BrowserInteractionContext,
 )
-from core.request.browser.intervention.base import (
-    HumanInterventionEngine,
-)
-from core.request.browser.typing import (
-    BrowserPageState,
-)
 from core.request.context import RequestContext
 from core.spider.config import SearchSpiderConfig
 
@@ -30,14 +27,15 @@ class PlaywrightBrowserInteractionEngine(
     BrowserInteractionEngine,
 ):
     """
-    Execute browser interaction actions against a Playwright page.
+    Execute browser interaction actions against a
+    Playwright page.
 
     Responsibilities:
     - dispatch BrowserAction
-    - execute Playwright page operations
-    - normalize action timeouts
-    - inspect browser page state
-    - invoke human intervention when required
+    - execute browser actions
+    - inspect page state after actions
+    - resolve optional human intervention
+    - wait for page recovery
 
     This engine does not own:
     - Browser
@@ -53,11 +51,18 @@ class PlaywrightBrowserInteractionEngine(
     def __init__(
         self,
         inspector: BrowserPageInspector,
-        human_intervention: HumanInterventionEngine,
-        executor_registry: BrowserActionExecutorRegistry,        
+        human_intervention_registry:
+            HumanInterventionEngineRegistry,
+        executor_registry:
+            BrowserActionExecutorRegistry,
     ) -> None:
+
         self._inspector = inspector
-        self._human_intervention = human_intervention
+
+        self._human_interventions = (
+            human_intervention_registry
+        )
+
         self._executors = executor_registry
 
     async def execute(
@@ -75,24 +80,97 @@ class PlaywrightBrowserInteractionEngine(
 
         for action in context.config.actions:
 
-            executor = self._executors.resolve(
-                action.type,
-            )
-
-            await executor.execute(
-                page,
-                action,
+            await self._execute_action(
+                page=page,
+                action=action,
             )
 
             await self._handle_page_state(
-                context,
+                context=context,
+                page=page,
+            )
+
+    async def _execute_action(
+        self,
+        *,
+        page: Page,
+        action: BrowserAction,
+    ) -> None:
+
+        executor = self._executors.resolve(
+            action.type,
+        )
+
+        await executor.execute(
+            page,
+            action,
+        )
+
+    async def _handle_page_state(
+        self,
+        *,
+        context: BrowserInteractionContext[Any],
+        page: Page,
+    ) -> None:
+
+        inspection = await self._inspector.inspect(
+            page,
+        )
+
+        intervention = (
+            self._human_interventions.resolve(
+                inspection.state,
+            )
+        )
+
+        if intervention is None:
+            return
+
+        await intervention.intervene(
+            context,
+            inspection,
+        )
+
+        await self._wait_until_recovered(
+            page,
+        )
+
+    async def _wait_until_recovered(
+        self,
+        page: Page,
+    ) -> None:
+
+        deadline = (
+            asyncio.get_running_loop().time()
+            + self.RECOVERY_TIMEOUT
+        )
+
+        while True:
+
+            inspection = await self._inspector.inspect(
                 page,
             )
 
+            intervention = (
+                self._human_interventions.resolve(
+                    inspection.state,
+                )
+            )
 
-    # =========================================================
-    # response / page
-    # =========================================================
+            if intervention is None:
+                return
+
+            if (
+                asyncio.get_running_loop().time()
+                >= deadline
+            ):
+                raise BrowserPageRecoveryTimeoutError(
+                    inspection=inspection,
+                )
+
+            await asyncio.sleep(
+                self.RECOVERY_INTERVAL,
+            )
 
     @staticmethod
     def _get_response(
@@ -120,65 +198,3 @@ class PlaywrightBrowserInteractionEngine(
             )
 
         return response
-
-    # =========================================================
-    # page state
-    # =========================================================
-
-    async def _handle_page_state(
-        self,
-        context: BrowserInteractionContext[Any],
-        page: Page,
-    ) -> None:
-
-        inspection = await self._inspector.inspect(
-            page,
-        )
-
-        if inspection not in {
-            BrowserPageState.CHALLENGE,
-            BrowserPageState.CAPTCHA,
-        }:
-            return
-
-        await self._human_intervention.intervene(
-            context,
-            inspection,
-        )
-
-        await self._wait_until_recovered(
-            page,
-        )
-
-    async def _wait_until_recovered(
-        self,
-        page: Page,
-    ) -> None:
-
-        deadline = (
-            asyncio.get_running_loop().time()
-            + self.RECOVERY_TIMEOUT
-        )
-
-        while True:
-
-            inspection = await self._inspector.inspect(
-                page,
-            )
-
-            if inspection.state == BrowserPageState.NORMAL:
-                return
-
-            if (
-                asyncio.get_running_loop().time()
-                >= deadline
-            ):
-                raise TimeoutError(
-                    "Browser page did not recover "
-                    "after human intervention.",
-                )
-
-            await asyncio.sleep(
-                self.RECOVERY_INTERVAL,
-            )
-

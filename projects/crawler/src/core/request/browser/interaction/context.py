@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from core.request.browser.runtime_manager import BrowserSessionRuntime
 from core.request.context import RequestContext
 from core.spider.config import SpiderConfig
 
@@ -20,4 +19,3 @@ class BrowserInteractionContext(
 
     config: ConfigT
 
-    session: BrowserSessionRuntime

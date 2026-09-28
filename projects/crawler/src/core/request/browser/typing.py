@@ -78,13 +78,17 @@ class BrowserPageState(str, Enum):
 
     TURNSTILE_CHALLENGE = "turnstile_challenge"
 
-    class BrowserSessionState(str, Enum):
+class BrowserSessionState(str, Enum):
 
-        READY = "ready"
-        RUNNING = "running"
-        CHALLENGE = "challenge"
-        WAITING_FOR_HUMAN = "waiting_for_human"
-        CLOSED = "closed"
+    READY = "ready"
+    RUNNING = "running"
+    CHALLENGE = "challenge"
+    WAITING_FOR_HUMAN = "waiting_for_human"
+    CLOSED = "closed"
+
+class HumanInterventionType(str,Enum):
+    WAIT = "wait"
+    MANUAL = "manual"
 
 LoadState = Literal[
     "domcontentloaded",

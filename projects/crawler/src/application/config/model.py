@@ -4,7 +4,7 @@ from typing import Self
 
 from core.extraction.extractor.config import ExtractConfigUnion
 from core.output.config import OutputConfigUnion
-from core.request.browser.config import BrowserContextConfig, BrowserRuntimeConfig
+from core.request.browser.config import BrowserContextConfig, BrowserPageSnapshotConfig, BrowserRuntimeConfig, HumanInterventionConfig
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.auth.config import AuthProviderConfigUnion
@@ -145,7 +145,12 @@ class ApplicationConfig(BaseConfig):
     browser_runtime: BrowserRuntimeConfig = Field(
         default_factory=BrowserRuntimeConfig,
     )
-
+    page_snapshot: BrowserPageSnapshotConfig = Field(
+        default_factory=BrowserPageSnapshotConfig,
+    )
+    human_intervention: HumanInterventionConfig = Field(
+        default_factory=HumanInterventionConfig,
+    )
     runtime: RuntimeConfig = Field(
         default_factory=RuntimeConfig,
     )

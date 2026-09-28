@@ -175,12 +175,25 @@ class Registry(
         """
         return self.get(key)
 
+    def get_optional(
+        self,
+        key: K,
+    ) -> V | None:
+        """
+        Return the registered value for ``key``.
+
+        Returns ``None`` when ``key`` is not registered.
+        """
+        return self._values.get(key)
+
     def get_or_none(
         self,
         key: K,
     ) -> V | None:
-
-        return self._values.get(key)
+        """
+        Alias of get_optional().
+        """
+        return self.get_optional(key)
 
     def contains(
         self,
