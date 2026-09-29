@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from collections.abc import Callable
 from core.provider import  ProviderResolver
+from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.spider.services import SpiderServices
 from core.spider.template.extraction import RequestTemplate
 from core.spider.template.download import DownloadRequestTemplate
@@ -65,8 +66,11 @@ def build_search_template_factory(
     def factory() -> SearchRequestTemplate:
 
         return SearchRequestTemplate(
-            resolver.resolve(
+            services=resolver.resolve(
                 SpiderServices,
+            ),
+            manager=resolver.resolve(
+                BrowserRuntimeManager,
             ),
         )
 

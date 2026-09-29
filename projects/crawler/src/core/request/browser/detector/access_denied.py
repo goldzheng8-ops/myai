@@ -9,7 +9,7 @@ class AccessDeniedDetector(
     BrowserPageStateDetector,
 ):
 
-    priority = 300
+    priority = 3000
 
     _TITLE_MARKERS = (
         "access denied",

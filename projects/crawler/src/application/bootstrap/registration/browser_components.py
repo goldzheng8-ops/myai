@@ -2,8 +2,9 @@ from typing import Any
 from core.request.browser.detector.captcha import CaptchaDetector
 from core.request.browser.detector.access_denied import AccessDeniedDetector
 from core.request.browser.detector.cloudflare_challenge import CloudflareChallengeDetector
+from core.request.browser.detector.human_verification import HumanVerificationChallengeDetector
 from core.request.browser.detector.login_required import LoginRequiredDetector
-from core.request.browser.detector.normal import NormalPageDetector
+# from core.request.browser.detector.normal import NormalPageDetector
 from core.request.browser.detector.registry import BrowserPageStateDetectorRegistry
 from core.request.browser.detector.turnstile_challenge import TurnstileChallengeDetector
 from core.request.browser.inspector.base import BrowserPageInspector
@@ -23,6 +24,7 @@ from core.request.browser.executor.evaluate import EvaluateActionExecutor
 from application.config.model import ApplicationConfig
 from core.provider import ProviderBuilder, ProviderResolver
 from core.request.browser.intervention.factory import build_manual_console_intervention_factory
+from core.request.browser.intervention.handler.Console import ConsoleHumanInterventionHandler
 from core.request.browser.intervention.registry import HumanInterventionEngineRegistry
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.browser.snapshot import BrowserPageSnapshotBuilder, PlaywrightBrowserPageSnapshotBuilder
@@ -33,7 +35,7 @@ def register_browser_components(
     builder: ProviderBuilder,
     config: ApplicationConfig,
 ) -> None:
-
+    builder.add_type(ConsoleHumanInterventionHandler)
     builder.add_factory(
         BrowserRuntimeManager,
         lambda resolver: BrowserRuntimeManager(
@@ -184,6 +186,10 @@ def create_state_detector_registry(
         "captcha",
         CaptchaDetector(),
     )
+    registry.register(
+        "human_verification",
+        HumanVerificationChallengeDetector(),
+    )
 
     registry.register(
         "login",
@@ -195,9 +201,9 @@ def create_state_detector_registry(
         AccessDeniedDetector(),
     )
 
-    registry.register(
-        "normal",
-        NormalPageDetector(),
-    )
+    # registry.register(
+    #     "normal",
+    #     NormalPageDetector(),
+    # )
 
     return registry

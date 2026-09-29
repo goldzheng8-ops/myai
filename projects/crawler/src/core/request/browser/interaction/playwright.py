@@ -1,15 +1,11 @@
 import asyncio
 from typing import Any
-
+import logging
 from core.request.browser.exception import BrowserPageRecoveryTimeoutError
 from core.request.browser.executor.registry import BrowserActionExecutorRegistry
 from core.request.browser.interaction.model import BrowserAction
 from core.request.browser.intervention.registry import HumanInterventionEngineRegistry
 from playwright.async_api import Page
-
-from core.extraction.response.playwright import (
-    PlaywrightResponseAdapter,
-)
 from core.request.browser.inspector.base import (
     BrowserPageInspector,
 )
@@ -19,8 +15,9 @@ from core.request.browser.interaction.base import (
 from core.request.browser.interaction.context import (
     BrowserInteractionContext,
 )
-from core.request.context import RequestContext
 from core.spider.config import SearchSpiderConfig
+
+logger=logging.getLogger(__name__)
 
 
 class PlaywrightBrowserInteractionEngine(
@@ -72,19 +69,25 @@ class PlaywrightBrowserInteractionEngine(
         ],
     ) -> None:
 
-        response = self._get_response(
-            context.request,
-        )
+        page = context.session_runtime.page
 
-        page = response.page
-
-        for action in context.config.actions:
-
+        for index, action in enumerate(
+            context.config.actions,
+            start=1,
+        ):
+            logger.info(
+                "[BrowserAction] #%d type=%s",
+                index,
+                action.type,
+            )
             await self._execute_action(
                 page=page,
                 action=action,
             )
-
+            logger.info(
+                "[BrowserAction] #%d completed",
+                index,
+            )
             await self._handle_page_state(
                 context=context,
                 page=page,
@@ -115,8 +118,16 @@ class PlaywrightBrowserInteractionEngine(
 
         inspection = await self._inspector.inspect(
             page,
+            context.session_runtime.page_state
         )
-
+        logger.info(
+            "[BrowserState] state=%s url=%s "
+            "title=%r reason=%s",
+            inspection.state.value,
+            inspection.url,
+            inspection.title,
+            inspection.reason,
+        )
         intervention = (
             self._human_interventions.resolve(
                 inspection.state,
@@ -125,18 +136,24 @@ class PlaywrightBrowserInteractionEngine(
 
         if intervention is None:
             return
-
+        logger.info(
+            "[BrowserIntervention] engine=%s state=%s",
+            type(intervention).__name__,
+            inspection.state.value,
+        )
         await intervention.intervene(
             context,
             inspection,
         )
 
         await self._wait_until_recovered(
+            context,
             page,
         )
 
     async def _wait_until_recovered(
         self,
+        context: BrowserInteractionContext[Any],
         page: Page,
     ) -> None:
 
@@ -149,6 +166,7 @@ class PlaywrightBrowserInteractionEngine(
 
             inspection = await self._inspector.inspect(
                 page,
+                context.session_runtime.page_state,
             )
 
             intervention = (
@@ -172,29 +190,3 @@ class PlaywrightBrowserInteractionEngine(
                 self.RECOVERY_INTERVAL,
             )
 
-    @staticmethod
-    def _get_response(
-        request: RequestContext,
-    ) -> PlaywrightResponseAdapter:
-
-        result = request.result
-
-        if result is None:
-            raise RuntimeError(
-                "Browser interaction requires "
-                "a completed request result.",
-            )
-
-        response = result.response
-
-        if not isinstance(
-            response,
-            PlaywrightResponseAdapter,
-        ):
-            raise TypeError(
-                "Browser interaction requires a "
-                "PlaywrightResponseAdapter, got "
-                f"{type(response).__name__}.",
-            )
-
-        return response

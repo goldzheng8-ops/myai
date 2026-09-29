@@ -8,7 +8,7 @@ class LoginRequiredDetector(
     BrowserPageStateDetector,
 ):
 
-    priority = 200
+    priority = 2000
 
     _TEXT_MARKERS = (
         "sign in",

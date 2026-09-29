@@ -1,4 +1,5 @@
 from __future__ import annotations
+from core.request.browser.snapshot import BrowserPageRuntimeState
 from playwright.async_api import Response
 import asyncio
 from dataclasses import dataclass, field
@@ -28,12 +29,17 @@ ColorScheme = Literal['dark', 'light', 'no-preference', 'null']
 @dataclass(slots=True)
 class BrowserSessionRuntime:
     session_id: str
+
     context: BrowserContext
     page: Page
 
     proxy: ProxyConfig | None = None
 
     cookie_sink: BrowserCookieSink | None = None
+
+    page_state: BrowserPageRuntimeState = field(
+        default_factory=BrowserPageRuntimeState,
+    )
 
     lock: asyncio.Lock = field(
         default_factory=asyncio.Lock,
@@ -44,6 +50,7 @@ class BrowserSessionRuntime:
     ] = field(
         default_factory=set,
     )
+
     response_handler: (
         Callable[[Response], None] | None
     ) = None
@@ -55,6 +62,8 @@ class BrowserSessionRuntime:
                 "response",
                 self.response_handler,
             )
+
+            self.response_handler = None
 
         tasks = tuple(self.cookie_tasks)
 
@@ -153,15 +162,17 @@ class BrowserRuntimeManager(LifecycleParticipant):
 
             if session is not None:
 
-                if not self._same_proxy(
-                    session.proxy,
-                    proxy,
-                ):
-                    raise RuntimeError(
-                        "Browser session proxy cannot "
-                        "be changed after creation: "
-                        f"{session_id!r}",
-                    )
+                if proxy is not None:
+
+                    if not self._same_proxy(
+                        session.proxy,
+                        proxy,
+                    ):
+                        raise RuntimeError(
+                            "Browser session proxy cannot "
+                            "be changed after creation: "
+                            f"{session_id!r}",
+                        )
 
                 if (
                     cookie_sink is not None
@@ -191,7 +202,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
                 cookie_sink=cookie_sink,
             )
 
-            self._install_cookie_listener(
+            self._install_response_listener(
                 session,
             )
 
@@ -351,7 +362,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
 
         return browser
 
-    def _install_cookie_listener(
+    def _install_response_listener(
         self,
         session: BrowserSessionRuntime,
     ) -> None:
@@ -359,7 +370,10 @@ class BrowserRuntimeManager(LifecycleParticipant):
         def handler(
             response: Response,
         ) -> None:
-
+            self._update_page_state(
+                session,
+                response,
+            )
             task = asyncio.create_task(
                 self._process_response_cookies(
                     session,
@@ -399,4 +413,27 @@ class BrowserRuntimeManager(LifecycleParticipant):
 
         await sink.update(
             cookies,
+        )
+
+    @staticmethod
+    def _update_page_state(
+        session: BrowserSessionRuntime,
+        response: Response,
+    ) -> None:
+
+        request = response.request
+
+        if request.resource_type != "document":
+            return
+
+        content_type = response.headers.get(
+            "content-type",
+        )
+
+        session.page_state.status_code = (
+            response.status
+        )
+
+        session.page_state.content_type = (
+            content_type
         )

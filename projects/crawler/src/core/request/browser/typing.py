@@ -78,6 +78,8 @@ class BrowserPageState(str, Enum):
 
     TURNSTILE_CHALLENGE = "turnstile_challenge"
 
+    HUMAN_VERIFICATION = "human_verification"
+
 class BrowserSessionState(str, Enum):
 
     READY = "ready"
