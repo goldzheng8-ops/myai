@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 from dataclasses import dataclass, field
 from playwright.async_api import Page
 import logging
@@ -19,6 +20,7 @@ from core.request.browser.interaction.context import (
     BrowserInteractionContext,
 )
 from core.spider.config import SearchSpiderConfig
+from core.request.browser.inspector.model import BrowserPageInspection
 
 logger=logging.getLogger(__name__)
 
@@ -57,6 +59,12 @@ _PHASE_TRANSITIONS: dict[
     BrowserInteractionPhase.COMPLETED: frozenset(),
 }
 
+@dataclass(frozen=True, slots=True)
+class BrowserPhaseTransition:
+
+    from_phase: BrowserInteractionPhase  = BrowserInteractionPhase.INITIALIZING
+    to_phase: BrowserInteractionPhase  = BrowserInteractionPhase.INITIALIZING
+
 @dataclass(slots=True)
 class BrowserInteractionExecution:
 
@@ -65,10 +73,10 @@ class BrowserInteractionExecution:
     )
 
     transitions: list[
-        BrowserInteractionPhase
+        BrowserPhaseTransition
     ] = field(
         default_factory=lambda: [
-            BrowserInteractionPhase.INITIALIZING,
+            BrowserPhaseTransition(),
         ],
     )
 
@@ -93,7 +101,12 @@ class BrowserInteractionExecution:
             )
 
         self.phase = phase
-        self.transitions.append(phase)
+        self.transitions.append(
+            BrowserPhaseTransition(
+                from_phase=current,
+                to_phase=phase,
+            )
+        )
         
 class PlaywrightBrowserInteractionEngine(
     BrowserInteractionEngine,
@@ -139,88 +152,269 @@ class PlaywrightBrowserInteractionEngine(
             SearchSpiderConfig
         ],
     ) -> None:
-        
+
         page = context.session_runtime.page
-        runtime_state = context.session_runtime.page_state
-        phase = BrowserInteractionPhase.INITIALIZING
-        await self._inspector.inspect(
-            page,
-            phase,
-            runtime_state,
-        )       
-        for index, action in enumerate(
-            context.config.actions,
-            start=1,
-        ):
-            phase = BrowserInteractionPhase.INTERACTING            
-            logger.info(
-                "[BrowserAction] #%d type=%s",
-                index,
-                action.type,
-            )
-            await self._execute_action(
-                page=page,
-                action=action,
-            )
-            logger.info(
-                "[BrowserAction] #%d completed",
-                index,
-            )
-            inspection = await self._inspector.inspect(
-                page=page,
-                phase=phase,
-                runtime_state=runtime_state,
-            )
-            if inspection.state in {
-                BrowserPageState.CHALLENGE,
-                BrowserPageState.CAPTCHA,
-            }:
 
-                phase = (
-                    BrowserInteractionPhase.HUMAN_INTERVENTION
-                )
-
-                intervention = (
-                    self._interventions.resolve(
-                        inspection.state,
-                    )
-                )
-
-                if intervention is None:
-                    raise RuntimeError(
-                        "No human intervention engine is "
-                        f"registered for state "
-                        f"{inspection.state!r}.",
-                    )
-
-                logger.info(
-                    "[BrowserIntervention] "
-                    "engine=%s state=%s",
-                    type(intervention).__name__,
-                    inspection.state.value,
-                )
-
-                await intervention.intervene(
-                    context,
-                    inspection,
-                )
-
-                phase = (
-                    BrowserInteractionPhase.RECOVERY
-                )
-
-                await self._wait_until_recovered(
-                    page=page,
-                    phase=phase,
-                    runtime_state=runtime_state,
-                )
-
-        phase = BrowserInteractionPhase.COMPLETED
-
-        logger.info(
-            "[BrowserInteraction] completed",
+        runtime_state = (
+            context.session_runtime.page_state
         )
 
+        execution = (
+            BrowserInteractionExecution()
+        )
+
+        try:
+
+            await self._initialize(
+                page=page,
+                runtime_state=runtime_state,
+                execution=execution,
+            )
+
+            for index, action in enumerate(
+                context.config.actions,
+                start=1,
+            ):
+                await self._process_action(
+                    context=context,
+                    page=page,
+                    runtime_state=runtime_state,
+                    execution=execution,
+                    index=index,
+                    action=action,
+                )
+
+            self._transition_to(
+                execution,
+                BrowserInteractionPhase.COMPLETED,
+            )
+
+            logger.info(
+                "[BrowserInteraction] completed "
+                "transitions=%s",
+                self._format_transitions(
+                    execution,
+                ),
+            )
+
+        except Exception:
+            logger.exception(
+                "[BrowserInteraction] failed "
+                "phase=%s",
+                execution.phase.value,
+            )
+            raise
+
+    async def _initialize(
+        self,
+        *,
+        page: Page,
+        runtime_state: BrowserPageRuntimeState,
+        execution: BrowserInteractionExecution,
+    ) -> BrowserPageInspection:
+
+        self._transition_to(
+            execution,
+            BrowserInteractionPhase.INITIALIZING,
+        )
+
+        return await self._inspect(
+            page=page,
+            runtime_state=runtime_state,
+            execution=execution,
+        )
+
+    async def _process_action(
+        self,
+        *,
+        context: BrowserInteractionContext[
+            SearchSpiderConfig
+        ],
+        page: Page,
+        runtime_state: BrowserPageRuntimeState,
+        execution: BrowserInteractionExecution,
+        index: int,
+        action: BrowserAction,
+    ) -> None:
+
+        self._transition_to(
+            execution,
+            BrowserInteractionPhase.INTERACTING,
+        )
+
+        logger.info(
+            "[BrowserAction] #%d type=%s",
+            index,
+            action.type,
+        )
+
+        await self._execute_action(
+            page=page,
+            action=action,
+        )
+
+        logger.info(
+            "[BrowserAction] #%d completed",
+            index,
+        )
+
+        inspection = await self._inspect(
+            page=page,
+            runtime_state=runtime_state,
+            execution=execution,
+        )
+
+        if inspection.state in {
+            BrowserPageState.CHALLENGE,
+            BrowserPageState.CAPTCHA,
+        }:
+            await self._handle_intervention(
+                context=context,
+                page=page,
+                runtime_state=runtime_state,
+                execution=execution,
+                inspection=inspection,
+            )
+
+    async def _handle_intervention(
+        self,
+        *,
+        context: BrowserInteractionContext[Any],
+        page: Page,
+        runtime_state: BrowserPageRuntimeState,
+        execution: BrowserInteractionExecution,
+        inspection: BrowserPageInspection,
+    ) -> None:
+
+        self._transition_to(
+            execution,
+            BrowserInteractionPhase.HUMAN_INTERVENTION,
+        )
+
+        intervention = self._interventions.resolve(
+            inspection.state,
+        )
+
+        if intervention is None:
+            raise RuntimeError(
+                "No human intervention engine is "
+                f"registered for state "
+                f"{inspection.state!r}.",
+            )
+
+        logger.info(
+            "[BrowserIntervention] "
+            "engine=%s state=%s",
+            type(intervention).__name__,
+            inspection.state.value,
+        )
+
+        await intervention.intervene(
+            context,
+            inspection,
+        )
+
+        await self._recover(
+            page=page,
+            runtime_state=runtime_state,
+            execution=execution,
+        )
+
+    async def _recover(
+        self,
+        *,
+        page: Page,
+        runtime_state: BrowserPageRuntimeState,
+        execution: BrowserInteractionExecution,
+    ) -> None:
+
+        self._transition_to(
+            execution,
+            BrowserInteractionPhase.RECOVERY,
+        )
+
+        deadline = (
+            asyncio.get_running_loop().time()
+            + self.RECOVERY_TIMEOUT
+        )
+
+        while True:
+
+            await self._stabilizer.stabilize(
+                page=page,
+                phase=execution.phase,
+                runtime_state=runtime_state,
+            )
+
+            inspection = await self._inspect(
+                page=page,
+                runtime_state=runtime_state,
+                execution=execution,
+            )
+
+            if inspection.state == (
+                BrowserPageState.NORMAL
+            ):
+                logger.info(
+                    "[BrowserRecovery] "
+                    "page recovered.",
+                )
+
+                self._transition_to(
+                    execution,
+                    BrowserInteractionPhase.INTERACTING,
+                )
+
+                return
+
+            if (
+                asyncio.get_running_loop().time()
+                >= deadline
+            ):
+                raise TimeoutError(
+                    "Browser page did not recover "
+                    "after human intervention.",
+                )
+
+            await asyncio.sleep(
+                self.RECOVERY_INTERVAL,
+            )
+
+    async def _inspect(
+        self,
+        *,
+        page: Page,
+        runtime_state: BrowserPageRuntimeState,
+        execution: BrowserInteractionExecution,
+    ) -> BrowserPageInspection:
+
+        return await self._inspector.inspect(
+            page=page,
+            phase=execution.phase,
+            runtime_state=runtime_state,
+        )
+
+    def _transition_to(
+        self,
+        execution: BrowserInteractionExecution,
+        phase: BrowserInteractionPhase,
+    ) -> None:
+
+        previous = execution.phase
+
+        execution.transition_to(
+            phase,
+        )
+
+        if previous == execution.phase:
+            return
+
+        logger.info(
+            "[BrowserInteractionPhase] "
+            "%s -> %s",
+            previous.value,
+            execution.phase.value,
+        )
 
     async def _execute_action(
         self,
@@ -238,49 +432,19 @@ class PlaywrightBrowserInteractionEngine(
             action,
         )
 
+    @staticmethod
+    def _format_transitions(
+        execution: BrowserInteractionExecution,
+    ) -> str:
 
-    async def _wait_until_recovered(
-        self,
-        page: Page,
-        phase: BrowserInteractionPhase,
-        runtime_state: BrowserPageRuntimeState,
-    ) -> None:
+        transitions = execution.transitions
 
-        deadline = (
-            asyncio.get_running_loop().time()
-            + self.RECOVERY_TIMEOUT
-        )
+        if not transitions:
+            return "<none>"
 
-        while True:
+        phases = [
+            transition.to_phase
+            for transition in transitions
+        ]
 
-            await self._stabilizer.stabilize(
-                page=page,
-                phase=phase,
-                runtime_state=runtime_state,
-            )
-
-            inspection = await self._inspector.inspect(
-                page=page,
-                phase=phase,
-                runtime_state=runtime_state,
-            )
-
-            if inspection.state == BrowserPageState.NORMAL:
-                logger.info(
-                    "[BrowserRecovery] "
-                    "page recovered.",
-                )
-                return
-
-            if (
-                asyncio.get_running_loop().time()
-                >= deadline
-            ):
-                raise TimeoutError(
-                    "Browser page did not recover "
-                    "after human intervention.",
-                )
-
-            await asyncio.sleep(
-                self.RECOVERY_INTERVAL,
-            )
+        return " -> ".join(phases)

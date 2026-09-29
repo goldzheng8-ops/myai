@@ -41,7 +41,7 @@ class PlaywrightBrowserPageStabilizer(
 
         logger.info(
             "[BrowserStabilizer] initial snapshot "
-            "state=%s url=%r title=%r",
+            "phase=%s url=%r title=%r",
             phase,
             previous.url,
             previous.title,
@@ -68,7 +68,7 @@ class PlaywrightBrowserPageStabilizer(
 
             logger.info(
                 "[BrowserStabilizer] "
-                "attempt=%d state=%s stable=%s "
+                "attempt=%d phase=%s stable=%s "
                 "url=%r title=%r",
                 attempt + 1,
                 phase,
@@ -84,7 +84,7 @@ class PlaywrightBrowserPageStabilizer(
 
         logger.info(
             "[BrowserStabilizer] "
-            "stability timeout state=%s "
+            "stability timeout phase=%s "
             "url=%r title=%r",
             phase,
             previous.url,

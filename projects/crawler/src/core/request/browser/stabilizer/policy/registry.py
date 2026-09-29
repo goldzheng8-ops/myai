@@ -1,4 +1,5 @@
 from core.registry import Registry
+from core.registry.errors import RegistryKeyError
 from core.request.browser.stabilizer.policy.base import BrowserPageStabilityPolicy
 from core.request.browser.typing import BrowserInteractionPhase
 
