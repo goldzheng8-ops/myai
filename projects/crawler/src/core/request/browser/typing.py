@@ -80,13 +80,25 @@ class BrowserPageState(str, Enum):
 
     HUMAN_VERIFICATION = "human_verification"
 
-class BrowserSessionState(str, Enum):
+class BrowserPageRuntimeState(str,Enum):
+    INITIAL = "initial"
+    INTERACTING = "interacting"
+    INSPECTING = "inspecting"
+    CHALLENGE_RECOVERY = "challenge_recovery"
+    CAPTCHA_RECOVERY = "captcha_recovery"
+    WAITING = "waiting"
 
-    READY = "ready"
-    RUNNING = "running"
-    CHALLENGE = "challenge"
-    WAITING_FOR_HUMAN = "waiting_for_human"
-    CLOSED = "closed"
+class BrowserInteractionPhase(str,Enum):
+
+    INITIALIZING = "initializing"
+
+    INTERACTING = "interacting"
+
+    HUMAN_INTERVENTION = "human_intervention"
+
+    RECOVERY = "recovery"
+
+    COMPLETED = "completed"
 
 class HumanInterventionType(str,Enum):
     WAIT = "wait"

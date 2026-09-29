@@ -7,6 +7,8 @@ crawl:
 
 aria2:
   executable: "D:/program/aria2/aria2c.exe"
+browser_runtime:
+  headless: false
 runtime:
 
   engine:

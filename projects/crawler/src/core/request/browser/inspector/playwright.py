@@ -1,11 +1,14 @@
+from core.request.browser.stabilizer.base import BrowserPageStabilizer
 from playwright.async_api import Page
 import logging
 
 from core.request.browser.detector.registry import BrowserPageStateDetectorRegistry
 from core.request.browser.inspector.base import BrowserPageInspector
 from core.request.browser.inspector.model import BrowserPageInspection
-from core.request.browser.snapshot import BrowserPageRuntimeState, BrowserPageSnapshotBuilder
-from core.request.browser.typing import BrowserPageState
+from core.request.browser.snapshot import BrowserPageRuntimeState
+from core.request.browser.typing import BrowserInteractionPhase, BrowserPageState
+
+
 logger=logging.getLogger(__name__)
 
 class PlaywrightBrowserPageInspector(
@@ -16,47 +19,43 @@ class PlaywrightBrowserPageInspector(
         self,
         detector_registry:
             BrowserPageStateDetectorRegistry,
-        snapshot_builder:
-            BrowserPageSnapshotBuilder,
+        stabilizer:
+            BrowserPageStabilizer,
     ) -> None:
 
         self._detectors = detector_registry
-        self._snapshot_builder = snapshot_builder
+        self._stabilizer = stabilizer
 
     async def inspect(
         self,
         page: Page,
+        phase: BrowserInteractionPhase,        
         runtime_state: BrowserPageRuntimeState,
     ) -> BrowserPageInspection:
 
-        snapshot = await self._snapshot_builder.build(
-            page,
-            runtime_state,
+        snapshot = (
+            await self._stabilizer.stabilize(
+                page=page,
+                phase=phase,
+                runtime_state=runtime_state,
+            )
         )
-        logger.info(
-            "[BrowserSnapshot] "
-            "url=%r title=%r "
-            "text_length=%d",
-            snapshot.url,
-            snapshot.title,
-            len(snapshot.body_text),
-        )
-        logger.info(
-            "[BrowserSnapshot] text=%r",
-            snapshot.body_text[:500],
-        )
-        inspection = await self._detectors.detect(
-            page,
-            snapshot,
+
+        inspection = (
+            await self._detectors.detect(
+                page,
+                snapshot,
+            )
         )
 
         if inspection is None:
-
             return BrowserPageInspection(
                 state=BrowserPageState.UNKNOWN,
                 url=snapshot.url,
                 title=snapshot.title,
-                reason="No page-state detector matched.",
+                reason=(
+                    "No page-state detector matched."
+                ),
             )
 
         return inspection

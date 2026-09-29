@@ -4,7 +4,6 @@ from core.request.browser.detector.access_denied import AccessDeniedDetector
 from core.request.browser.detector.cloudflare_challenge import CloudflareChallengeDetector
 from core.request.browser.detector.human_verification import HumanVerificationChallengeDetector
 from core.request.browser.detector.login_required import LoginRequiredDetector
-# from core.request.browser.detector.normal import NormalPageDetector
 from core.request.browser.detector.registry import BrowserPageStateDetectorRegistry
 from core.request.browser.detector.turnstile_challenge import TurnstileChallengeDetector
 from core.request.browser.inspector.base import BrowserPageInspector
@@ -28,8 +27,14 @@ from core.request.browser.intervention.handler.Console import ConsoleHumanInterv
 from core.request.browser.intervention.registry import HumanInterventionEngineRegistry
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.browser.snapshot import BrowserPageSnapshotBuilder, PlaywrightBrowserPageSnapshotBuilder
+from core.request.browser.stabilizer.playwright import PlaywrightBrowserPageStabilizer
+from core.request.browser.stabilizer.base import BrowserPageStabilizer
+from core.request.browser.stabilizer.policy.challenge import ChallengeStabilityPolicy
+from core.request.browser.stabilizer.policy.interaction import InteractionStabilityPolicy
+from core.request.browser.stabilizer.policy.registry import BrowserPageStabilityPolicyRegistry
+from core.request.browser.stabilizer.policy.strict import StrictStabilityPolicy
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
-from core.request.browser.typing import BrowserPageState
+from core.request.browser.typing import BrowserPageState, BrowserInteractionPhase
 
 def register_browser_components(
     builder: ProviderBuilder,
@@ -57,8 +62,19 @@ def register_browser_components(
             detector_registry=resolver.resolve(
                 BrowserPageStateDetectorRegistry,
             ),
+            stabilizer=resolver.resolve(
+                BrowserPageStabilizer,
+            ),
+        ),
+    )
+    builder.add_factory(
+        BrowserPageStabilizer,
+        lambda resolver: PlaywrightBrowserPageStabilizer(
             snapshot_builder=resolver.resolve(
                 BrowserPageSnapshotBuilder,
+            ),
+            policy_registry=resolver.resolve(
+                BrowserPageStabilityPolicyRegistry,
             ),
         ),
     )
@@ -67,6 +83,9 @@ def register_browser_components(
         lambda resolver: PlaywrightBrowserInteractionEngine(
             inspector=resolver.resolve(
                 BrowserPageInspector,
+            ),
+            stabilizer=resolver.resolve(
+                BrowserPageStabilizer,
             ),
             human_intervention_registry=resolver.resolve(
                 HumanInterventionEngineRegistry,
@@ -85,6 +104,12 @@ def register_browser_components(
     builder.add_factory(
         BrowserPageStateDetectorRegistry,
         lambda resolver: create_state_detector_registry(
+            resolver,
+        ),
+    )
+    builder.add_factory(
+        BrowserPageStabilityPolicyRegistry,
+        lambda resolver: create_stability_policy_registry(
             resolver,
         ),
     )
@@ -201,9 +226,35 @@ def create_state_detector_registry(
         AccessDeniedDetector(),
     )
 
-    # registry.register(
-    #     "normal",
-    #     NormalPageDetector(),
-    # )
+
+    return registry
+
+def create_stability_policy_registry(
+    resolver: ProviderResolver[Any, Any],
+) -> BrowserPageStabilityPolicyRegistry:
+
+    registry = BrowserPageStabilityPolicyRegistry()
+
+    registry.register(
+        BrowserInteractionPhase.INITIALIZING,
+        StrictStabilityPolicy(),
+    )
+    registry.register(
+        BrowserInteractionPhase.INTERACTING,
+        InteractionStabilityPolicy(),
+    )
+    registry.register(
+        BrowserInteractionPhase.HUMAN_INTERVENTION,
+        ChallengeStabilityPolicy(),
+    )
+    registry.register(
+        BrowserInteractionPhase.RECOVERY,
+        ChallengeStabilityPolicy(),
+    )
+    registry.register(
+        BrowserInteractionPhase.COMPLETED,
+        StrictStabilityPolicy(),
+    )
+
 
     return registry
