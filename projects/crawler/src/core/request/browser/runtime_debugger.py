@@ -1,9 +1,11 @@
+from playwright.async_api import Page, Response
+import logging
+from collections.abc import Mapping
+
 from core.request.browser.inspector.model import BrowserPageInspection
 from core.request.browser.model import BrowserInteractionExecution
 from core.request.browser.typing import BrowserInteractionPhase, BrowserPageState
 from core.request.browser.interaction.model import BrowserAction
-from playwright.async_api import Page, Response
-import logging
 
 from core.request.browser.config import BrowserRuntimeConfig
 from core.request.browser.snapshot import BrowserPageRuntimeState, BrowserPageSnapshot
@@ -274,7 +276,7 @@ class BrowserRuntimeDebugger:
         request = response.request
 
         logger.info(
-            "[BrowserPageResponse] "
+            "[BrowserNavigationDiagnostics] "
             "navigation=%d "
             "resource=%s "
             "method=%s "
@@ -292,7 +294,7 @@ class BrowserRuntimeDebugger:
         )
 
         logger.info(
-            "[BrowserEnvironment] "
+            "[BrowserNavigationDiagnostics] "
             "headless=%s",
             self.config.headless,
         )
@@ -316,7 +318,9 @@ class BrowserRuntimeDebugger:
             request.url,
             headers,
         )
-
+        self._log_navigation_headers(
+            headers,
+        )
     async def log_page_environment(
         self,
         *,
@@ -337,14 +341,14 @@ class BrowserRuntimeDebugger:
 
         except Exception as exc:
             logger.debug(
-                "[BrowserEnvironment] "
+                "[BrowserNavigationEnvironment] "
                 "failed to inspect page environment: %s",
                 exc,
             )
             return
 
         logger.info(
-            "[BrowserEnvironment] "
+            "[BrowserNavigationEnvironment] "
             "headless=%s "
             "user_agent=%r "
             "navigator.webdriver=%r "
@@ -355,4 +359,35 @@ class BrowserRuntimeDebugger:
             environment["webdriver"],
             environment["href"],
             environment["title"],
+        )
+
+
+    @staticmethod
+    def _log_navigation_headers(
+        headers: Mapping[str, str],
+    ) -> None:
+
+        interesting = {
+            key: value
+            for key, value in headers.items()
+            if key.lower() in {
+                "user-agent",
+                "accept",
+                "accept-language",
+                "sec-ch-ua",
+                "sec-ch-ua-mobile",
+                "sec-ch-ua-platform",
+                "sec-fetch-dest",
+                "sec-fetch-mode",
+                "sec-fetch-site",
+                "sec-fetch-user",
+                "origin",
+                "referer",
+                "cookie",
+            }
+        }
+
+        logger.info(
+            "[BrowserNavigationHeaders] %r",
+            interesting,
         )

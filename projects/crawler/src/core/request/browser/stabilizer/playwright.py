@@ -73,9 +73,9 @@ class PlaywrightBrowserPageStabilizer(
 
             if stable:
 
-                debugger.log_stable_page(
-                    snapshot=current,
-                )
+                # debugger.log_stable_page(
+                #     snapshot=current,
+                # )
 
                 await debugger.log_page_environment(
                     page=page,
