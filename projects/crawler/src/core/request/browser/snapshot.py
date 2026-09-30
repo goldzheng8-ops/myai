@@ -6,12 +6,15 @@ from playwright.async_api import Page
 
 @dataclass(slots=True)
 class BrowserPageRuntimeState:
-    """
-    Runtime state associated with the current document in a Page.
-    """
-
     status_code: int | None = None
     content_type: str | None = None
+
+    last_main_document_url: str | None = None
+    last_main_document_status: int | None = None
+    last_main_document_method: str | None = None
+    last_main_document_resource: str | None = None
+
+    navigation_count: int = 0
 
 @dataclass(frozen=True, slots=True)
 class BrowserPageSnapshot:

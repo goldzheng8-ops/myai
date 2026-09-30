@@ -1,6 +1,8 @@
 import asyncio
 from typing import Any
-from dataclasses import dataclass, field
+
+from core.request.browser.model import BrowserInteractionExecution
+from core.request.browser.runtime_debugger import BrowserRuntimeDebugger
 from playwright.async_api import Page
 import logging
 
@@ -24,89 +26,8 @@ from core.request.browser.inspector.model import BrowserPageInspection
 
 logger=logging.getLogger(__name__)
 
-_PHASE_TRANSITIONS: dict[
-    BrowserInteractionPhase,
-    frozenset[BrowserInteractionPhase],
-] = {
-    BrowserInteractionPhase.INITIALIZING: frozenset(
-        {
-            BrowserInteractionPhase.INTERACTING,
-            BrowserInteractionPhase.COMPLETED,
-        }
-    ),
 
-    BrowserInteractionPhase.INTERACTING: frozenset(
-        {
-            BrowserInteractionPhase.INTERACTING,
-            BrowserInteractionPhase.HUMAN_INTERVENTION,
-            BrowserInteractionPhase.COMPLETED,
-        }
-    ),
 
-    BrowserInteractionPhase.HUMAN_INTERVENTION: frozenset(
-        {
-            BrowserInteractionPhase.RECOVERY,
-        }
-    ),
-
-    BrowserInteractionPhase.RECOVERY: frozenset(
-        {
-            BrowserInteractionPhase.INTERACTING,
-            BrowserInteractionPhase.COMPLETED,
-        }
-    ),
-
-    BrowserInteractionPhase.COMPLETED: frozenset(),
-}
-
-@dataclass(frozen=True, slots=True)
-class BrowserPhaseTransition:
-
-    from_phase: BrowserInteractionPhase  = BrowserInteractionPhase.INITIALIZING
-    to_phase: BrowserInteractionPhase  = BrowserInteractionPhase.INITIALIZING
-
-@dataclass(slots=True)
-class BrowserInteractionExecution:
-
-    phase: BrowserInteractionPhase = (
-        BrowserInteractionPhase.INITIALIZING
-    )
-
-    transitions: list[
-        BrowserPhaseTransition
-    ] = field(
-        default_factory=lambda: [
-            BrowserPhaseTransition(),
-        ],
-    )
-
-    def transition_to(
-        self,
-        phase: BrowserInteractionPhase,
-    ) -> None:
-
-        current = self.phase
-
-        if phase == current:
-            return
-
-        allowed = _PHASE_TRANSITIONS[current]
-
-        if phase not in allowed:
-            raise RuntimeError(
-                "Invalid browser interaction phase "
-                f"transition: "
-                f"{current.value!r} -> "
-                f"{phase.value!r}.",
-            )
-
-        self.phase = phase
-        self.transitions.append(
-            BrowserPhaseTransition(
-                from_phase=current,
-                to_phase=phase,
-            )
-        )
         
 class PlaywrightBrowserInteractionEngine(
     BrowserInteractionEngine,
@@ -139,12 +60,14 @@ class PlaywrightBrowserInteractionEngine(
         stabilizer: BrowserPageStabilizer,
         human_intervention_registry: HumanInterventionEngineRegistry,
         executor_registry: BrowserActionExecutorRegistry,
+        debugger: BrowserRuntimeDebugger,
     ) -> None:
 
         self._inspector = inspector
         self._stabilizer = stabilizer
         self._interventions = human_intervention_registry
         self._executors = executor_registry
+        self._debugger = debugger
 
     async def execute(
         self,
@@ -175,6 +98,7 @@ class PlaywrightBrowserInteractionEngine(
                 context.config.actions,
                 start=1,
             ):
+                
                 await self._process_action(
                     context=context,
                     page=page,
@@ -189,19 +113,14 @@ class PlaywrightBrowserInteractionEngine(
                 BrowserInteractionPhase.COMPLETED,
             )
 
-            logger.info(
-                "[BrowserInteraction] completed "
-                "transitions=%s",
-                self._format_transitions(
-                    execution,
-                ),
+            self._debugger.log_transitions(
+                execution=execution,
             )
 
-        except Exception:
-            logger.exception(
-                "[BrowserInteraction] failed "
-                "phase=%s",
-                execution.phase.value,
+        except Exception as exc:
+            self._debugger.log_interaction_failed(
+                phase=execution.phase,
+                exc=exc,
             )
             raise
 
@@ -242,10 +161,9 @@ class PlaywrightBrowserInteractionEngine(
             BrowserInteractionPhase.INTERACTING,
         )
 
-        logger.info(
-            "[BrowserAction] #%d type=%s",
-            index,
-            action.type,
+        self._debugger.log_action(
+            index=index,
+            action=action,
         )
 
         await self._execute_action(
@@ -253,9 +171,10 @@ class PlaywrightBrowserInteractionEngine(
             action=action,
         )
 
-        logger.info(
-            "[BrowserAction] #%d completed",
-            index,
+        self._debugger.log_action(
+            index=index,
+            action=action,
+            completed=True,
         )
 
         inspection = await self._inspect(
@@ -302,11 +221,9 @@ class PlaywrightBrowserInteractionEngine(
                 f"{inspection.state!r}.",
             )
 
-        logger.info(
-            "[BrowserIntervention] "
-            "engine=%s state=%s",
-            type(intervention).__name__,
-            inspection.state.value,
+        self._debugger.log_intervention(
+            engine=intervention,
+            state=inspection.state,
         )
 
         await intervention.intervene(
@@ -353,11 +270,10 @@ class PlaywrightBrowserInteractionEngine(
             )
 
             if inspection.state == (
-                BrowserPageState.NORMAL
+                BrowserPageState.UNKNOWN
             ):
-                logger.info(
-                    "[BrowserRecovery] "
-                    "page recovered.",
+                self._debugger.log_recovery(
+                    recovered=True,
                 )
 
                 self._transition_to(
@@ -379,7 +295,9 @@ class PlaywrightBrowserInteractionEngine(
             await asyncio.sleep(
                 self.RECOVERY_INTERVAL,
             )
-
+            self._debugger.log_recovery(
+                recovered=False,
+            )
     async def _inspect(
         self,
         *,
@@ -409,11 +327,9 @@ class PlaywrightBrowserInteractionEngine(
         if previous == execution.phase:
             return
 
-        logger.info(
-            "[BrowserInteractionPhase] "
-            "%s -> %s",
-            previous.value,
-            execution.phase.value,
+        self._debugger.log_phase(
+            previous=previous,
+            current=execution.phase,
         )
 
     async def _execute_action(
@@ -432,19 +348,3 @@ class PlaywrightBrowserInteractionEngine(
             action,
         )
 
-    @staticmethod
-    def _format_transitions(
-        execution: BrowserInteractionExecution,
-    ) -> str:
-
-        transitions = execution.transitions
-
-        if not transitions:
-            return "<none>"
-
-        phases = [
-            transition.to_phase
-            for transition in transitions
-        ]
-
-        return " -> ".join(phases)

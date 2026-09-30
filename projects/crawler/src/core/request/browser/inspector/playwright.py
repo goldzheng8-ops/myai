@@ -1,6 +1,7 @@
+from core.request.browser.runtime_debugger import BrowserRuntimeDebugger
 from core.request.browser.stabilizer.base import BrowserPageStabilizer
 from playwright.async_api import Page
-import logging
+
 
 from core.request.browser.detector.registry import BrowserPageStateDetectorRegistry
 from core.request.browser.inspector.base import BrowserPageInspector
@@ -9,7 +10,6 @@ from core.request.browser.snapshot import BrowserPageRuntimeState
 from core.request.browser.typing import BrowserInteractionPhase, BrowserPageState
 
 
-logger=logging.getLogger(__name__)
 
 class PlaywrightBrowserPageInspector(
     BrowserPageInspector,
@@ -17,14 +17,13 @@ class PlaywrightBrowserPageInspector(
 
     def __init__(
         self,
-        detector_registry:
-            BrowserPageStateDetectorRegistry,
-        stabilizer:
-            BrowserPageStabilizer,
+        detector_registry: BrowserPageStateDetectorRegistry,
+        stabilizer: BrowserPageStabilizer,
+        debugger: BrowserRuntimeDebugger,
     ) -> None:
-
         self._detectors = detector_registry
         self._stabilizer = stabilizer
+        self._debugger = debugger
 
     async def inspect(
         self,
@@ -47,7 +46,11 @@ class PlaywrightBrowserPageInspector(
                 snapshot,
             )
         )
-
+        self._debugger.log_detector(
+            phase=phase,
+            snapshot=snapshot,
+            inspection=inspection,
+        )
         if inspection is None:
             return BrowserPageInspection(
                 state=BrowserPageState.UNKNOWN,

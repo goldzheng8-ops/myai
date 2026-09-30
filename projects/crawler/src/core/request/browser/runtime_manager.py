@@ -1,10 +1,11 @@
 from __future__ import annotations
-from core.request.browser.snapshot import BrowserPageRuntimeState
+from core.request.browser.model import BrowserSessionRuntime
+from core.request.browser.runtime_debugger import BrowserRuntimeDebugger
 from playwright.async_api import Response
 import asyncio
-from dataclasses import dataclass, field
-from typing import Callable, Literal, cast
+import logging
 
+from typing import  Literal, cast
 from core.request.browser.cookie_sink import BrowserCookieSink
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.downloader.serializer.playwright import PlaywrightCookieSerializer
@@ -12,7 +13,6 @@ from playwright.async_api import (
     Browser,
     BrowserContext,
     BrowserType,
-    Page,
     Playwright,
     ProxySettings,
     async_playwright,
@@ -24,62 +24,10 @@ from core.request.middleware.proxy.config import ProxyConfig
 from core.request.middleware.cookie.model import Cookie
 
 ColorScheme = Literal['dark', 'light', 'no-preference', 'null']
+logger=logging.getLogger(__name__)
 
 
-@dataclass(slots=True)
-class BrowserSessionRuntime:
-    session_id: str
-
-    context: BrowserContext
-    page: Page
-
-    proxy: ProxyConfig | None = None
-
-    cookie_sink: BrowserCookieSink | None = None
-
-    page_state: BrowserPageRuntimeState = field(
-        default_factory=BrowserPageRuntimeState,
-    )
-
-    lock: asyncio.Lock = field(
-        default_factory=asyncio.Lock,
-    )
-
-    cookie_tasks: set[
-        asyncio.Task[None]
-    ] = field(
-        default_factory=set,
-    )
-
-    response_handler: (
-        Callable[[Response], None] | None
-    ) = None
-
-    async def close(self) -> None:
-
-        if self.response_handler is not None:
-            self.context.remove_listener(
-                "response",
-                self.response_handler,
-            )
-
-            self.response_handler = None
-
-        tasks = tuple(self.cookie_tasks)
-
-        self.cookie_tasks.clear()
-
-        if tasks:
-            await asyncio.gather(
-                *tasks,
-                return_exceptions=True,
-            )
-
-        if not self.page.is_closed():
-            await self.page.close()
-
-        await self.context.close()
-
+        
 class BrowserRuntimeManager(LifecycleParticipant):
     """
     Owns the Playwright runtime lifecycle.
@@ -104,6 +52,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
         config: BrowserRuntimeConfig,
         context_config: BrowserContextConfig,
         cookie_extractor:PlaywrightCookieExtractor,
+        debugger: BrowserRuntimeDebugger,
     ) -> None:
         self._config = config
         self._context_config = context_config
@@ -112,7 +61,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
         self._browser: Browser | None = None
 
         self._sessions: dict[str, BrowserSessionRuntime] = {}
-
+        self._debugger = debugger
         self._lock = asyncio.Lock()
 
     @property
@@ -415,8 +364,9 @@ class BrowserRuntimeManager(LifecycleParticipant):
             cookies,
         )
 
-    @staticmethod
+
     def _update_page_state(
+        self,
         session: BrowserSessionRuntime,
         response: Response,
     ) -> None:
@@ -426,14 +376,33 @@ class BrowserRuntimeManager(LifecycleParticipant):
         if request.resource_type != "document":
             return
 
-        content_type = response.headers.get(
-            "content-type",
+        if response.frame != session.page.main_frame:
+            return
+
+        state = session.page_state
+
+        state.status_code = response.status
+
+        state.content_type = (
+            response.headers.get("content-type")
         )
 
-        session.page_state.status_code = (
-            response.status
+        state.last_main_document_url = response.url
+
+        state.last_main_document_status = response.status
+
+        state.last_main_document_method = request.method
+
+        state.last_main_document_resource = request.resource_type
+
+        state.navigation_count += 1
+
+
+
+        session.create_debug_task(
+            self._debugger.log_document_response(
+                state=state,
+                response=response,
+            )
         )
 
-        session.page_state.content_type = (
-            content_type
-        )

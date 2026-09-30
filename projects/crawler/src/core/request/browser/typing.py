@@ -80,13 +80,6 @@ class BrowserPageState(str, Enum):
 
     HUMAN_VERIFICATION = "human_verification"
 
-class BrowserPageRuntimeState(str,Enum):
-    INITIAL = "initial"
-    INTERACTING = "interacting"
-    INSPECTING = "inspecting"
-    CHALLENGE_RECOVERY = "challenge_recovery"
-    CAPTCHA_RECOVERY = "captcha_recovery"
-    WAITING = "waiting"
 
 class BrowserInteractionPhase(str,Enum):
 

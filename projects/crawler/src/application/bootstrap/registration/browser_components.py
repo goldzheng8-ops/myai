@@ -25,7 +25,8 @@ from core.provider import ProviderBuilder, ProviderResolver
 from core.request.browser.intervention.factory import build_manual_console_intervention_factory
 from core.request.browser.intervention.handler.Console import ConsoleHumanInterventionHandler
 from core.request.browser.intervention.registry import HumanInterventionEngineRegistry
-from core.request.browser.runtime_manager import BrowserRuntimeManager
+
+from core.request.browser.runtime_manager import BrowserRuntimeDebugger, BrowserRuntimeManager
 from core.request.browser.snapshot import BrowserPageSnapshotBuilder, PlaywrightBrowserPageSnapshotBuilder
 from core.request.browser.stabilizer.playwright import PlaywrightBrowserPageStabilizer
 from core.request.browser.stabilizer.base import BrowserPageStabilizer
@@ -41,12 +42,14 @@ def register_browser_components(
     config: ApplicationConfig,
 ) -> None:
     builder.add_type(ConsoleHumanInterventionHandler)
+
     builder.add_factory(
         BrowserRuntimeManager,
         lambda resolver: BrowserRuntimeManager(
             config=config.browser_runtime,
             context_config=config.browser_context,
-            cookie_extractor=resolver.resolve(PlaywrightCookieExtractor)
+            cookie_extractor=resolver.resolve(PlaywrightCookieExtractor),
+            debugger=resolver.resolve(BrowserRuntimeDebugger),
 
         ),
     )
@@ -54,6 +57,12 @@ def register_browser_components(
         BrowserPageSnapshotBuilder,
         lambda resolver: PlaywrightBrowserPageSnapshotBuilder(
             config=config.page_snapshot
+        ),
+    )
+    builder.add_factory(
+        BrowserRuntimeDebugger,
+        lambda resolver: BrowserRuntimeDebugger(
+            config=config.browser_runtime
         ),
     )
     builder.add_factory(
@@ -65,6 +74,9 @@ def register_browser_components(
             stabilizer=resolver.resolve(
                 BrowserPageStabilizer,
             ),
+            debugger=resolver.resolve(
+                BrowserRuntimeDebugger,
+            ),
         ),
     )
     builder.add_factory(
@@ -75,6 +87,9 @@ def register_browser_components(
             ),
             policy_registry=resolver.resolve(
                 BrowserPageStabilityPolicyRegistry,
+            ),
+            debugger=resolver.resolve(
+                BrowserRuntimeDebugger,
             ),
         ),
     )
@@ -92,6 +107,9 @@ def register_browser_components(
             ),
             executor_registry=resolver.resolve(
                 BrowserActionExecutorRegistry,
+            ),
+            debugger=resolver.resolve(
+                BrowserRuntimeDebugger,
             ),
         ),
     )

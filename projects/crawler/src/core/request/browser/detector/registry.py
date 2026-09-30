@@ -39,21 +39,7 @@ class BrowserPageStateDetectorRegistry(
                 page,
                 snapshot,
             )
-            logger.info(
-                "[BrowserStateDetector] "
-                "detector=%s state=%s reason=%r",
-                type(detector).__name__,
-                (
-                    inspection.state
-                    if inspection is not None
-                    else None
-                ),
-                (
-                    inspection.reason
-                    if inspection is not None
-                    else None
-                ),
-            )
+
             if inspection is not None:
                 return inspection
 

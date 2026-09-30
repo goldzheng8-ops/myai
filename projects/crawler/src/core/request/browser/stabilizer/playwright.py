@@ -1,14 +1,12 @@
 import asyncio
-import logging
 
+from core.request.browser.runtime_manager import BrowserRuntimeDebugger
 from core.request.browser.snapshot import BrowserPageRuntimeState, BrowserPageSnapshot, BrowserPageSnapshotBuilder
 from core.request.browser.stabilizer.base import BrowserPageStabilizer
 from core.request.browser.stabilizer.policy.registry import BrowserPageStabilityPolicyRegistry
 from core.request.browser.typing import BrowserInteractionPhase
 from playwright.async_api import Page
 
-
-logger = logging.getLogger(__name__)
 
 
 class PlaywrightBrowserPageStabilizer(
@@ -19,9 +17,12 @@ class PlaywrightBrowserPageStabilizer(
         self,
         snapshot_builder: BrowserPageSnapshotBuilder,
         policy_registry: BrowserPageStabilityPolicyRegistry,
+        debugger: BrowserRuntimeDebugger,
     ) -> None:
+
         self._snapshot_builder = snapshot_builder
         self._policies = policy_registry
+        self._debugger = debugger
 
     async def stabilize(
         self,
@@ -39,26 +40,23 @@ class PlaywrightBrowserPageStabilizer(
             runtime_state,
         )
 
-        logger.info(
-            "[BrowserStabilizer] initial snapshot "
-            "phase=%s url=%r title=%r",
-            phase,
-            previous.url,
-            previous.title,
+        debugger = self._debugger
+
+        debugger.log_snapshot(
+            phase=phase,
+            snapshot=previous,
         )
 
         for attempt in range(
-            policy.max_attempts
+            policy.max_attempts,
         ):
             await asyncio.sleep(
                 policy.interval,
             )
 
-            current = (
-                await self._snapshot_builder.build(
-                    page,
-                    runtime_state,
-                )
+            current = await self._snapshot_builder.build(
+                page,
+                runtime_state,
             )
 
             stable = policy.is_stable(
@@ -66,29 +64,30 @@ class PlaywrightBrowserPageStabilizer(
                 current,
             )
 
-            logger.info(
-                "[BrowserStabilizer] "
-                "attempt=%d phase=%s stable=%s "
-                "url=%r title=%r",
-                attempt + 1,
-                phase,
-                stable,
-                current.url,
-                current.title,
+            debugger.log_snapshot(
+                phase=phase,
+                attempt=attempt + 1,
+                stable=stable,
+                snapshot=current,
             )
 
             if stable:
+
+                debugger.log_stable_page(
+                    snapshot=current,
+                )
+
+                await debugger.log_page_environment(
+                    page=page,
+                )
                 return current
 
             previous = current
 
-        logger.info(
-            "[BrowserStabilizer] "
-            "stability timeout phase=%s "
-            "url=%r title=%r",
-            phase,
-            previous.url,
-            previous.title,
+
+        debugger.log_stabilizer_timeout(
+            phase=phase,
+            snapshot=previous,
         )
 
         return previous
