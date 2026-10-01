@@ -1,6 +1,7 @@
 from __future__ import annotations
 import asyncio
 import logging
+from core.request.middleware.auth.auth_provider.oauth2.refresher import OAuth2TokenRefresher
 from core.request.middleware.cookie.cookie_converter import PlaywrightCookieConverter
 from playwright.async_api import (
     Browser,
@@ -55,6 +56,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
         context_config: BrowserContextConfig,
         cookie_extractor:PlaywrightCookieExtractor,
         debugger: BrowserRuntimeDebugger,
+        oauth2_token_refresher: OAuth2TokenRefresher,
     ) -> None:
         self._config = config
         self._context_config = context_config
@@ -65,7 +67,8 @@ class BrowserRuntimeManager(LifecycleParticipant):
         self._sessions: dict[str, BrowserSessionRuntime] = {}
         self._debugger = debugger
         self._lock = asyncio.Lock()
-
+        self._oauth2_token_refresher = oauth2_token_refresher
+        
     @property
     def config(self) -> BrowserRuntimeConfig:
         return self._config
@@ -196,6 +199,7 @@ class BrowserRuntimeManager(LifecycleParticipant):
         """
         async with self._lock:
             sessions = tuple(self._sessions.values())
+            session_ids = tuple(self._sessions.keys())
             self._sessions.clear()
 
             browser = self._browser
@@ -206,6 +210,10 @@ class BrowserRuntimeManager(LifecycleParticipant):
 
         await asyncio.gather(
             *(session.close() for session in sessions),
+            return_exceptions=True,
+        )
+        await asyncio.gather(
+            *(self._oauth2_token_refresher.clear_session(session_id) for session_id in session_ids),
             return_exceptions=True,
         )
 

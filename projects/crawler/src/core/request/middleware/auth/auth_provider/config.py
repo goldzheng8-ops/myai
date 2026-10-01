@@ -51,7 +51,7 @@ class OAuth2CredentialsProviderConfig(
 ):
     type: Literal["oauth2"] = "oauth2"
 
-    provider_name: str
+    provider_key: str
 
     access_token_storage: Literal[
         "local_storage",
@@ -69,7 +69,24 @@ class OAuth2CredentialsProviderConfig(
 
     refresh_token_key: str | None = None
 
+    expires_at_storage: Literal[
+        "local_storage",
+        "session_storage",
+        "cookies",
+    ] | None = None
+
+    expires_at_key: str | None = None
+
+    token_type_storage: Literal[
+        "local_storage",
+        "session_storage",
+        "cookies",
+    ] | None = None
+
+    token_type_key: str | None = None
+
     refresh_leeway: float = 30.0
+
 
 AuthProviderConfigUnion = Annotated[
     (

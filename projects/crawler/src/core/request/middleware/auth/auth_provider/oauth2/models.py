@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from core.request.middleware.auth.auth_provider.oauth2.typing import OAuth2TokenState
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class OAuth2TokenSet:
@@ -20,3 +22,10 @@ class OAuth2TokenSet:
             return False
 
         return now.timestamp() + leeway >= self.expires_at.timestamp()
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class OAuth2TokenRecord:
+    token_set: OAuth2TokenSet | None
+    state: OAuth2TokenState = OAuth2TokenState.ACTIVE
+    invalid_reason: str | None = None
