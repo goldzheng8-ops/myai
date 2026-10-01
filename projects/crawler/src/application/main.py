@@ -18,8 +18,11 @@ async def main() -> None:
     # application = bootstrap.create(
     #     "application.yaml",
     # )
+    # application = bootstrap.create(
+    #     "search.yaml",
+    # )
     application = bootstrap.create(
-        "search.yaml",
+        "loginin.yaml",
     )
 
     try:

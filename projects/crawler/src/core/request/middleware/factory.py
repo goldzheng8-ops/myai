@@ -3,7 +3,7 @@ from typing import Any, Protocol
 from core.cache.protocol import Cache
 from core.provider import ProviderResolver
 from core.request.middleware.auth.middleware import AuthMiddleware
-from core.request.middleware.auth.resolver import AuthProviderResolver
+from core.request.middleware.auth.auth_provider.resolver import AuthProviderResolver
 from core.request.middleware.cache.middleware import CacheMiddleware
 from core.request.middleware.cookie.middleware import CookieMiddleware
 from core.request.middleware.deduplicate.middleware import DeduplicateMiddleware

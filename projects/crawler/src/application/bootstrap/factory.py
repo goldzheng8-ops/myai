@@ -14,7 +14,7 @@ from core.provider import (
 )
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.download.resume.store import ResumeStore
-from core.request.middleware.auth.resolver import AuthProviderResolver
+from core.request.middleware.auth.auth_provider.resolver import AuthProviderResolver
 
 from .container import ApplicationContainer
 from .registration import (

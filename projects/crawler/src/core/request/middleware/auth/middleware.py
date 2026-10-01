@@ -8,13 +8,22 @@ from core.request.context import RequestContext
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import AuthMiddlewareConfig
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
-from .provider import AuthCredentials, AuthProvider
+from .auth_provider.base import AuthCredentials, AuthProvider
 
 T = TypeVar("T")
 
 class AuthMiddleware(
     RequestMiddleware[AuthMiddlewareConfig],
 ):
+    """
+    Authentication credential propagation middleware.
+
+    This middleware injects existing authentication
+    credentials into outgoing requests.
+
+    Interactive authentication is handled by the
+    browser interaction layer.
+    """
     plugin_type = MiddlewareType.AUTH
 
     def __init__(
@@ -44,11 +53,11 @@ class AuthMiddleware(
             context,
         )
 
-        if credentials is not None:
-            self._apply_credentials(
-                context,
-                credentials,
-            )
+
+        self._apply_credentials(
+            context,
+            credentials,
+        )
 
         return await next_(context)
 

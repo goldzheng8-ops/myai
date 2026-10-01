@@ -5,9 +5,9 @@ from typing import Any, Generic, TypeVar
 
 from core.lifecycle.protocol import LifecycleParticipant
 from core.request.context import RequestContext
+from core.request.middleware.cookie.model import Cookie
 from core.request.typing import (
     RequestHeaders,
-    RequestCookies,
     RequestParams,
 
 )
@@ -23,9 +23,7 @@ class AuthCredentials:
         default_factory=dict,
     )
 
-    cookies: RequestCookies = field(
-        default_factory=dict,
-    )
+    cookies: tuple[Cookie, ...] = ()
 
     params: RequestParams = field(
         default_factory=dict,
@@ -51,7 +49,7 @@ class AuthProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials | None:
+    ) -> AuthCredentials:
         raise NotImplementedError
 
 

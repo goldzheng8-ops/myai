@@ -154,7 +154,7 @@ class BrowserAction(BaseConfig):
             field = next(iter(missing))
 
             raise ValueError(
-                f"{self.type.value!r} action requires "
+                f"{self.type!r} action requires "
                 f"a {field}.",
             )
 

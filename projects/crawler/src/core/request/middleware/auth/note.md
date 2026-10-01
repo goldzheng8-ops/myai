@@ -29,3 +29,12 @@ nonce
 client 根据 username/password/nonce 计算 digest
   ↓
 Authorization: Digest ...
+
+BearerAuthProvider
+        │
+        ▼
+TokenProvider
+   ├── StaticTokenProvider
+   ├── RefreshTokenProvider
+   ├── OAuthTokenProvider
+   └── ...

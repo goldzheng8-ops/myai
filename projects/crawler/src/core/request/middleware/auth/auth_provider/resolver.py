@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from typing import Any
 
-from core.request.middleware.auth.provider import BaseAuthProvider
+from core.request.middleware.auth.auth_provider.base import BaseAuthProvider
 
 
 class AuthProviderResolver:

@@ -186,6 +186,7 @@ class PlaywrightBrowserInteractionEngine(
         if inspection.state in {
             BrowserPageState.CHALLENGE,
             BrowserPageState.CAPTCHA,
+            # BrowserPageState.LOGIN_REQUIRED,
         }:
             await self._handle_intervention(
                 context=context,

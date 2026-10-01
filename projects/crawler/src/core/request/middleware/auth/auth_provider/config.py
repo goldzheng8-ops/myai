@@ -1,5 +1,6 @@
 from typing import Annotated, Literal
 
+
 from pydantic import Field
 
 from core.typing.config import BaseConfig
@@ -30,35 +31,45 @@ class BearerAuthProviderConfig(
 ):
     type: Literal["bearer"] = "bearer"
 
-    token: str
+    storage: Literal[
+        "local_storage",
+        "session_storage",
+        "cookies",
+    ]
+
+    key: str
 
 class CookieAuthProviderConfig(
     AuthProviderConfig,
 ):
     type: Literal["cookie"] = "cookie"
 
-    cookies: dict[str, str] = Field(
-        default_factory=dict,
-    )
+    name: str
 
-class OAuth2ClientCredentialsProviderConfig(
+class OAuth2CredentialsProviderConfig(
     AuthProviderConfig,
 ):
-    type: Literal[
-        "oauth2_client_credentials"
-    ] = "oauth2_client_credentials"
+    type: Literal["oauth2"] = "oauth2"
 
-    token_url: str
+    provider_name: str
 
-    client_id: str
+    access_token_storage: Literal[
+        "local_storage",
+        "session_storage",
+        "cookies",
+    ]
 
-    client_secret: str
+    access_token_key: str
 
-    scope: str | None = None
+    refresh_token_storage: Literal[
+        "local_storage",
+        "session_storage",
+        "cookies",
+    ] | None = None
 
-    timeout: float = 10.0
+    refresh_token_key: str | None = None
 
-    token_expiry_margin: float = 30.0
+    refresh_leeway: float = 30.0
 
 AuthProviderConfigUnion = Annotated[
     (
@@ -66,7 +77,7 @@ AuthProviderConfigUnion = Annotated[
         | ApiKeyAuthProviderConfig
         | BearerAuthProviderConfig
         | CookieAuthProviderConfig
-        | OAuth2ClientCredentialsProviderConfig
+        | OAuth2CredentialsProviderConfig
     ),
     Field(discriminator="type"),
 ]

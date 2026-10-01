@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from http.cookiejar import Cookie as StdlibCookie
-from typing import Iterable
+from typing import Any, Iterable, Mapping
 from urllib.parse import urlparse
 
 from core.request.middleware.cookie.model import Cookie, SameSite
@@ -129,4 +129,99 @@ class HttpCookieConverter:
         return datetime.fromtimestamp(
             value,
             tz=timezone.utc,
+        )
+
+class PlaywrightCookieConverter:
+
+    @staticmethod
+    def convert(
+        cookie: Mapping[str, Any],
+        *,
+        host_only: bool,
+    ) -> Cookie:
+
+        domain = str(
+            cookie.get("domain", ""),
+        ).lstrip(".")
+
+        if not domain:
+            raise ValueError(
+                "Playwright cookie has no domain.",
+            )
+
+        expires = cookie.get("expires")
+
+        return Cookie(
+            name=str(cookie["name"]),
+            value=str(cookie["value"]),
+            scope_domain=domain,
+            host_only=host_only,
+            path=str(
+                cookie.get("path") or "/",
+            ),
+            expires=(
+                datetime.fromtimestamp(
+                    float(expires),
+                    tz=timezone.utc,
+                )
+                if (
+                    expires is not None
+                    and float(expires) > 0
+                )
+                else None
+            ),
+            secure=bool(
+                cookie.get("secure", False),
+            ),
+            http_only=bool(
+                cookie.get("httpOnly", False),
+            ),
+            same_site=(
+                PlaywrightCookieConverter._convert_same_site(
+                    cookie.get("sameSite"),
+                )
+            ),
+            partition_key=(
+                str(cookie["partitionKey"])
+                if cookie.get("partitionKey")
+                else None
+            ),
+        )
+
+    @staticmethod
+    def convert_many(
+        cookies: Iterable[Mapping[str, Any]],
+        *,
+        host_only: bool,
+    ) -> tuple[Cookie, ...]:
+
+        return tuple(
+            PlaywrightCookieConverter.convert(
+                cookie,
+                host_only=host_only,
+            )
+            for cookie in cookies
+        )
+
+    @staticmethod
+    def _convert_same_site(
+        value: Any,
+    ) -> SameSite | None:
+
+        if value is None:
+            return None
+
+        normalized = str(value).lower()
+
+        if normalized == "lax":
+            return "lax"
+
+        if normalized == "strict":
+            return "strict"
+
+        if normalized == "none":
+            return "none"
+
+        raise ValueError(
+            f"Unsupported Playwright SameSite value: {value!r}",
         )

@@ -206,6 +206,13 @@ def create_human_intervention_registry(
             config=config,
         ),
     )
+    registry.register(
+        BrowserPageState.LOGIN_REQUIRED,
+        build_manual_console_intervention_factory(
+            resolver=resolver,
+            config=config,
+        ),
+    )
 
     return registry
 

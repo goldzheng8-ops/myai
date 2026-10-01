@@ -1,13 +1,13 @@
 from collections.abc import Sequence
 from typing import Any
 
-from core.request.middleware.auth.apikey import ApiKeyAuthProvider
-from core.request.middleware.auth.basic import BasicAuthProvider
-from core.request.middleware.auth.bearer import BearerAuthProvider
-from core.request.middleware.auth.config import AuthProviderConfigUnion
-from core.request.middleware.auth.cookie import CookieAuthProvider
-from core.request.middleware.auth.oauth2 import OAuth2ClientCredentialsProvider
-from core.request.middleware.auth.provider import BaseAuthProvider
+from core.request.middleware.auth.auth_provider.apikey import ApiKeyAuthProvider
+from core.request.middleware.auth.auth_provider.basic import BasicAuthProvider
+from core.request.middleware.auth.auth_provider.bearer import BearerAuthProvider
+from core.request.middleware.auth.auth_provider.config import AuthProviderConfigUnion
+from core.request.middleware.auth.auth_provider.cookie import CookieAuthProvider
+from core.request.middleware.auth.auth_provider.oauth2 import OAuth2ClientCredentialsProvider
+from core.request.middleware.auth.auth_provider.base import BaseAuthProvider
 
 
 class AuthProviderFactory:

@@ -1,8 +1,8 @@
 import base64
 
 from core.request.context import RequestContext
-from core.request.middleware.auth.config import BasicAuthProviderConfig
-from .provider import AuthCredentials, BaseAuthProvider
+from core.request.middleware.auth.auth_provider.config import BasicAuthProviderConfig
+from .base import AuthCredentials, BaseAuthProvider
 class BasicAuthProvider(BaseAuthProvider[BasicAuthProviderConfig]):
 
     def __init__(

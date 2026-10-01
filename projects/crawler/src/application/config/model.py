@@ -7,7 +7,7 @@ from core.output.config import OutputConfigUnion
 from core.request.browser.config import BrowserContextConfig, BrowserPageSnapshotConfig, BrowserRuntimeConfig, HumanInterventionConfig
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
-from core.request.middleware.auth.config import AuthProviderConfigUnion
+from core.request.middleware.auth.auth_provider.config import AuthProviderConfigUnion
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
 from core.request.middleware.retry.config import RetryPolicyConfig
 from core.request.middleware.robots.config import RobotsPolicyConfig

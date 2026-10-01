@@ -1,6 +1,6 @@
 from core.request.context import RequestContext
-from core.request.middleware.auth.config import ApiKeyAuthProviderConfig
-from .provider import AuthCredentials, BaseAuthProvider
+from core.request.middleware.auth.auth_provider.config import ApiKeyAuthProviderConfig
+from .base import AuthCredentials, BaseAuthProvider
 
 class ApiKeyAuthProvider(BaseAuthProvider[ApiKeyAuthProviderConfig]):
 

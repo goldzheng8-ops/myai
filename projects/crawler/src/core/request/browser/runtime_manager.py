@@ -1,23 +1,25 @@
 from __future__ import annotations
-from core.request.browser.model import BrowserSessionRuntime
-from core.request.browser.runtime_debugger import BrowserRuntimeDebugger
-from playwright.async_api import Response
 import asyncio
 import logging
-
-from typing import  Literal, cast
-from core.request.browser.cookie_sink import BrowserCookieSink
-from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
-from core.request.downloader.serializer.playwright import PlaywrightCookieSerializer
+from core.request.middleware.cookie.cookie_converter import PlaywrightCookieConverter
 from playwright.async_api import (
     Browser,
     BrowserContext,
     BrowserType,
     Playwright,
+    Page,
+    Response,
     ProxySettings,
     async_playwright,
 )
+from typing import  Literal, cast
 
+
+from core.request.browser.model import BrowserSessionRuntime
+from core.request.browser.runtime_debugger import BrowserRuntimeDebugger
+from core.request.browser.cookie_sink import BrowserCookieSink
+from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
+from core.request.downloader.serializer.playwright import PlaywrightCookieSerializer
 from core.lifecycle.protocol import LifecycleParticipant
 from core.request.browser.config import BrowserContextConfig, BrowserRuntimeConfig
 from core.request.middleware.proxy.config import ProxyConfig
@@ -406,3 +408,109 @@ class BrowserRuntimeManager(LifecycleParticipant):
             )
         )
 
+    async def get_cookies(
+        self,
+        session: BrowserSessionRuntime,
+        urls: str | list[str] | None = None,
+    ) -> tuple[Cookie, ...]:
+        """
+        Read cookies from the Playwright BrowserContext.
+
+        This returns framework Cookie objects and therefore preserves
+        the framework cookie abstraction.
+        """
+        playwright_cookies = await session.context.cookies(
+            urls,
+        )
+
+        if not playwright_cookies:
+            return ()
+
+        return tuple(
+            PlaywrightCookieConverter.convert(
+                cookie,
+                host_only=False,
+            )
+            for cookie in playwright_cookies
+        )
+
+
+    async def get_local_storage(
+        self,
+        session: BrowserSessionRuntime,
+        page: Page | None = None,
+    ) -> dict[str, str]:
+        """
+        Read localStorage from the selected page's origin.
+
+        Does not navigate the page.
+        """
+        target_page = (
+            page
+            if page is not None
+            else session.page
+        )
+
+        return await self._get_storage(
+            page=target_page,
+            storage_name="localStorage",
+        )
+
+
+    async def get_session_storage(
+        self,
+        session: BrowserSessionRuntime,
+        page: Page | None = None,
+    ) -> dict[str, str]:
+        """
+        Read sessionStorage from the selected page's origin.
+
+        Does not navigate the page.
+        """
+        target_page = (
+            page
+            if page is not None
+            else session.page
+        )
+
+        return await self._get_storage(
+            page=target_page,
+            storage_name="sessionStorage",
+        )
+
+    async def _get_storage(
+        self,
+        *,
+        page: Page,
+        storage_name: str,
+    ) -> dict[str, str]:
+
+        return await page.evaluate(
+            """
+            storageName => {
+                const storage = window[storageName];
+                const result = {};
+
+                for (
+                    let index = 0;
+                    index < storage.length;
+                    index++
+                ) {
+                    const key = storage.key(index);
+
+                    if (key === null) {
+                        continue;
+                    }
+
+                    const value = storage.getItem(key);
+
+                    if (value !== null) {
+                        result[key] = value;
+                    }
+                }
+
+                return result;
+            }
+            """,
+            storage_name,
+        )
