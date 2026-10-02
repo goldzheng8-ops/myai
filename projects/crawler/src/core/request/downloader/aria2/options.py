@@ -15,7 +15,7 @@ class Aria2Options:
 
     cookies: tuple[str, ...] = ()
 
-    proxy: str | None = None
+    all_proxy: str | None = None
 
     timeout: float | None = None
 
@@ -67,8 +67,8 @@ class Aria2Options:
                 self.cookies,
             )
 
-        if self.proxy is not None:
-            options["all-proxy"] = self.proxy
+        if self.all_proxy is not None:
+            options["all-proxy"] = self.all_proxy
 
         if self.timeout is not None:
             options["timeout"] = str(
@@ -186,6 +186,6 @@ class Aria2OptionsBuilder:
             dir=directory,
             headers=headers,
             cookies=cookies,
-            proxy=proxy,
+            all_proxy=proxy,
             timeout=self._timeout,
         )

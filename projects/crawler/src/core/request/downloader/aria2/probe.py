@@ -28,6 +28,7 @@ class Aria2RpcProbe:
         self._rpc_secret = rpc_secret
         self._client = httpx.AsyncClient(
             timeout=timeout,
+            trust_env=False,
         )
 
     async def is_available(self) -> bool:

@@ -1,5 +1,6 @@
 # 安装 aria2c
 
+# 关闭代理，修正400
 
 aria2 本质上不是 HTTP response source，而是 download artifact source。
 
@@ -48,3 +49,4 @@ Aria2DownloaderConfig
 │
 └── RPC timeout
     └── timeout
+

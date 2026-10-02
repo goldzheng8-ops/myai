@@ -44,6 +44,7 @@ class Aria2Client:
 
         self._client = httpx.AsyncClient(
             timeout=self._timeout,
+            trust_env=False,
         )
 
     async def close(self) -> None:

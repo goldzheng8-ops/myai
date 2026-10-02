@@ -308,7 +308,7 @@ spiders:
       - type: header
       - type: user_agent
       - type: auth
-      - type: proxy
+      # - type: proxy
       - type: response_validation
       - type: robot
       - type: retry
