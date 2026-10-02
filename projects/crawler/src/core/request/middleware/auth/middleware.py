@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from core.request.builder import RequestBuilder
 from core.request.context import RequestContext
+from core.request.middleware.auth.auth_provider.registry import AuthProviderRegistry
 from core.request.middleware.base import RequestMiddleware
 from core.request.middleware.config import AuthMiddlewareConfig
 from core.request.middleware.typing import MiddlewareType, RequestMiddlewareNext
-from .auth_provider.base import AuthCredentials, AuthProvider
+from .auth_provider.base import AuthCredentials
 
 T = TypeVar("T")
 
@@ -28,7 +29,7 @@ class AuthMiddleware(
 
     def __init__(
         self,
-        provider: AuthProvider[Any],
+        provider: AuthProviderRegistry,
         config: AuthMiddlewareConfig,
     ) -> None:
         super().__init__(config)
@@ -36,7 +37,7 @@ class AuthMiddleware(
         self._provider = provider
 
     @property
-    def provider(self) -> AuthProvider[Any]:
+    def provider(self) -> AuthProviderRegistry:
         return self._provider
 
     @property
@@ -49,7 +50,7 @@ class AuthMiddleware(
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
 
-        credentials = await self._provider.get(
+        credentials = await self._provider.resolve(self.config.provider).get(
             context,
         )
 

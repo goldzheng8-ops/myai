@@ -1,7 +1,7 @@
 from core.typing.config import BaseConfig
 
 class OAuth2TokenEndpointConfig(BaseConfig):
-    token_url: str
+    token_url: str = ""
 
     client_id: str | None = None
     client_secret: str | None = None

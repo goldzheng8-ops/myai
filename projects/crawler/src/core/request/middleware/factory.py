@@ -2,8 +2,8 @@ from typing import Any, Protocol
 
 from core.cache.protocol import Cache
 from core.provider import ProviderResolver
+from core.request.middleware.auth.auth_provider.registry import AuthProviderRegistry
 from core.request.middleware.auth.middleware import AuthMiddleware
-from core.request.middleware.auth.auth_provider.resolver import AuthProviderResolver
 from core.request.middleware.cache.middleware import CacheMiddleware
 from core.request.middleware.cookie.middleware import CookieMiddleware
 from core.request.middleware.deduplicate.middleware import DeduplicateMiddleware
@@ -172,20 +172,14 @@ def build_auth_middleware_factory(
     resolver: ProviderResolver[Any, Any],
 ) -> MiddlewareFactory[AuthMiddlewareConfig]:
 
-    user_agent_resolver:AuthProviderResolver = resolver.resolve(
-        AuthProviderResolver,
-    )
+
 
     def factory(
         config: AuthMiddlewareConfig,
     ) -> AuthMiddleware:
 
-        provider = user_agent_resolver.resolve(
-            config.provider,
-        )
-
         return AuthMiddleware(
-            provider=provider,
+            provider=resolver.resolve(AuthProviderRegistry),
             config=config,
         )
 

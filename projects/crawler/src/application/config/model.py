@@ -8,6 +8,7 @@ from core.request.browser.config import BrowserContextConfig, BrowserPageSnapsho
 from core.request.config import RequestConfig
 from core.request.discovery.config import DiscoveryConfigUnion
 from core.request.middleware.auth.auth_provider.config import AuthProviderConfigUnion
+from core.request.middleware.auth.auth_provider.oauth2.config import OAuth2TokenEndpointConfig
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
 from core.request.middleware.retry.config import RetryPolicyConfig
 from core.request.middleware.robots.config import RobotsPolicyConfig
@@ -160,6 +161,9 @@ class ApplicationConfig(BaseConfig):
     proxies: tuple[ProxyProviderConfigUnion, ...] = ()
     user_agents: tuple[UserAgentProviderConfigUnion, ...] = ()
     auth_providers: tuple[AuthProviderConfigUnion, ...] = ()
+    oauth2_token_endpoint: OAuth2TokenEndpointConfig = Field(
+        default_factory=OAuth2TokenEndpointConfig,
+    )
     output_sinks: tuple[OutputConfigUnion, ...] = ()
 
     spiders: tuple[

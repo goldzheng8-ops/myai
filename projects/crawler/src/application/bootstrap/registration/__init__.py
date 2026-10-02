@@ -13,7 +13,6 @@ from .middlewares import (
     register_middlewares,
     register_proxy_providers_resolver,
     register_user_agent_providers_resolver,
-    register_auth_providers_resolver,
 )
 from .request_services import register_request_services
 from .resolvers import register_resolvers
@@ -30,7 +29,6 @@ __all__ = [
     "register_extractors",
     "register_proxy_providers_resolver",
     "register_user_agent_providers_resolver",
-    "register_auth_providers_resolver",
     "register_middleware_dependencies",
     "register_middlewares",
     "register_resolvers",

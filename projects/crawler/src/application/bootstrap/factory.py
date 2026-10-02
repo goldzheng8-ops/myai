@@ -14,7 +14,8 @@ from core.provider import (
 )
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.download.resume.store import ResumeStore
-from core.request.middleware.auth.auth_provider.resolver import AuthProviderResolver
+from core.request.middleware.auth.auth_provider.oauth2.endpoint import OAuth2TokenEndpointClient
+
 
 from .container import ApplicationContainer
 from .registration import (
@@ -28,7 +29,6 @@ from .registration import (
     register_lifecycle,
     register_proxy_providers_resolver,
     register_user_agent_providers_resolver,
-    register_auth_providers_resolver,
     register_middleware_dependencies,
     register_middlewares,
     register_runtimes,
@@ -128,10 +128,6 @@ class ApplicationContainerFactory:
             builder,
             config,          
         )
-        register_auth_providers_resolver(
-            builder,
-            config,          
-        )
 
         register_middleware_dependencies(
             builder,
@@ -185,12 +181,6 @@ class ApplicationContainerFactory:
             LifecycleManager,
         )
 
-        auth_resolver:AuthProviderResolver = container.resolve(
-            AuthProviderResolver,
-        )
-        for provider in auth_resolver.values():
-            lifecycle.register(provider)
-
 
         out_resolver:OutputResolver = container.resolve(
             OutputResolver,
@@ -212,3 +202,9 @@ class ApplicationContainerFactory:
             browser_runtime_manager,
         )
 
+        oauth2_client = container.resolve(
+            OAuth2TokenEndpointClient,
+        )
+        lifecycle.register(
+            oauth2_client,
+        )

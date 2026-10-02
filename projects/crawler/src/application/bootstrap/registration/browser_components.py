@@ -36,6 +36,7 @@ from core.request.browser.stabilizer.policy.registry import BrowserPageStability
 from core.request.browser.stabilizer.policy.strict import StrictStabilityPolicy
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.browser.typing import BrowserPageState, BrowserInteractionPhase
+from core.request.middleware.auth.auth_provider.oauth2.refresher import OAuth2TokenRefresher
 
 def register_browser_components(
     builder: ProviderBuilder,
@@ -50,6 +51,7 @@ def register_browser_components(
             context_config=config.browser_context,
             cookie_extractor=resolver.resolve(PlaywrightCookieExtractor),
             debugger=resolver.resolve(BrowserRuntimeDebugger),
+            oauth2_token_refresher=resolver.resolve(OAuth2TokenRefresher),
 
         ),
     )

@@ -70,7 +70,7 @@ class FingerprintMiddlewareConfig(
 ):
     pass
 class AuthMiddlewareConfig(MiddlewareConfig):
-    provider: str = "default"
+    provider: str = "basic"
     override_headers: bool = False
     override_cookies: bool = False
     override_params: bool = False

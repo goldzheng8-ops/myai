@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Mapping, NoReturn
+from core.lifecycle.protocol import LifecycleParticipant
 from core.request.middleware.auth.auth_provider.oauth2.errors import OAuth2HTTPError, OAuth2ProtocolError, OAuth2TokenError, OAuth2TransportError
 import httpx
 
@@ -7,7 +8,7 @@ from core.request.middleware.auth.auth_provider.oauth2.models import OAuth2Token
 from core.request.middleware.auth.auth_provider.oauth2.config import OAuth2TokenEndpointConfig
 
 
-class OAuth2TokenEndpointClient:
+class OAuth2TokenEndpointClient(LifecycleParticipant):
 
     def __init__(
         self,
@@ -416,3 +417,10 @@ class OAuth2TokenEndpointClient:
             datetime.now(timezone.utc)
             + timedelta(seconds=seconds)
         )
+
+    async def start(self) -> None:
+        ...
+
+    async def close(self) -> None:
+        await self._client.aclose()
+

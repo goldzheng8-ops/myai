@@ -6,7 +6,7 @@ from pydantic import Field
 from core.typing.config import BaseConfig
 
 class AuthProviderConfig(BaseConfig):
-    name: str
+    pass
 
 class BasicAuthProviderConfig(
     AuthProviderConfig,
