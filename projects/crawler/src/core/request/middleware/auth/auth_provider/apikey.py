@@ -14,7 +14,7 @@ class ApiKeyAuthProvider(BaseAuthProvider[ApiKeyAuthProviderConfig]):
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
         return AuthCredentials(
             headers={
                 self.config.header: self.config.key,

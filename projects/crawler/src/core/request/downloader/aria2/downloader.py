@@ -39,6 +39,7 @@ class Aria2Downloader(
             config
             if config is not None
             else Aria2DownloaderConfig(),
+            response_adapter_resolver,
         )
 
         self._response_adapter_resolver = (
@@ -173,6 +174,7 @@ class Aria2Downloader(
             headers={
                 "content-length": str(len(body)),
             },
+            cookies=context.descriptor.cookies,
             body=body,
             encoding=None,
             reason="OK",

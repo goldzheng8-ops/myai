@@ -12,6 +12,7 @@ from core.request.middleware.auth.auth_provider.oauth2.config import OAuth2Token
 from core.request.middleware.proxy.config import ProxyProviderConfigUnion
 from core.request.middleware.retry.config import RetryPolicyConfig
 from core.request.middleware.robots.config import RobotsPolicyConfig
+from core.request.middleware.session.config import SessionConfig
 from core.request.middleware.user_agent.config import UserAgentProviderConfigUnion
 from core.request.profile import RequestProfile
 from core.request.middleware.chain_builder import MiddlewareSpecUnion
@@ -126,7 +127,9 @@ class CrawlConfig(BaseConfig):
 class ApplicationConfig(BaseConfig):
     name: str = "ai-space"
     environment: str = "development"
-
+    session: SessionConfig = Field(
+        default_factory=SessionConfig,
+    )
     resume: ResumeConfig = Field(
         default_factory=ResumeConfig,
     )

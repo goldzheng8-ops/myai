@@ -14,7 +14,7 @@ class BasicAuthProvider(BaseAuthProvider[BasicAuthProviderConfig]):
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
         raw = (
             f"{self.config.username}:{self.config.password}"
             .encode()

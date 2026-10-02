@@ -50,6 +50,8 @@ class ScheduledRequest:
 
     fingerprint: str
 
+    session_id: str | None
+
 class RequestKindHandler(ABC):
 
     # Provide a default class-level value so type checkers (Pylance)
@@ -116,11 +118,13 @@ class TemplateRequestHandler(
             self._spider_config_registry.get(
                 descriptor.target_spider,
             )
-        )
+        )  
+
+        runtime = RuntimeContext()
 
         spider_context = SpiderContext(
             config=spider_config,
-            runtime=self._runtime,
+            runtime=runtime,
         )
 
         template = self._spider_registry.create(
@@ -131,6 +135,7 @@ class TemplateRequestHandler(
             config=spider_config,
             descriptor=descriptor,
             runtime=spider_context.runtime,
+            session_id=item.session_id,
             fingerprint=item.fingerprint,
         )
 

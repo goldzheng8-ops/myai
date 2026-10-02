@@ -17,11 +17,14 @@ class CookieAuthProvider(BaseAuthProvider[CookieAuthProviderConfig]):
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
 
         cookie = await self._get_cookie(
             context,
         )
+
+        if cookie is None:
+            return None
 
         return AuthCredentials(
             cookies=(cookie,),
@@ -30,7 +33,7 @@ class CookieAuthProvider(BaseAuthProvider[CookieAuthProviderConfig]):
     async def _get_cookie(
         self,
         context: RequestContext,
-    ) -> Cookie:
+    ) -> Cookie | None:
 
         state = await self._auth_state_provider.get_state(
             context=context,
@@ -40,6 +43,4 @@ class CookieAuthProvider(BaseAuthProvider[CookieAuthProviderConfig]):
             if cookie.name == self._config.name:
                 return cookie
 
-        raise ValueError(
-            f"Cookie with name '{self._config.name}' not found in the auth state.",
-        )
+        return None

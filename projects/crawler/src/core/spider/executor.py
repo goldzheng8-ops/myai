@@ -6,6 +6,7 @@ import logging
 
 from core.output.engine import OutputEngine
 from core.request.descriptor import RequestDescriptor
+from core.request.middleware.session.resolver import SessionIdResolver
 from core.spider.dispatcher import RequestKindDispatcher
 from core.spider.handler.base import RequestExecutionResult, ScheduledRequest
 
@@ -21,12 +22,13 @@ class CrawlerExecutor:
         dispatcher: RequestKindDispatcher,
         fingerprint_provider: FingerprintProvider,
         output_engine: OutputEngine,
+        session_id_resolver: SessionIdResolver,
     ) -> None:
         self._dispatcher = dispatcher
-        self._fingerprint_provider = (
-            fingerprint_provider
-        )
+        self._fingerprint_provider = fingerprint_provider
         self._output_engine = output_engine
+        self._session_id_resolver = session_id_resolver
+
     async def execute(
         self,
         descriptors: Sequence[RequestDescriptor],
@@ -38,7 +40,7 @@ class CrawlerExecutor:
         seen: set[str] = set()
 
         for descriptor in descriptors:
-            if self._enqueue(
+            if self._enqueue_initial(
                 descriptor,
                 queue,
                 seen,
@@ -73,6 +75,7 @@ class CrawlerExecutor:
                         descriptor,
                         queue,
                         seen,
+                        session_id=item.session_id,
                     ):
                         result.request_count += 1
 
@@ -112,11 +115,31 @@ class CrawlerExecutor:
 
         result.item_count += 1
 
+    def _enqueue_initial(
+        self,
+        descriptor: RequestDescriptor,
+        queue: deque[ScheduledRequest],
+        seen: set[str],
+    ) -> bool:
+
+        session_id = self._session_id_resolver.resolve(
+            descriptor,
+        )
+
+        return self._enqueue(
+            descriptor,
+            queue,
+            seen,
+            session_id=session_id,
+        )
+
     def _enqueue(
         self,
         descriptor: RequestDescriptor,
         queue: deque[ScheduledRequest],
         seen: set[str],
+        *,
+        session_id: str | None,
     ) -> bool:
 
         fingerprint = (
@@ -124,14 +147,8 @@ class CrawlerExecutor:
                 descriptor,
             )
         )
-        print(
-            f"\nURL: {descriptor.url}"
-            f"\nkind: {descriptor.kind}"
-            f"\ndont_filter: {descriptor.meta.dont_filter}"
-            f"\nfingerprint: {fingerprint}",
-        )
-        if not descriptor.meta.dont_filter:
 
+        if not descriptor.meta.dont_filter:
             if fingerprint in seen:
                 return False
 
@@ -141,11 +158,12 @@ class CrawlerExecutor:
             ScheduledRequest(
                 descriptor=descriptor,
                 fingerprint=fingerprint,
+                session_id=session_id,
             ),
         )
 
         return True
-
+    
     @staticmethod
     async def _close_response(
         execution: RequestExecutionResult,

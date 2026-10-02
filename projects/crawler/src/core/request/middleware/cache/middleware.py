@@ -9,7 +9,7 @@ from core.request.middleware.base import (
 )
 from core.request.middleware.config import CacheMiddlewareConfig
 from core.request.response import RequestResponse
-from core.request.result import RequestResult
+
 
 from .key import (
     CacheKeyProvider,
@@ -104,11 +104,7 @@ class CacheMiddleware(
         response: RequestResponse,
     ) -> None:
 
-        context.result = RequestResult(
-            response=response,
-            success=True,
-            elapsed=0.0,
-        )
+        context.transport_response = response
 
     def _store_response(
         self,
@@ -116,20 +112,12 @@ class CacheMiddleware(
         context: RequestContext,
     ) -> None:
 
-        result = context.result
+        transport_response = context.transport_response
 
-        if result is None:
-            return
-
-        if not result.success:
-            return
-
-        response = result.response
-
-        if response is None:
+        if transport_response is None:
             return
 
         self._cache.put(
             key,
-            response,
+            transport_response,
         )

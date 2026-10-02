@@ -18,16 +18,14 @@ class BearerAuthProvider(BaseAuthProvider[BearerAuthProviderConfig]):
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
 
         token = await self._get_token(
             context,
         )
 
         if token is None:
-            raise ValueError(
-                f"Token with key '{self._config.key}' not found in the auth state.",
-            )
+            return None
 
         return AuthCredentials(
             headers={
@@ -58,7 +56,4 @@ class BearerAuthProvider(BaseAuthProvider[BearerAuthProviderConfig]):
                 if cookie.name == self._config.key:
                     return cookie.value
             return None
-        raise ValueError(
-            f"Unsupported browser storage: "
-            f"{self._config.storage!r}",
-        )
+        return None

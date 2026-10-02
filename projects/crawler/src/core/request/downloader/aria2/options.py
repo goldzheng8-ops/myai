@@ -172,9 +172,9 @@ class Aria2OptionsBuilder:
         )
 
         cookies = tuple(
-            f"{key}={value}"
-            for key, value
-            in descriptor.cookies.items()
+            f"{cookie.name}={cookie.value}"
+            for cookie in descriptor.cookies
+
         )
 
         proxy = None

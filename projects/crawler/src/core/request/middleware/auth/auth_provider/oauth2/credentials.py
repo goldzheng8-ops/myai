@@ -1,7 +1,7 @@
 from core.request.context import RequestContext
 from core.request.middleware.auth.auth_provider.base import AuthCredentials, BaseAuthProvider
 from core.request.middleware.auth.auth_provider.config import OAuth2CredentialsProviderConfig
-from core.request.middleware.auth.auth_provider.oauth2.errors import OAuth2AuthenticationRequiredError
+
 from core.request.middleware.auth.auth_provider.oauth2.initial import OAuth2InitialTokenLoader
 from core.request.middleware.auth.auth_provider.oauth2.refresher import OAuth2TokenRefresher
 
@@ -25,14 +25,12 @@ class OAuth2CredentialsProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
 
         session_id = context.session_id
 
         if session_id is None:
-            raise OAuth2AuthenticationRequiredError(
-                "OAuth2 authentication requires a session.",
-            )
+            return None
 
         token_set = await self._token_refresher.get_valid(
             session_id=session_id,

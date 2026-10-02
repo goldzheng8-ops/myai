@@ -8,6 +8,7 @@ from core.lifecycle.manager import LifecycleManager
 from core.output.engine import OutputEngine
 from core.provider import ProviderBuilder, ProviderResolver
 from core.request.middleware.fingerprint.provider import FingerprintProvider
+from core.request.middleware.session.resolver import DefaultSessionIdResolver, SessionIdResolver
 from core.spider.dispatcher import RequestKindDispatcher
 from core.spider.executor import CrawlerExecutor
 from core.spider.handler.download_request import DownloadRequestHandler
@@ -78,6 +79,9 @@ def register_crawler(
             output_engine=resolver.resolve(
                 OutputEngine,
             ),
+            session_id_resolver=resolver.resolve(
+                SessionIdResolver,
+            ),
         ),
     )
 
@@ -115,5 +119,12 @@ def register_crawler(
                 LifecycleManager,
             ),
             crawl_config=config.crawl,
+        ),
+    )
+
+    builder.add_factory(
+        SessionIdResolver,
+        lambda _: DefaultSessionIdResolver(
+            default_session_id=config.session.default_session_id,
         ),
     )

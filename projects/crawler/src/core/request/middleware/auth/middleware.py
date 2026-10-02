@@ -54,11 +54,11 @@ class AuthMiddleware(
             context,
         )
 
-
-        self._apply_credentials(
-            context,
-            credentials,
-        )
+        if credentials is not None:
+            self._apply_credentials(
+                context,
+                credentials,
+            )
 
         return await next_(context)
 

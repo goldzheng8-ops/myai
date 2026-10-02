@@ -49,7 +49,7 @@ class AuthProvider(
     async def get(
         self,
         context: RequestContext,
-    ) -> AuthCredentials:
+    ) -> AuthCredentials | None:
         raise NotImplementedError
 
 

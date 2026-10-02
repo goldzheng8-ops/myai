@@ -37,21 +37,16 @@ class SessionMiddleware(RequestMiddleware[SessionMiddlewareConfig]):
         next_: RequestMiddlewareNext,
     ) -> RequestContext:
 
-        session_id = self._resolve_session_id(
-            context,
-        )
+        session_id = context.session_id
 
         if session_id is None:
             return await next_(context)
-
-        context.session_id = session_id
 
         session = await self._store.get(
             session_id,
         )
 
         if session is None:
-
             if not self.config.create_if_missing:
                 return await next_(context)
 
@@ -65,24 +60,10 @@ class SessionMiddleware(RequestMiddleware[SessionMiddlewareConfig]):
         )
 
         try:
-
-            return await next_(
-                context,
-            )
+            return await next_(context)
 
         finally:
-
             if self.config.save_after_request:
                 await self._store.save(
                     session,
                 )
-
-    def _resolve_session_id(
-        self,
-        context: RequestContext,
-    ) -> str | None:
-
-        if context.session_id is not None:
-            return context.session_id
-
-        return self.config.default_session_id
