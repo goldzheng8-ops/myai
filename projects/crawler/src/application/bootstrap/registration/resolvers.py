@@ -4,7 +4,8 @@ from core.extraction.resolver.engine import ResolverEngine
 from core.extraction.resolver.executor import ResolverExecutor
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator
 from core.extraction.resolver.registry import ResolverRegistry
-from core.provider import ProviderBuilder,ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.extraction.resolver.factory import (
     create_constant_resolver,
     create_context_resolver,

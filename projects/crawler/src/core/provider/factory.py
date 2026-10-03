@@ -36,14 +36,13 @@ class FactoryProvider(
         service: type[T],
     ) -> T:
 
-        factory = self._registry.get(service)
-        return factory(self._resolver)
+        registration = self._registry.get(service)
+
+        return registration.factory(self._resolver)
 
     def get(
         self,
         service: type[T],
     ) -> T:
 
-        return self._create(
-            service,
-        )
+        return self._create(service)

@@ -1,6 +1,3 @@
-
-from collections.abc import MutableMapping
-
 from core.template.adapter.base import RenderableTemplate
 from core.template.cache.base import TemplateCache
 
@@ -9,11 +6,7 @@ class MemoryTemplateCache(
     TemplateCache,
 ):
 
-    def __init__(
-        self,
-        cache: MutableMapping[str, RenderableTemplate] | None = None,
-    ) -> None:
-
+    def __init__(self) -> None:
         self._cache: dict[
             str,
             RenderableTemplate,

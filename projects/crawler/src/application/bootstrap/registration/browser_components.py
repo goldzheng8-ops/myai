@@ -21,7 +21,8 @@ from core.request.browser.executor.file import FileActionExecutor
 from core.request.browser.executor.wait import WaitActionExecutor
 from core.request.browser.executor.evaluate import EvaluateActionExecutor
 from application.config.model import ApplicationConfig
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.request.browser.intervention.factory import build_manual_console_intervention_factory
 from core.request.browser.intervention.handler.Console import ConsoleHumanInterventionHandler
 from core.request.browser.intervention.registry import HumanInterventionEngineRegistry

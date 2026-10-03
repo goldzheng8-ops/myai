@@ -1,6 +1,7 @@
 from typing import Any
 
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.request.discovery.engine import DiscoveryEngine
 from core.request.discovery.registry import DiscoveryRegistry
 from core.request.discovery.typing import DiscoveryType

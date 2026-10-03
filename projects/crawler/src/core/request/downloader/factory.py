@@ -2,7 +2,7 @@
 from typing import Any, Protocol
 
 from core.extraction.response.resolver import ResponseAdapterResolver
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.downloader.aria2.client import Aria2Client
 from core.request.downloader.aria2.downloader import Aria2Downloader

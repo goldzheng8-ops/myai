@@ -8,10 +8,8 @@ from application.bootstrap.registration.outputs import register_outputs
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
 from core.output.output_resolver import OutputResolver
-from core.provider import (
-    ProviderBuilder,
-    SingletonProvider,
-)
+from core.provider.builder import ProviderBuilder
+from core.provider.singleton import SingletonProvider
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.request.download.resume.store import ResumeStore
 from core.request.middleware.auth.auth_provider.oauth2.endpoint import OAuth2TokenEndpointClient
@@ -31,7 +29,7 @@ from .registration import (
     register_user_agent_providers_resolver,
     register_middleware_dependencies,
     register_middlewares,
-    register_runtimes,
+    register_scrapy_runtimes,
     register_request_services,
     register_resolvers,
     register_selector_registries,
@@ -39,6 +37,7 @@ from .registration import (
     register_spider_configs,
     register_template,
     register_transforms,
+    register_runtime_context,
 )
 
 class ApplicationContainerFactory:
@@ -92,6 +91,9 @@ class ApplicationContainerFactory:
             config,
         )
         
+        register_runtime_context(
+            builder,
+        )
         register_spider_components(
             builder,
         )
@@ -100,7 +102,7 @@ class ApplicationContainerFactory:
             builder,
         )
 
-        register_runtimes(
+        register_scrapy_runtimes(
             builder,
             config,
         )

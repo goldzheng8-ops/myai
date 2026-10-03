@@ -10,7 +10,7 @@ from core.extraction.selector.selection.mode import SelectionMode
 from core.extraction.selector.selection.multiple import MultipleSelectionStrategy
 from core.extraction.selector.selection.registry import SelectionRegistry
 from core.extraction.selector.selection.single import SingleSelectionStrategy
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 
 
 def register_selector_registries(

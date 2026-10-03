@@ -2,8 +2,8 @@ from typing import Any
 
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
-from core.provider import ProviderBuilder, ProviderResolver
-
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.request.downloader.aria2.client import Aria2Client
 from core.request.downloader.aria2.launcher import Aria2ProcessLauncher
 from core.request.downloader.aria2.monitor import Aria2DownloadMonitor

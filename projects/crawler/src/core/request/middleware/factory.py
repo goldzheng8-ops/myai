@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
 from core.cache.protocol import Cache
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 from core.request.middleware.auth.auth_provider.registry import AuthProviderRegistry
 from core.request.middleware.auth.middleware import AuthMiddleware
 from core.request.middleware.cache.middleware import CacheMiddleware

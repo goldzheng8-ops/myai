@@ -22,6 +22,16 @@ class DotPathExpression(ResolveExpression):
         return self.path
 
 @dataclass(slots=True, frozen=True)
+class TemplateExpression(
+    ResolveExpression,
+):
+    source: str
+
+    @property
+    def cache_key(self) -> str:
+        return self.source
+    
+@dataclass(slots=True, frozen=True)
 class JsonPathExpression(ResolveExpression):
 
     path: str
@@ -38,6 +48,9 @@ class JMESExpression(ResolveExpression):
     @property
     def cache_key(self) -> str:
         return f"jmes:{self.expression}"
+    
+
+
 
 '''
 JsonPointerExpression

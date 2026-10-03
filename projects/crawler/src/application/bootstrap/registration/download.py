@@ -5,7 +5,7 @@ from core.request.download.chunk.store import ChunkStore
 from core.request.download.factory import DownloadStrategyFactory
 from core.request.download.range.parser import RangeParser
 from core.request.download.resume.store import ResumeStore
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 from core.request.download.resume.local import LocalResumeStore
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 

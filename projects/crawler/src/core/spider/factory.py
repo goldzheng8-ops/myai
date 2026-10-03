@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 from collections.abc import Callable
-from core.provider import  ProviderResolver
+from core.provider.protocol import  ProviderResolver
 from core.request.browser.runtime_manager import BrowserRuntimeManager
 from core.spider.services import SpiderServices
 from core.spider.template.extraction import RequestTemplate

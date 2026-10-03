@@ -1,5 +1,4 @@
-
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 from core.template.cache.base import TemplateCache
 from core.template.cache.memory import MemoryTemplateCache
 from core.template.backend.base import TemplateBackend

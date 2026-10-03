@@ -1,26 +1,11 @@
-from abc import ABC, abstractmethod
-from typing import Any, Generic, Sequence
+from typing import Any, Sequence
 
 from core.runtime.context import RuntimeContext
 from core.runtime.errors import InvalidExpressionError, PathNotFoundError
 from core.runtime.expression import DotPathExpression
 from core.runtime.options import DotPathOptions
 from core.runtime.protocol import AccessorProvider
-from core.runtime.typing import ExpressionT
-
-
-class ResolveStrategy(
-    Generic[ExpressionT],
-    ABC,
-):
-
-    @abstractmethod
-    def resolve(
-        self,
-        context: RuntimeContext,
-        expression: ExpressionT,
-    ) -> Any:
-        ...
+from core.runtime.strategy.base import ResolveStrategy
 
 class DotPathStrategy(
     ResolveStrategy[

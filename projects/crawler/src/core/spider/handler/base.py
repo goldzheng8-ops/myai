@@ -120,11 +120,9 @@ class TemplateRequestHandler(
             )
         )  
 
-        runtime = RuntimeContext()
-
         spider_context = SpiderContext(
             config=spider_config,
-            runtime=runtime,
+            runtime=self._runtime,
         )
 
         template = self._spider_registry.create(

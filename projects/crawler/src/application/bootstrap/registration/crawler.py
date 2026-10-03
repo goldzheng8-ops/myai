@@ -6,7 +6,8 @@ from application.crawler.application import CrawlerApplication
 from application.crawler.service import CrawlerService
 from core.lifecycle.manager import LifecycleManager
 from core.output.engine import OutputEngine
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.request.middleware.fingerprint.provider import FingerprintProvider
 from core.request.middleware.session.resolver import DefaultSessionIdResolver, SessionIdResolver
 from core.spider.dispatcher import RequestKindDispatcher

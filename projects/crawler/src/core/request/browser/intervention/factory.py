@@ -3,7 +3,7 @@
 from typing import Any
 
 from application.config.model import ApplicationConfig
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 from core.request.browser.intervention.base import HumanInterventionEngine
 from core.request.browser.intervention.handler.Console import ConsoleHumanInterventionHandler
 from core.request.browser.intervention.manual import ManualHumanInterventionEngine

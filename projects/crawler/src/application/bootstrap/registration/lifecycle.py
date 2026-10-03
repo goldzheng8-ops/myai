@@ -1,6 +1,6 @@
 
 from core.lifecycle.manager import LifecycleManager
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 
 
 def register_lifecycle(

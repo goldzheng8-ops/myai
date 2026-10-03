@@ -16,7 +16,7 @@ from core.extraction.transform.plugins.upper import UpperTransform
 from core.extraction.transform.plugins.url_resolve import UrlResolveTransform
 from core.extraction.transform.registry import TransformRegistry
 from core.extraction.transform.typing import TransformType
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 
 
 def register_transforms(

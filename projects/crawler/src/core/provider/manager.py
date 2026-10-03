@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class ProviderManager(
-    ProviderResolver[Any,Any]
+    ProviderResolver[Any, Any],
 ):
 
     def __init__(
@@ -22,11 +22,12 @@ class ProviderManager(
     ) -> None:
 
         self._registry = registry
+        self._default_strategy_cls = strategy_cls
 
-        self._strategy = strategy_cls(
-            registry,
-            self,
-        )
+        self._providers: dict[
+            type[BaseProvider],
+            BaseProvider,
+        ] = {}
 
     @property
     def registry(
@@ -35,12 +36,40 @@ class ProviderManager(
 
         return self._registry
 
+    def _get_provider(
+        self,
+        strategy_cls: type[BaseProvider],
+    ) -> BaseProvider:
+
+        provider = self._providers.get(strategy_cls)
+
+        if provider is None:
+            provider = strategy_cls(
+                self._registry,
+                self,
+            )
+
+            self._providers[strategy_cls] = provider
+
+        return provider
+
     def resolve(
         self,
         key: type[T],
     ) -> T:
 
-        return self._strategy.get(key)
+        registration = self._registry.get(key)
+
+        strategy_cls = (
+            registration.strategy_cls
+            or self._default_strategy_cls
+        )
+
+        provider = self._get_provider(
+            strategy_cls,
+        )
+
+        return provider.get(key)
 
     def contains(
         self,

@@ -6,14 +6,12 @@ from .factory import FactoryProvider
 from .typing import T
 from .registry import ProviderRegistry
 
-class SingletonProvider(
-    FactoryProvider,
-):
+class SingletonProvider(FactoryProvider):
 
     def __init__(
         self,
         registry: ProviderRegistry,
-        resolver: ProviderResolver[Any,Any],
+        resolver: ProviderResolver[Any, Any],
     ) -> None:
 
         super().__init__(
@@ -21,29 +19,18 @@ class SingletonProvider(
             resolver,
         )
 
-        self._instances: dict[
-            type[Any],
-            Any,
-        ] = {}
+        self._instances: dict[type[Any], Any] = {}
 
     def get(
         self,
         service: type[T],
     ) -> T:
 
-        instance = self._instances.get(
-            service,
-        )
+        instance = self._instances.get(service)
 
         if instance is None:
-
-            instance = self._create(
-                service,
-            )
-
-            self._instances[
-                service
-            ] = instance
+            instance = self._create(service)
+            self._instances[service] = instance
 
         return instance
 
@@ -51,4 +38,5 @@ class SingletonProvider(
     def instances(
         self,
     ) -> Mapping[type[Any], Any]:
+
         return self._instances

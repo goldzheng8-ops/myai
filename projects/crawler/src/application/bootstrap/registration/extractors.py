@@ -7,10 +7,8 @@ from core.extraction.transform.engine import TransformExecutor
 from core.extraction.value.engine import ValueEngine
 from core.extraction.value.evaluator import ValueExecutor
 from core.extraction.extractor.typing import ExtractType
-from core.provider import (
-    ProviderBuilder,
-    ProviderResolver,
-)
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 
 from core.extraction.extractor.factory import (
     build_field_extractor_factory,

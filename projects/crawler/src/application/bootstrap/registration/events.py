@@ -1,8 +1,8 @@
 from typing import Any
 
 from core.event import EventDispatcher, EventRegistry
-from core.provider import ProviderBuilder
 from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.request.events.completed import RequestCompleted
 from core.request.events.failed import RequestFailed
 from core.request.events.skipped import RequestSkipped

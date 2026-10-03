@@ -1,4 +1,4 @@
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 from core.request.downloader.extractor.httpx import HttpxCookieExtractor
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.downloader.extractor.scrapy import ScrapyCookieExtractor

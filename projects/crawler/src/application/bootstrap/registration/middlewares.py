@@ -4,7 +4,8 @@ import httpx
 
 from application.config.model import ApplicationConfig
 from core.lifecycle.manager import LifecycleManager
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.cache.protocol import Cache
 from core.cache.memory import MemoryCache
 from core.request.middleware.auth.auth_provider.apikey import ApiKeyAuthProvider
@@ -44,6 +45,8 @@ from core.request.middleware.throttle.resolver import HostThrottleKeyResolver, T
 from core.request.middleware.user_agent.factory import UserAgentProviderFactory
 from core.request.middleware.user_agent.resolver import UserAgentProviderResolver
 from core.request.browser.runtime_manager import BrowserRuntimeManager
+from core.provider.factory import FactoryProvider
+
 def register_proxy_providers_resolver(
     builder: ProviderBuilder,
     config: ApplicationConfig,
@@ -99,6 +102,7 @@ def register_middleware_dependencies(
     builder.add_type(
         Cache,
         MemoryCache,
+        strategy_cls=FactoryProvider,
     )
 
 

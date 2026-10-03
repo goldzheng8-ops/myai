@@ -13,7 +13,8 @@ from core.spider.handler.search import SearchRequestHandler
 from core.spider.handler.spider_request import SpiderRequestHandler
 from core.spider.registry import SpiderRegistry
 from core.spider.services import SpiderServices
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.spider.factory import (
     build_download_template_factory,
     build_extraction_template_factory,
@@ -27,9 +28,6 @@ def register_spider_components(
     builder: ProviderBuilder,
 ) -> None:
     
-    builder.add_type(RuntimeContext)
-
-
     builder.add_factory(
         SearchRequestHandler,
         lambda resolver: SearchRequestHandler(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 from core.provider.protocol import ProviderResolver
@@ -10,29 +10,25 @@ from .typing import T
 if TYPE_CHECKING:
     from .registry import ProviderRegistry
 
-class BaseProvider(
-    ABC,
-):
+class BaseProvider(ABC):
 
     def __init__(
         self,
         registry: ProviderRegistry,
-        resolver: ProviderResolver[Any,Any],
+        resolver: ProviderResolver[Any, Any],
     ) -> None:
-
         self._registry = registry
         self._resolver = resolver
-
-    def get(
-        self,
-        service: type[T],
-    ) -> T:
-
-        raise NotImplementedError()
 
     def contains(
         self,
         service: type[Any],
     ) -> bool:
-
         return self._registry.contains(service)
+
+    @abstractmethod
+    def get(
+        self,
+        service: type[T],
+    ) -> T:
+        ...

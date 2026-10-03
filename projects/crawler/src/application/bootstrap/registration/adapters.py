@@ -1,5 +1,5 @@
 from core.extraction.response.resolver import ResponseAdapterResolver
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 
 
 def register_adapters(

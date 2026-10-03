@@ -7,7 +7,7 @@ from core.extraction.resolver.plugins.context import ContextResolver
 from core.extraction.resolver.plugins.expression import DefaultExpressionEvaluator, ExpressionResolver
 from core.extraction.resolver.plugins.selector import SelectorResolver
 from core.extraction.resolver.plugins.template import DefaultTemplateManager, TemplateValueResolver
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 from core.extraction.selector.executor import PipelineExecutor
 
 ResolverFactory: TypeAlias = Callable[

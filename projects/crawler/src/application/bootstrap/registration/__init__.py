@@ -16,12 +16,13 @@ from .middlewares import (
 )
 from .request_services import register_request_services
 from .resolvers import register_resolvers
-from .runtimes import register_runtimes
+from .scrapy_runtimes import register_scrapy_runtimes
 from .selector import register_selector_registries
 from .spider_components import register_spider_components
 from .spider_configs import register_spider_configs
 from .template import register_template
 from .transforms import register_transforms
+from .runtime_context import register_runtime_context
 
 __all__ = [
     "register_discoveries",
@@ -35,7 +36,7 @@ __all__ = [
     "register_spider_components",
     "register_transforms",
     "register_adapters",
-    "register_runtimes",
+    "register_scrapy_runtimes",
     "register_lifecycle",
     "register_crawler",
     "register_request_dispatcher",
@@ -44,4 +45,5 @@ __all__ = [
     "register_template",
     "register_selector_registries",
     "register_spider_configs",
+    "register_runtime_context",
 ]

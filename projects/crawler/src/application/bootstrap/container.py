@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, TypeVar
 
-from core.provider import ProviderManager
+from core.provider.manager import ProviderManager
 
 
 T = TypeVar("T")

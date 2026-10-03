@@ -3,7 +3,7 @@ from typing import Any, TypeAlias
 
 from core.extraction.selector.executor import PipelineExecutor
 from core.extraction.transform.executor import TransformExecutor
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 from core.request.discovery.base import DiscoveryPlugin
 from core.request.discovery.plugins.cursor_api import CursorApiDiscovery
 from core.request.discovery.plugins.html import HtmlDiscoveryPlugin

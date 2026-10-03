@@ -5,7 +5,7 @@ from types import MappingProxyType
 from typing import Any, Self
 
 from core.cache.protocol import Cache
-from core.runtime.expression import DotPathExpression, ResolveExpression
+from core.runtime.expression import ResolveExpression
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -19,6 +19,8 @@ from .scope import RuntimeScope
 @dataclass(slots=True)
 class RuntimeContext:
 
+    _resolve_engine: ResolveEngine
+
     _scopes: list[RuntimeScope] = field(
         default_factory=lambda: [
             RuntimeScope(name="global")
@@ -27,48 +29,23 @@ class RuntimeContext:
 
     _cache: Cache[str, Any] | None = None
 
-    _resolver: ResolveEngine | None = None
-
     _frozen: bool = False
 
     @property
-    def resolver(
+    def resolve_engine(
         self,
     ) -> ResolveEngine | None:
 
-        return self._resolver
+        return self._resolve_engine
 
-    def set_resolver(
-        self,
-        resolver: ResolveEngine | None,
-    ) -> None:
-        """
-        Configure the resolve engine.
-        """
 
-        self._ensure_mutable()
-
-        self._resolver = resolver
 
     def resolve(
         self,
         expression: ResolveExpression,
     ) -> Any:
-        if isinstance(
-            expression,
-            str,
-        ):
-            expression = DotPathExpression(
-                expression
-            )
 
-        if self._resolver is None:
-
-            raise RuntimeError(
-                "ResolveEngine not configured."
-            )
-
-        return self._resolver.resolve(
+        return self._resolve_engine.resolve(
             self,
             expression,
         )
@@ -240,6 +217,7 @@ class RuntimeContext:
     ) -> Self:
 
         return type(self)(
+            _resolve_engine=self._resolve_engine,
             _scopes=[
                 RuntimeScope(
                     name=scope.name,
@@ -249,7 +227,6 @@ class RuntimeContext:
                 for scope in self._scopes
             ],
             _cache=None,
-            _resolver=self._resolver,
             _frozen=self._frozen,
         )
 

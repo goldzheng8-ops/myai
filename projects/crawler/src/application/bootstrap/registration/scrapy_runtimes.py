@@ -1,6 +1,5 @@
-
 from application.config.model import ApplicationConfig
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 from core.request.downloader.scrapy.bridge import ScrapyRequestBridge
 from core.request.downloader.scrapy.executor import DefaultScrapyRequestExecutor, ScrapyRequestExecutor
 from core.request.downloader.scrapy.runner import (
@@ -10,7 +9,7 @@ from core.request.downloader.scrapy.runner import (
 from core.request.downloader.scrapy.runtime import DefaultScrapyRuntime, ScrapyRuntime
 
 
-def register_runtimes(
+def register_scrapy_runtimes(
     builder: ProviderBuilder,
     config: ApplicationConfig,
 ) -> None:

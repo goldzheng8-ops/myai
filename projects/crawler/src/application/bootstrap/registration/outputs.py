@@ -5,7 +5,8 @@ from application.config import ApplicationConfig
 from core.output.engine import OutputEngine
 from core.output.factory import DownloadFilenameResolverFactory, OutputSinkFactory, StorageFactory
 from core.output.output_resolver import OutputResolver
-from core.provider import ProviderBuilder, ProviderResolver
+from core.provider.protocol import ProviderResolver
+from core.provider.builder import ProviderBuilder
 from core.template.manager.base import TemplateManager
 
 

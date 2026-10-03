@@ -7,7 +7,7 @@ from core.extraction.extractor.field import FieldExtractor
 from core.extraction.extractor.list import ListExtractor
 from core.extraction.extractor.object import ObjectExtractor
 from core.extraction.value.evaluator import ValueExecutor
-from core.provider import ProviderResolver
+from core.provider.protocol import ProviderResolver
 
 ExtractorFactory: TypeAlias = Callable[
     [],

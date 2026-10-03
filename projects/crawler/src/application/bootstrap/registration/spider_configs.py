@@ -1,6 +1,6 @@
 from application.config.model import ApplicationConfig
 from application.config.registry import SpiderConfigRegistry
-from core.provider import ProviderBuilder
+from core.provider.builder import ProviderBuilder
 from application.config.merger import ConfigMerger
 from application.config.resolver import SpiderConfigResolver
 

@@ -14,18 +14,17 @@ class ResolveEngine:
     def __init__(
         self,
         registry: ResolveRegistry,
-    ):
-
+    ) -> None:
         self._registry = registry
 
     def resolve(
         self,
         context: RuntimeContext,
         expression: ResolveExpression,
-    ):
+    ) -> Any:
 
-        strategy = self._registry.get(
-            type(expression)
+        strategy = self._registry.create(
+            type(expression),
         )
 
         return strategy.resolve(
