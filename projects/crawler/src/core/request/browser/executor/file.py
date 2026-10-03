@@ -17,7 +17,7 @@ class FileActionExecutor(
             is BrowserActionType.SET_INPUT_FILES
         )
 
-    async def execute(
+    async def _execute(
         self,
         page: Page,
         action: BrowserAction,

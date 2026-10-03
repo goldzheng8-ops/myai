@@ -22,7 +22,7 @@ class CheckActionExecutor(
 
         return action_type in self._SUPPORTED
 
-    async def execute(
+    async def _execute(
         self,
         page: Page,
         action: BrowserAction,

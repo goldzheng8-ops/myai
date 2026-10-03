@@ -15,12 +15,12 @@ async def main() -> None:
         container_factory=ApplicationContainerFactory(),
     )
 
-    application = bootstrap.create(
-        "application.yaml",
-    )
     # application = bootstrap.create(
-    #     "search.yaml",
+    #     "application.yaml",
     # )
+    application = bootstrap.create(
+        "search.yaml",
+    )
     # application = bootstrap.create(
     #     "loginin.yaml",
     # )

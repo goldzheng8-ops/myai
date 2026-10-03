@@ -146,9 +146,7 @@ class PlaywrightBrowserInteractionEngine(
     async def _process_action(
         self,
         *,
-        context: BrowserInteractionContext[
-            SearchSpiderConfig
-        ],
+        context: BrowserInteractionContext[Any],
         page: Page,
         runtime_state: BrowserPageRuntimeState,
         execution: BrowserInteractionExecution,
@@ -169,6 +167,7 @@ class PlaywrightBrowserInteractionEngine(
         await self._execute_action(
             page=page,
             action=action,
+            context=context,
         )
 
         self._debugger.log_action(
@@ -338,6 +337,7 @@ class PlaywrightBrowserInteractionEngine(
         *,
         page: Page,
         action: BrowserAction,
+        context: BrowserInteractionContext[Any],        
     ) -> None:
 
         executor = self._executors.resolve(
@@ -347,5 +347,6 @@ class PlaywrightBrowserInteractionEngine(
         await executor.execute(
             page,
             action,
+            context.request.runtime,
         )
 

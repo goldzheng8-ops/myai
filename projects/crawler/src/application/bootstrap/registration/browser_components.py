@@ -38,11 +38,52 @@ from core.request.browser.stabilizer.policy.strict import StrictStabilityPolicy
 from core.request.downloader.extractor.playwright import PlaywrightCookieExtractor
 from core.request.browser.typing import BrowserPageState, BrowserInteractionPhase
 from core.request.middleware.auth.auth_provider.oauth2.refresher import OAuth2TokenRefresher
+from core.runtime.parser import ResolveExpressionParser
 
 def register_browser_components(
     builder: ProviderBuilder,
     config: ApplicationConfig,
 ) -> None:
+
+    builder.add_type(
+        ResolveExpressionParser,
+    )
+    builder.add_type(
+        NavigationActionExecutor,
+    )
+
+    builder.add_type(
+        LocatorActionExecutor,
+    )
+
+    builder.add_type(
+        InputActionExecutor,
+    )
+
+    builder.add_type(
+        SelectionActionExecutor,
+    )
+
+    builder.add_type(
+        CheckActionExecutor,
+    )
+
+    builder.add_type(
+        KeyboardActionExecutor,
+    )
+
+    builder.add_type(
+        FileActionExecutor,
+    )
+
+    builder.add_type(
+        WaitActionExecutor,
+    )
+
+    builder.add_type(
+        EvaluateActionExecutor,
+    )
+
     builder.add_type(ConsoleHumanInterventionHandler)
 
     builder.add_factory(
@@ -150,50 +191,69 @@ def create_action_executor_registry(
 
     registry.register(
         "navigation",
-        NavigationActionExecutor(),
+        resolver.resolve(
+            NavigationActionExecutor,
+        ),
     )
 
     registry.register(
         "locator",
-        LocatorActionExecutor(),
+        resolver.resolve(
+            LocatorActionExecutor,
+        ),
     )
 
     registry.register(
         "input",
-        InputActionExecutor(),
+        resolver.resolve(
+            InputActionExecutor,
+        ),
     )
 
     registry.register(
         "selection",
-        SelectionActionExecutor(),
+        resolver.resolve(
+            SelectionActionExecutor,
+        ),
     )
 
     registry.register(
         "check",
-        CheckActionExecutor(),
+        resolver.resolve(
+            CheckActionExecutor,
+        ),
     )
 
     registry.register(
         "keyboard",
-        KeyboardActionExecutor(),
+        resolver.resolve(
+            KeyboardActionExecutor,
+        ),
     )
 
     registry.register(
         "file",
-        FileActionExecutor(),
+        resolver.resolve(
+            FileActionExecutor,
+        ),
     )
 
     registry.register(
         "wait",
-        WaitActionExecutor(),
+        resolver.resolve(
+            WaitActionExecutor,
+        ),
     )
 
     registry.register(
         "evaluate",
-        EvaluateActionExecutor(),
+        resolver.resolve(
+            EvaluateActionExecutor,
+        ),
     )
 
     return registry
+
 def create_human_intervention_registry(
     *,
     resolver: ProviderResolver[Any, Any],

@@ -14,7 +14,7 @@ class EvaluateActionExecutor(
 
         return action_type is BrowserActionType.EVALUATE
 
-    async def execute(
+    async def _execute(
         self,
         page: Page,
         action: BrowserAction,

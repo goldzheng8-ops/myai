@@ -14,7 +14,7 @@ class SelectionActionExecutor(
 
         return action_type is BrowserActionType.SELECT
 
-    async def execute(
+    async def _execute(
         self,
         page: Page,
         action: BrowserAction,

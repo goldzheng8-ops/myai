@@ -21,9 +21,8 @@ class RequestContext:
     descriptor: RequestDescriptor
 
     config: SpiderConfigUnion
-    runtime: RuntimeContext = field(
-        default_factory=RuntimeContext,
-    )
+    
+    runtime: RuntimeContext 
 
     fingerprint: str | None = None
 

@@ -34,7 +34,7 @@ class RuntimeContext:
     @property
     def resolve_engine(
         self,
-    ) -> ResolveEngine | None:
+    ) -> ResolveEngine:
 
         return self._resolve_engine
 
