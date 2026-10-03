@@ -5,8 +5,10 @@ from core.provider.protocol import ProviderResolver
 from core.provider.builder import ProviderBuilder
 from core.provider.factory import FactoryProvider
 from core.runtime import RuntimeContext
+from core.runtime.accessor import AttributeAccessor, MappingAccessor, SequenceAccessor
 from core.runtime.engine import ResolveEngine
 from core.runtime.expression import DotPathExpression, TemplateExpression
+from core.runtime.accessor_provider import AccessorProvider, DefaultAccessorProvider
 from core.runtime.registry import ResolveRegistry
 from core.runtime.strategy.dot_path import DotPathStrategy
 from core.runtime.strategy.template import TemplateStrategy
@@ -15,7 +17,26 @@ def register_runtime_context(
     builder: ProviderBuilder,
 ) -> None:
 
+    builder.add_instance(
+        AccessorProvider,
+        DefaultAccessorProvider(
+            accessors=(
+                MappingAccessor(),
+                SequenceAccessor(),
+                AttributeAccessor(),
+            ),
+        ),
+    )
 
+    builder.add_factory(
+        DotPathStrategy,
+        lambda resolver: DotPathStrategy(
+            provider=resolver.resolve(
+                AccessorProvider,
+            ),
+        ),
+        strategy_cls=FactoryProvider,
+    )
     builder.add_factory(
         RuntimeContext,
         lambda resolver: RuntimeContext(

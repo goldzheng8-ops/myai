@@ -4,7 +4,7 @@ from core.runtime.context import RuntimeContext
 from core.runtime.errors import InvalidExpressionError, PathNotFoundError
 from core.runtime.expression import DotPathExpression
 from core.runtime.options import DotPathOptions
-from core.runtime.protocol import AccessorProvider
+from core.runtime.accessor_provider import AccessorProvider
 from core.runtime.strategy.base import ResolveStrategy
 
 class DotPathStrategy(
@@ -96,11 +96,13 @@ class DotPathStrategy(
 
         for accessor in self._provider.accessors():
 
-            if not accessor.supports(value):
+            if not accessor.supports(
+                value,
+                key,
+            ):
                 continue
 
             try:
-
                 return accessor.access(
                     value,
                     key,
@@ -114,7 +116,7 @@ class DotPathStrategy(
                 TypeError,
                 ValueError,
             ):
-                break
+                continue
 
         if self._options.ignore_missing:
             return None
