@@ -229,7 +229,7 @@ spiders:
     actions:
       - type: fill
         selector: 'input[name="q"]'
-        value: "{{item.keyword}}"
+        value: $.item.keyword
 
       - type: click
         selector: 'input[type="submit"]'
@@ -247,7 +247,7 @@ spiders:
     outputs: []
 
     data_source:
-      format: csv
-      path: data/input.csv
+      format: excel
+      path: data/input.xlsx
 
 

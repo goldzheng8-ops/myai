@@ -1,7 +1,7 @@
 import json
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from core.input.reader.base import BaseDataReader
 from core.input.record import DataRecord
@@ -31,13 +31,18 @@ class JsonDataReader(
                 "a top-level array.",
             )
 
-        for index, item in enumerate(data):
+        for index, item in enumerate(data): # type: ignore
             if not isinstance(item, dict):
                 raise ValueError(
                     f"JSON record at index {index} "
                     "must be an object.",
                 )
 
+            values = cast(
+                dict[str, Any],
+                item,
+            )
+
             yield DataRecord(
-                values=item,
+                values=values,
             )

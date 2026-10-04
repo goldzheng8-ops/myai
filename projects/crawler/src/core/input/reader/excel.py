@@ -28,6 +28,12 @@ class ExcelDataReader(
         try:
             worksheet = workbook.active
 
+            if worksheet is None:
+                raise ValueError(
+                    f"Excel workbook in {path} "
+                    "does not contain an active worksheet.",
+                )
+
             rows = worksheet.iter_rows(
                 values_only=True,
             )
