@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from playwright.async_api import Page
+import logging
 
 from core.request.browser.interaction.model import BrowserAction
 from core.request.browser.typing import BrowserActionType
 from core.runtime.context import RuntimeContext
 from core.runtime.parser import ResolveExpressionParser
 
+logger=logging.getLogger(__name__)
 
 class BrowserActionExecutor(ABC):
 
@@ -59,12 +61,22 @@ class BrowserActionExecutor(ABC):
                 action,
                 field_name,
             )
-
+            logger.info(
+                "Resolving field %s: value=%r (%s)",
+                field_name,
+                value,
+                type(value).__name__,
+            )
             resolved = self._resolve_value(
                 value,
                 context,
             )
-
+            logger.info(
+                "Resolved field %s: value=%r (%s)",
+                field_name,
+                resolved,
+                type(resolved).__name__,
+            )
             if resolved is not value:
                 updates[field_name] = resolved
 
@@ -105,7 +117,11 @@ class BrowserActionExecutor(ABC):
         expression = self._parser.parse(
             value,
         )
-
+        logger.info(
+            "Parsed expression: source=%r expression=%r",
+            value,
+            expression,
+        )
         if expression is None:
             return value
 

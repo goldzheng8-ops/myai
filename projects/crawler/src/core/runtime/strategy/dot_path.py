@@ -33,24 +33,9 @@ class DotPathStrategy(
         context: RuntimeContext,
         expression: DotPathExpression,
     ) -> Any:
-
-        cache = context.cache
-
-        if (
-            not self._options.cache_enabled
-            or cache is None
-        ):
-            return self._resolve(
-                context,
-                expression,
-            )
-
-        return cache.put_if_absent(
-            expression.cache_key,
-            lambda: self._resolve(
-                context,
-                expression,
-            ),
+        return self._resolve(
+            context,
+            expression,
         )
 
     def _resolve(

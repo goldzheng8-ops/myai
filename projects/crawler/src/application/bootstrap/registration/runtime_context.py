@@ -28,6 +28,8 @@ def register_runtime_context(
         ),
     )
 
+    builder.add_type(TemplateStrategy)
+    
     builder.add_factory(
         DotPathStrategy,
         lambda resolver: DotPathStrategy(

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal
 
 
+from core.input.source import DataSource
 from core.request.browser.interaction.model import BrowserAction
 from core.request.middleware.config import MiddlewareSpecUnion
 from pydantic import Field, field_validator
@@ -92,6 +93,8 @@ class SearchSpiderConfig(
 
 
     actions: tuple[BrowserAction, ...] = ()
+
+    data_source:DataSource | None = None
 
 
 SpiderConfigUnion = Annotated[

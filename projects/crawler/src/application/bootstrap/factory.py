@@ -38,6 +38,7 @@ from .registration import (
     register_template,
     register_transforms,
     register_runtime_context,
+    register_inputs,
 )
 
 class ApplicationContainerFactory:
@@ -92,6 +93,9 @@ class ApplicationContainerFactory:
         )
         
         register_runtime_context(
+            builder,
+        )
+        register_inputs(
             builder,
         )
         register_spider_components(

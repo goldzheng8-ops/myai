@@ -229,7 +229,7 @@ spiders:
     actions:
       - type: fill
         selector: 'input[name="q"]'
-        value: 'Python web scraping'
+        value: "{{item.keyword}}"
 
       - type: click
         selector: 'input[type="submit"]'
@@ -245,5 +245,9 @@ spiders:
       #   timeout: 10
 
     outputs: []
+
+    data_source:
+      format: csv
+      path: data/input.csv
 
 

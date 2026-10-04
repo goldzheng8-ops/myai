@@ -23,6 +23,7 @@ from .spider_configs import register_spider_configs
 from .template import register_template
 from .transforms import register_transforms
 from .runtime_context import register_runtime_context
+from .inputs import register_inputs
 
 __all__ = [
     "register_discoveries",
@@ -46,4 +47,5 @@ __all__ = [
     "register_selector_registries",
     "register_spider_configs",
     "register_runtime_context",
+    "register_inputs"
 ]
