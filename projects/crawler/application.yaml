@@ -85,24 +85,24 @@ auth_providers:
 output_sinks:
   - name: news_jsonl
     type: jsonl
-    path: data/news.jsonl
+    path: data/raw/news.jsonl
   - name: news_csv
     type: csv
-    path: data/news.csv
+    path: data/raw/news.csv
   - name: detail_jsonl
     type: jsonl
-    path: data/detail_news.jsonl
+    path: data/raw/detail_news.jsonl
   - name: detail_csv
     type: csv
-    path: data/detail_news.csv
+    path: data/raw/detail_news.csv
   - name: json_file
     type: json_file
-    path: data/news.json
+    path: data/raw/news.json
   - name: binary_file
     type: binary_file
     storage:
       type: local
-      directory: data/downloads
+      directory: data/raw/downloads
     filename: "{{ download.body.body_bytes | sha256 }}.{{ download.url | extension }}"
     overwrite: true
   # - name: news_postgres

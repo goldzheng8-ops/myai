@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/playwright/python:v1.60.0-jammy
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/service/src
+    PYTHONPATH=/service/crawler
 
 # 安装 uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
@@ -15,7 +15,7 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY application.yaml ./application.yaml
 
-COPY src ./src
+COPY crawler ./crawler
 
 RUN uv sync --frozen --no-dev
 
