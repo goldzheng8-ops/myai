@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -74,45 +74,38 @@ class NotebookProject:
         filename: str | Path,
         *,
         kind: str | None = None,
+        sheet_name: str | int = 0,
         **kwargs: Any,
     ) -> pd.DataFrame:
         path = self.resolve_data_file(filename)
+
         if path is None:
-            raise FileNotFoundError(f"Unable to locate data file: {filename}")
+            raise FileNotFoundError(
+                f"Unable to locate data file: {filename}"
+            )
 
-        def coerce_frame(raw: Any) -> pd.DataFrame:
-            if isinstance(raw, pd.DataFrame):
-                return raw
-            if isinstance(raw, dict):
-                return pd.DataFrame.from_dict(cast(dict[Any, Any], raw))
-            if isinstance(raw, (list, tuple, np.ndarray)):
-                return pd.DataFrame(cast(Any, raw))
-            if raw is None:
-                return pd.DataFrame()
-            return pd.DataFrame([raw])
+        resolved_kind = (
+            kind
+            or path.suffix.lower().lstrip(".")
+            or "csv"
+        ).lower()
 
-        resolved_kind = (kind or path.suffix.lower().lstrip(".") or "csv").lower()
         if resolved_kind in {"csv", "txt"}:
-            loaded: Any = cast(Any, pd.read_csv(path, **kwargs))
-            return coerce_frame(loaded)
+            return pd.read_csv(path, **kwargs)
+
         if resolved_kind in {"json", "jsonl"}:
-            loaded: Any = cast(Any, pd.read_json(path, **kwargs))
-            return coerce_frame(loaded)
+            return pd.read_json(path, **kwargs)
+
         if resolved_kind in {"xlsx", "xls"}:
-            loaded: Any = cast(Any, pd.read_excel(path, **kwargs))
-            if isinstance(loaded, dict) and loaded:
-                first_frame: Any = cast(Any, next(iter(cast(dict[Any, Any], loaded).values()), None))
-                if isinstance(first_frame, pd.DataFrame):
-                    return first_frame
-                if first_frame is not None:
-                    return coerce_frame(first_frame)
-                return pd.DataFrame()
-            return coerce_frame(loaded)
+            return pd.read_excel(
+                path,
+                sheet_name=sheet_name,
+                **kwargs,
+            )
 
-        raise ValueError(f"Unsupported data format: {resolved_kind}")
-
-    def load_csv(self, filename: str | Path, **kwargs: object) -> pd.DataFrame:
-        return self.load_data(filename, kind="csv", **kwargs)
+        raise ValueError(
+            f"Unsupported data format: {resolved_kind}"
+        )
 
 
 def _normalize_frequency(freq: str) -> str:
@@ -586,15 +579,36 @@ def distribution_summary(
 ) -> pd.DataFrame:
     if column not in data.columns:
         raise KeyError(f"Missing required column: {column}")
+
     if bins <= 0:
         raise ValueError("bins must be greater than 0")
 
-    values = pd.to_numeric(data[column], errors="coerce").dropna()
-    if values.empty:
-        return pd.DataFrame(columns=["bin", "count", "min_value", "max_value"])
+    values = (
+        pd.to_numeric(
+            data[column],
+            errors="coerce",
+        )
+        .dropna()
+    )
 
-    bins_series = pd.cut(values, bins=bins, include_lowest=include_lowest, duplicates="drop")
-    counts = pd.Series(bins_series).value_counts(sort=False)
+    if values.empty:
+        return pd.DataFrame(
+            columns=[
+                "bin",
+                "count",
+                "min_value",
+                "max_value",
+            ]
+        )
+
+    bins_series = pd.cut(
+        values,
+        bins=bins,
+        include_lowest=include_lowest,
+        duplicates="drop",
+    )
+
+    counts = bins_series.value_counts(sort=False)
 
     summary = pd.DataFrame(
         {
@@ -604,13 +618,14 @@ def distribution_summary(
     )
 
     intervals = counts.index
+
     min_values: list[float] = []
     max_values: list[float] = []
+
     for interval in intervals:
         if isinstance(interval, pd.Interval):
-            interval_value = cast(Any, interval)
-            min_values.append(float(interval_value.left))
-            max_values.append(float(interval_value.right))
+            min_values.append(float(interval.left))
+            max_values.append(float(interval.right))
         else:
             min_values.append(float("nan"))
             max_values.append(float("nan"))
@@ -618,9 +633,9 @@ def distribution_summary(
     summary["min_value"] = min_values
     summary["max_value"] = max_values
 
-    result: pd.DataFrame = summary[["bin", "count", "min_value", "max_value"]]
-    return result.reset_index(drop=True)
-
+    return summary[
+        ["bin", "count", "min_value", "max_value"]
+    ].reset_index(drop=True)
 
 def cohort_analysis(
     data: pd.DataFrame,
