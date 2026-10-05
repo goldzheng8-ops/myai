@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,36 +11,57 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+Aggregation = Literal[
+    "sum",
+    "mean",
+    "median",
+    "min",
+    "max",
+    "count",
+    "nunique",
+]
+
+CorrelationMethod = Literal[
+    "pearson",
+    "kendall",
+    "spearman",
+]
 
 @dataclass(slots=True)
 class NotebookProject:
-    """Resolve data files and orchestrate notebook analysis tasks."""
-
-    repo_root: str | Path
-    data_dir: str | Path | None = None
+    repo_root: Path
+    data_dir: Path | None = None
 
     def __post_init__(self) -> None:
-        self.repo_root = Path(self.repo_root).resolve()
-        self.data_dir = (
-            Path(self.data_dir).resolve()
-            if self.data_dir is not None
-            else self.repo_root / "data"
-        )
+        self.repo_root = self.repo_root.resolve()
+
+        if self.data_dir is None:
+            self.data_dir = self.repo_root / "data"
+        else:
+            self.data_dir = self.data_dir.resolve()
 
     def resolve_data_file(self, filename: str | Path) -> Path | None:
         target = Path(filename)
+
         if target.is_absolute():
             return target if target.exists() else None
 
+        data_dir = self.data_dir
+        assert data_dir is not None
+
         candidates = [
-            self.data_dir / target,
+            data_dir / target,
             self.repo_root / "data" / target,
             self.repo_root / "data-analysis" / "data" / target,
         ]
 
-        for root in [self.repo_root, *self.repo_root.parents]:
-            candidates.append(root / "data" / target)
-            candidates.append(root / "data-analysis" / "data" / target)
+        for root in (self.repo_root, *self.repo_root.parents):
+            candidates.extend(
+                (
+                    root / "data" / target,
+                    root / "data-analysis" / "data" / target,
+                )
+            )
 
         for candidate in candidates:
             if candidate.exists():
@@ -47,18 +69,32 @@ class NotebookProject:
 
         return None
 
-    def load_data(self, filename: str | Path, *, kind: str | None = None, **kwargs: object) -> pd.DataFrame:
+    def load_data(
+        self,
+        filename: str | Path,
+        *,
+        kind: str | None = None,
+        **kwargs: Any,
+    ) -> pd.DataFrame:
         path = self.resolve_data_file(filename)
         if path is None:
             raise FileNotFoundError(f"Unable to locate data file: {filename}")
 
         resolved_kind = (kind or path.suffix.lower().lstrip(".") or "csv").lower()
         if resolved_kind in {"csv", "txt"}:
-            return pd.read_csv(path, **kwargs)
+            loaded: Any = pd.read_csv(path, **kwargs)
+            return loaded if isinstance(loaded, pd.DataFrame) else pd.DataFrame(loaded)
         if resolved_kind in {"json", "jsonl"}:
-            return pd.read_json(path, **kwargs)
+            loaded: Any = pd.read_json(path, **kwargs)
+            return loaded if isinstance(loaded, pd.DataFrame) else pd.DataFrame(loaded)
         if resolved_kind in {"xlsx", "xls"}:
-            return pd.read_excel(path, **kwargs)
+            loaded: Any = pd.read_excel(path, **kwargs)
+            if isinstance(loaded, pd.DataFrame):
+                return loaded
+            if isinstance(loaded, dict) and loaded:
+                first_frame: Any = next(iter(loaded.values()))
+                return first_frame if isinstance(first_frame, pd.DataFrame) else pd.DataFrame(first_frame)
+            return pd.DataFrame(loaded)
 
         raise ValueError(f"Unsupported data format: {resolved_kind}")
 
@@ -83,17 +119,26 @@ def summarize_by(
     group_by: str,
     value_col: str,
     ascending: bool = False,
-    agg: str = "sum",
+    agg: Aggregation  = "sum",
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (group_by, value_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (group_by, value_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
-    aggregation = getattr(data.groupby(group_by, as_index=False)[value_col], agg)
+    output_col = f"total_{value_col}"
+
     summary = (
-        aggregation()
-        .rename(columns={value_col: f"total_{value_col}"})
-        .sort_values(by=f"total_{value_col}", ascending=ascending, kind="stable")
+        data.groupby(group_by, as_index=False)
+        .agg(**{output_col: (value_col, agg)})
+        .sort_values(
+            by=output_col,
+            ascending=ascending,
+            kind="stable",
+        )
         .reset_index(drop=True)
     )
 
@@ -107,7 +152,7 @@ def top_by(
     value_col: str,
     top_n: int = 5,
     ascending: bool = False,
-    agg: str = "sum",
+    agg: Aggregation  = "sum",
 ) -> pd.DataFrame:
     return summarize_by(
         data,
@@ -134,7 +179,7 @@ def correlation_matrix(
     data: pd.DataFrame,
     *,
     columns: Iterable[str] | None = None,
-    method: str = "pearson",
+    method: CorrelationMethod = "pearson",
 ) -> pd.DataFrame:
     selected = data if columns is None else data[list(columns)]
     numeric = selected.select_dtypes(include=["number"])
@@ -150,9 +195,13 @@ def time_series_summary(
     value_col: str,
     group_by: str | None = None,
     freq: str = "D",
-    aggfunc: str = "sum",
+    aggfunc: Aggregation = "sum",
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (date_col, value_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (date_col, value_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
@@ -160,23 +209,58 @@ def time_series_summary(
     working[date_col] = pd.to_datetime(working[date_col])
     normalized_freq = _normalize_frequency(freq)
 
+    output_col = f"total_{value_col}"
+
     if group_by is not None:
         if group_by not in working.columns:
-            raise KeyError(f"Missing grouping column: {group_by}")
+            raise KeyError(
+                f"Missing grouping column: {group_by}"
+            )
+
         summary = (
-            working.groupby([group_by, pd.Grouper(key=date_col, freq=normalized_freq)], as_index=False)[value_col]
-            .agg(aggfunc)
-            .rename(columns={value_col: f"total_{value_col}"})
+            working
+            .groupby(
+                [
+                    group_by,
+                    pd.Grouper(
+                        key=date_col,
+                        freq=normalized_freq,
+                    ),
+                ],
+                as_index=False,
+            )
+            .agg(**{
+                output_col: (value_col, aggfunc),
+            })
+            .sort_values(
+                [group_by, date_col],
+                kind="stable",
+            )
+            .reset_index(drop=True)
         )
-        return summary.sort_values([group_by, date_col], kind="stable").reset_index(drop=True)
+
+        return summary
 
     summary = (
-        working.groupby(pd.Grouper(key=date_col, freq=normalized_freq), as_index=False)[value_col]
-        .agg(aggfunc)
-        .rename(columns={value_col: f"total_{value_col}"})
+        working
+        .groupby(
+            pd.Grouper(
+                key=date_col,
+                freq=normalized_freq,
+            ),
+            as_index=False,
+        )
+        .agg(**{
+            output_col: (value_col, aggfunc),
+        })
+        .sort_values(
+            date_col,
+            kind="stable",
+        )
+        .reset_index(drop=True)
     )
-    return summary.rename(columns={date_col: date_col}).sort_values(date_col, kind="stable").reset_index(drop=True)
 
+    return summary
 
 def trend_regression(
     data: pd.DataFrame,
@@ -192,17 +276,27 @@ def trend_regression(
     y_values = pd.to_numeric(data[y_col], errors="raise")
 
     if pd.api.types.is_datetime64_any_dtype(x_values):
-        x_numeric = (x_values - x_values.min()).dt.total_seconds().to_numpy(dtype=float) / 86400.0
+        datetime_values = pd.to_datetime(x_values)
+        x_numeric = (
+            (datetime_values - datetime_values.min())
+            .dt.total_seconds()
+            .to_numpy(dtype=float)
+            / 86400.0
+        )
     else:
         x_numeric = pd.to_numeric(x_values, errors="raise").to_numpy(dtype=float)
+
+    y_numeric = y_values.to_numpy(dtype=float)
 
     if len(x_numeric) < 2:
         raise ValueError("Trend regression requires at least two rows of data.")
 
-    slope, intercept = np.polyfit(x_numeric, y_values.to_numpy(dtype=float), 1)
+    coefficients = np.polyfit(x_numeric, y_numeric, 1)
+    slope = float(coefficients[0])
+    intercept = float(coefficients[1])
     fitted = intercept + slope * x_numeric
-    ss_res = float(np.sum((y_values.to_numpy(dtype=float) - fitted) ** 2))
-    ss_tot = float(np.sum((y_values.to_numpy(dtype=float) - y_values.mean()) ** 2))
+    ss_res = float(np.sum((y_numeric - fitted) ** 2))
+    ss_tot = float(np.sum((y_numeric - y_numeric.mean()) ** 2))
     r_squared = 1.0 if ss_tot == 0 else 1.0 - (ss_res / ss_tot)
 
     return {
@@ -219,14 +313,18 @@ def crosstab_summary(
     index_col: str,
     columns_col: str,
     values_col: str,
-    aggfunc: str = "sum",
+    aggfunc: Aggregation = "sum",
     fill_value: float | int | None = 0,
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (index_col, columns_col, values_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (index_col, columns_col, values_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
-    return pd.pivot_table(
+    summary: pd.DataFrame = pd.pivot_table(
         data,
         index=index_col,
         columns=columns_col,
@@ -234,6 +332,7 @@ def crosstab_summary(
         aggfunc=aggfunc,
         fill_value=fill_value,
     )
+    return summary
 
 
 def funnel_analysis(
@@ -243,20 +342,29 @@ def funnel_analysis(
     stage_col: str,
     stages: Iterable[str] | None = None,
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (user_id_col, stage_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (user_id_col, stage_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
     working = data[[user_id_col, stage_col]].drop_duplicates().copy()
-    ordered_stages = list(stages) if stages is not None else list(dict.fromkeys(working[stage_col].dropna().tolist()))
+    ordered_stages = (
+        list(stages)
+        if stages is not None
+        else list(dict.fromkeys(working[stage_col].dropna().tolist()))
+    )
+
     summary = (
         working[working[stage_col].isin(ordered_stages)]
-        .groupby(stage_col, as_index=False)[user_id_col]
+        .groupby(stage_col, as_index=False)[[user_id_col]]
         .nunique()
         .rename(columns={user_id_col: "user_count", stage_col: "stage"})
     )
     summary["stage"] = pd.Categorical(summary["stage"], categories=ordered_stages, ordered=True)
-    summary = summary.sort_values("stage").reset_index(drop=True)
+    summary = summary.sort_values("stage", kind="stable").reset_index(drop=True)
 
     if summary.empty:
         return summary.assign(conversion_rate=0.0, cumulative_rate=0.0)
@@ -264,7 +372,9 @@ def funnel_analysis(
     total_users = float(summary["user_count"].iloc[0])
     summary["conversion_rate"] = summary["user_count"] / total_users if total_users else 0.0
     summary["cumulative_rate"] = summary["user_count"].cumsum() / total_users if total_users else 0.0
-    return summary[["stage", "user_count", "conversion_rate", "cumulative_rate"]].reset_index(drop=True)
+
+    result: pd.DataFrame = summary[["stage", "user_count", "conversion_rate", "cumulative_rate"]]
+    return result.reset_index(drop=True)
 
 
 def user_segmentation(
@@ -275,7 +385,11 @@ def user_segmentation(
     thresholds: tuple[float, ...] = (0.0, 200.0, 500.0),
     labels: tuple[str, ...] = ("low", "mid", "high", "vip"),
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (user_id_col, value_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (user_id_col, value_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
@@ -283,14 +397,22 @@ def user_segmentation(
         raise ValueError("The number of thresholds must be one less than the number of labels.")
 
     summary = (
-        data.groupby(user_id_col, as_index=False)[value_col]
+        data.groupby(user_id_col, as_index=False)[[value_col]]
         .sum()
         .rename(columns={value_col: "total_value"})
     )
 
     bins = [-np.inf, *list(thresholds), np.inf]
-    summary["segment"] = pd.cut(summary["total_value"], bins=bins, labels=labels, right=True, include_lowest=True)
-    return summary[[user_id_col, "total_value", "segment"]].reset_index(drop=True)
+    summary["segment"] = pd.cut(
+        summary["total_value"],
+        bins=bins,
+        labels=labels,
+        right=True,
+        include_lowest=True,
+    )
+
+    result: pd.DataFrame = summary[[user_id_col, "total_value", "segment"]]
+    return result.reset_index(drop=True)
 
 
 def attribution_summary(
@@ -397,8 +519,9 @@ def period_over_period_growth(
     if group_by is not None:
         if group_by not in working.columns:
             raise KeyError(f"Missing grouping column: {group_by}")
+
         summary = (
-            working.groupby([group_by, date_col], as_index=False)[value_col]
+            working.groupby([group_by, date_col], as_index=False)[[value_col]]
             .sum()
             .sort_values([group_by, date_col], kind="stable")
         )
@@ -406,7 +529,7 @@ def period_over_period_growth(
         return summary.reset_index(drop=True)
 
     summary = (
-        working.groupby(date_col, as_index=False)[value_col]
+        working.groupby(date_col, as_index=False)[[value_col]]
         .sum()
         .sort_values(date_col, kind="stable")
         .reset_index(drop=True)
@@ -421,12 +544,16 @@ def share_of_total(
     group_by: str,
     value_col: str,
 ) -> pd.DataFrame:
-    missing_columns = [column for column in (group_by, value_col) if column not in data.columns]
+    missing_columns = [
+        column
+        for column in (group_by, value_col)
+        if column not in data.columns
+    ]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
 
     summary = (
-        data.groupby(group_by, as_index=False)[value_col]
+        data.groupby(group_by, as_index=False)[[value_col]]
         .sum()
         .rename(columns={value_col: "total_value"})
         .sort_values("total_value", ascending=False, kind="stable")
@@ -454,16 +581,31 @@ def distribution_summary(
         return pd.DataFrame(columns=["bin", "count", "min_value", "max_value"])
 
     bins_series = pd.cut(values, bins=bins, include_lowest=include_lowest, duplicates="drop")
-    summary = (
-        pd.DataFrame({"bin": bins_series, "count": 1})
-        .groupby("bin", observed=False)
-        .size()
-        .reset_index(name="count")
+    counts = pd.Series(bins_series).value_counts(sort=False)
+
+    summary = pd.DataFrame(
+        {
+            "bin": counts.index.map(str),
+            "count": counts.to_numpy(dtype=int),
+        }
     )
-    summary["min_value"] = summary["bin"].map(lambda interval: interval.left if pd.notna(interval) else np.nan)
-    summary["max_value"] = summary["bin"].map(lambda interval: interval.right if pd.notna(interval) else np.nan)
-    summary["bin"] = summary["bin"].astype(str)
-    return summary[["bin", "count", "min_value", "max_value"]].reset_index(drop=True)
+
+    intervals = counts.index
+    min_values: list[float] = []
+    max_values: list[float] = []
+    for interval in intervals:
+        if isinstance(interval, pd.Interval):
+            min_values.append(float(interval.left))
+            max_values.append(float(interval.right))
+        else:
+            min_values.append(float("nan"))
+            max_values.append(float("nan"))
+
+    summary["min_value"] = min_values
+    summary["max_value"] = max_values
+
+    result: pd.DataFrame = summary[["bin", "count", "min_value", "max_value"]]
+    return result.reset_index(drop=True)
 
 
 def cohort_analysis(
@@ -515,7 +657,10 @@ def ab_test_summary(
     working[metric_col] = pd.to_numeric(working[metric_col], errors="coerce")
     summary = (
         working.groupby(variant_col, as_index=False)
-        .agg(sample_size=(metric_col, "size"), metric_value=(metric_col, metric_type))
+        .agg(
+            sample_size=(metric_col, "size"),
+            metric_value=(metric_col, metric_type),
+        )
         .rename(columns={variant_col: "variant"})
         .sort_values("metric_value", ascending=False, kind="stable")
         .reset_index(drop=True)
@@ -546,19 +691,31 @@ def funnel_comparison(
         raise KeyError(f"Missing required column: {variant_col}")
 
     working = data[[user_id_col, stage_col, variant_col]].drop_duplicates().copy()
-    ordered_stages = list(stages) if stages is not None else list(dict.fromkeys(working[stage_col].dropna().tolist()))
+    ordered_stages = (
+        list(stages)
+        if stages is not None
+        else list(dict.fromkeys(working[stage_col].dropna().tolist()))
+    )
+
     summary = (
         working[working[stage_col].isin(ordered_stages)]
-        .groupby([variant_col, stage_col], as_index=False)[user_id_col]
+        .groupby([variant_col, stage_col], as_index=False)[[user_id_col]]
         .nunique()
         .rename(columns={user_id_col: "user_count"})
     )
-    total_by_variant = summary.groupby(variant_col, as_index=False)["user_count"].sum().rename(columns={"user_count": "total_users"})
-    result = summary.merge(total_by_variant, on=variant_col, how="left")
+    total_by_variant = (
+        summary.groupby(variant_col, as_index=False)[["user_count"]]
+        .sum()
+        .rename(columns={"user_count": "total_users"})
+    )
+
+    result: pd.DataFrame = summary.merge(total_by_variant, on=variant_col, how="left")
     result = result.rename(columns={variant_col: "variant"})
     result["conversion_rate"] = result["user_count"] / result["total_users"]
     result["stage"] = result[stage_col]
-    return result[["variant", "stage", "user_count", "total_users", "conversion_rate"]].sort_values(["variant", "stage"], kind="stable").reset_index(drop=True)
+
+    output: pd.DataFrame = result[["variant", "stage", "user_count", "total_users", "conversion_rate"]]
+    return output.sort_values(["variant", "stage"], kind="stable").reset_index(drop=True)
 
 
 def attribution_breakdown(
@@ -626,10 +783,14 @@ def forecast_metric(
 
     x_values = np.arange(len(working), dtype=float)
     y_values = working[value_col].to_numpy(dtype=float)
-    slope, intercept = np.polyfit(x_values, y_values, 1)
+    coefficients = np.polyfit(x_values, y_values, 1)
+    slope = float(coefficients[0])
+    intercept = float(coefficients[1])
     last_date = working[date_col].iloc[-1]
     forecast_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=periods, freq="D")
-    forecast_values = intercept + slope * (len(working) + np.arange(periods, dtype=float))
+    forecast_values = intercept + slope * (
+        len(working) + np.arange(periods, dtype=float)
+    )
     forecast_df = pd.DataFrame({date_col: forecast_dates, "forecast": forecast_values})
     summary = working.rename(columns={value_col: "actual"})
     summary["forecast"] = np.nan
