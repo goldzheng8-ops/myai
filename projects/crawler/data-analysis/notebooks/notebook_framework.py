@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,21 +80,34 @@ class NotebookProject:
         if path is None:
             raise FileNotFoundError(f"Unable to locate data file: {filename}")
 
+        def coerce_frame(raw: Any) -> pd.DataFrame:
+            if isinstance(raw, pd.DataFrame):
+                return raw
+            if isinstance(raw, dict):
+                return pd.DataFrame.from_dict(cast(dict[Any, Any], raw))
+            if isinstance(raw, (list, tuple, np.ndarray)):
+                return pd.DataFrame(cast(Any, raw))
+            if raw is None:
+                return pd.DataFrame()
+            return pd.DataFrame([raw])
+
         resolved_kind = (kind or path.suffix.lower().lstrip(".") or "csv").lower()
         if resolved_kind in {"csv", "txt"}:
-            loaded: Any = pd.read_csv(path, **kwargs)
-            return loaded if isinstance(loaded, pd.DataFrame) else pd.DataFrame(loaded)
+            loaded: Any = cast(Any, pd.read_csv(path, **kwargs))
+            return coerce_frame(loaded)
         if resolved_kind in {"json", "jsonl"}:
-            loaded: Any = pd.read_json(path, **kwargs)
-            return loaded if isinstance(loaded, pd.DataFrame) else pd.DataFrame(loaded)
+            loaded: Any = cast(Any, pd.read_json(path, **kwargs))
+            return coerce_frame(loaded)
         if resolved_kind in {"xlsx", "xls"}:
-            loaded: Any = pd.read_excel(path, **kwargs)
-            if isinstance(loaded, pd.DataFrame):
-                return loaded
+            loaded: Any = cast(Any, pd.read_excel(path, **kwargs))
             if isinstance(loaded, dict) and loaded:
-                first_frame: Any = next(iter(loaded.values()))
-                return first_frame if isinstance(first_frame, pd.DataFrame) else pd.DataFrame(first_frame)
-            return pd.DataFrame(loaded)
+                first_frame: Any = cast(Any, next(iter(cast(dict[Any, Any], loaded).values()), None))
+                if isinstance(first_frame, pd.DataFrame):
+                    return first_frame
+                if first_frame is not None:
+                    return coerce_frame(first_frame)
+                return pd.DataFrame()
+            return coerce_frame(loaded)
 
         raise ValueError(f"Unsupported data format: {resolved_kind}")
 
@@ -595,8 +608,9 @@ def distribution_summary(
     max_values: list[float] = []
     for interval in intervals:
         if isinstance(interval, pd.Interval):
-            min_values.append(float(interval.left))
-            max_values.append(float(interval.right))
+            interval_value = cast(Any, interval)
+            min_values.append(float(interval_value.left))
+            max_values.append(float(interval_value.right))
         else:
             min_values.append(float("nan"))
             max_values.append(float("nan"))
