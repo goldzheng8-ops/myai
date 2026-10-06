@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
+import duckdb
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -25,6 +26,13 @@ CorrelationMethod = Literal[
     "pearson",
     "kendall",
     "spearman",
+]
+
+ChartKind = Literal[
+    "bar",
+    "line",
+    "pie",
+    "scatter",
 ]
 
 @dataclass(slots=True)
@@ -106,8 +114,131 @@ class NotebookProject:
         raise ValueError(
             f"Unsupported data format: {resolved_kind}"
         )
+    def query(
+        self,
+        sql: str,
+        *,
+        tables: dict[str, pd.DataFrame] | None = None,
+    ) -> pd.DataFrame:
+        with duckdb.connect() as connection:
+            for name, data in (tables or {}).items():
+                connection.register(name, data)
 
+            return connection.execute(sql).df()
+    def query_df(
+        self,
+        sql: str,
+        data: pd.DataFrame,
+        *,
+        name: str = "data",
+    ) -> pd.DataFrame:
+        with duckdb.connect() as connection:
+            connection.register(name, data)
+            return connection.execute(sql).df()
+    def query_file(
+        self,
+        sql: str,
+        filename: str | Path,
+    ) -> pd.DataFrame:
+        path = self.resolve_data_file(filename)
 
+        if path is None:
+            raise FileNotFoundError(
+                f"Unable to locate data file: {filename}"
+            )
+
+        with duckdb.connect() as connection:
+            return connection.execute(
+                sql,
+                [str(path)],
+            ).df()
+    def query_csv(
+        self,
+        sql: str,
+        filename: str | Path,
+    ) -> pd.DataFrame:
+        path = self.resolve_data_file(filename)
+
+        if path is None:
+            raise FileNotFoundError(
+                f"Unable to locate data file: {filename}"
+            )
+
+        with duckdb.connect() as connection:
+            connection.execute(
+                "CREATE VIEW data AS SELECT * FROM read_csv_auto(?)",
+                [str(path)],
+            )
+            return connection.execute(sql).df()
+        
+    def plot(
+        self,
+        data: pd.DataFrame,
+        *,
+        x_col: str,
+        y_col: str,
+        kind: ChartKind = "bar",
+        title: str | None = None,
+        xlabel: str | None = None,
+        ylabel: str | None = None,
+        figsize: tuple[int, int] = (8, 5),
+    ) -> tuple[Figure, Axes]:
+        if x_col not in data.columns:
+            raise KeyError(
+                f"Missing required column: {x_col}"
+            )
+
+        if y_col not in data.columns:
+            raise KeyError(
+                f"Missing required column: {y_col}"
+            )
+
+        fig, axis = plt.subplots(figsize=figsize)
+
+        if kind == "bar":
+            axis.bar(
+                data[x_col],
+                data[y_col],
+            )
+
+        elif kind == "line":
+            axis.plot(
+                data[x_col],
+                data[y_col],
+                marker="o",
+            )
+
+        elif kind == "scatter":
+            axis.scatter(
+                data[x_col],
+                data[y_col],
+            )
+
+        elif kind == "pie":
+            axis.pie(
+                data[y_col],
+                labels=data[x_col].astype(str).tolist(),
+                autopct="%1.1f%%",
+            )
+
+        if title is not None:
+            axis.set_title(title)
+
+        if xlabel is not None:
+            axis.set_xlabel(xlabel)
+
+        if ylabel is not None:
+            axis.set_ylabel(ylabel)
+
+        if kind != "pie":
+            axis.grid(
+                True,
+                alpha=0.3,
+            )
+
+        fig.tight_layout()
+
+        return fig, axis
 def _normalize_frequency(freq: str) -> str:
     aliases = {
         "M": "ME",
@@ -274,6 +405,20 @@ def trend_regression(
     x_col: str,
     y_col: str,
 ) -> dict[str, float | pd.Series]:
+    return linear_regression(data, x_col=x_col, y_col=y_col)
+
+
+def linear_regression(
+    data: pd.DataFrame,
+    *,
+    x_col: str,
+    y_col: str,
+) -> dict[str, float | pd.Series]:
+    """Perform a simple linear regression (y = intercept + slope * x).
+
+    Accepts datetime or numeric `x_col`. Returns a dict with `slope`,
+    `intercept`, `r2`, and `fitted` (a pandas Series aligned to input index).
+    """
     missing_columns = [column for column in (x_col, y_col) if column not in data.columns]
     if missing_columns:
         raise KeyError(f"Missing required columns: {missing_columns}")
@@ -340,7 +485,61 @@ def crosstab_summary(
     )
     return summary
 
+def distribution_summary(
+    data: pd.DataFrame,
+    *,
+    column: str,
+    bins: int = 10,
+    include_lowest: bool = True,
+) -> pd.DataFrame:
+    if column not in data.columns:
+        raise KeyError(f"Missing required column: {column}")
 
+    if bins <= 0:
+        raise ValueError("bins must be greater than 0")
+
+    values = (
+        pd.to_numeric(
+            data[column],
+            errors="coerce",
+        )
+        .dropna()
+    )
+
+    if values.empty:
+        return pd.DataFrame(
+            columns=[
+                "bin",
+                "count",
+                "min_value",
+                "max_value",
+            ]
+        )
+
+    bins_series = pd.cut(
+        values,
+        bins=bins,
+        include_lowest=include_lowest,
+        duplicates="drop",
+    )
+
+    counts = bins_series.value_counts(sort=False)
+    categories = bins_series.cat.categories
+    categories = cast(
+        pd.IntervalIndex,
+        bins_series.cat.categories,
+    )
+    summary = pd.DataFrame(
+        {
+            "bin": categories.astype(str),
+            "count": counts.to_numpy(dtype=int),
+            "min_value": categories.left.to_numpy(dtype=float),
+            "max_value": categories.right.to_numpy(dtype=float),
+        }
+    )
+
+    return summary.reset_index(drop=True)
+##############################################################
 def funnel_analysis(
     data: pd.DataFrame,
     *,
@@ -477,165 +676,6 @@ def conversion_rate_by(
         .reset_index(drop=True)
     )
     return result
-
-
-def moving_average(
-    data: pd.DataFrame,
-    *,
-    date_col: str,
-    value_col: str,
-    window: int = 7,
-    group_by: str | None = None,
-) -> pd.DataFrame:
-    if window <= 0:
-        raise ValueError("window must be greater than 0")
-
-    working = data.copy().sort_values(date_col)
-    working[date_col] = pd.to_datetime(working[date_col])
-
-    if group_by is not None:
-        if group_by not in working.columns:
-            raise KeyError(f"Missing grouping column: {group_by}")
-        result = working.groupby(group_by, group_keys=False).apply(
-            lambda frame: frame.assign(
-                **{f"rolling_{value_col}_{window}d": frame[value_col].rolling(window=window, min_periods=1).mean()}
-            )
-        )
-        return result.reset_index(drop=True)
-
-    result = working.copy()
-    result[f"rolling_{value_col}_{window}d"] = result[value_col].rolling(window=window, min_periods=1).mean()
-    return result.reset_index(drop=True)
-
-
-def period_over_period_growth(
-    data: pd.DataFrame,
-    *,
-    date_col: str,
-    value_col: str,
-    periods: int = 1,
-    group_by: str | None = None,
-) -> pd.DataFrame:
-    if periods <= 0:
-        raise ValueError("periods must be greater than 0")
-
-    working = data.copy()
-    working[date_col] = pd.to_datetime(working[date_col])
-
-    if group_by is not None:
-        if group_by not in working.columns:
-            raise KeyError(f"Missing grouping column: {group_by}")
-
-        summary = (
-            working.groupby([group_by, date_col], as_index=False)[[value_col]]
-            .sum()
-            .sort_values([group_by, date_col], kind="stable")
-        )
-        summary["growth_rate"] = summary.groupby(group_by)[value_col].pct_change(periods=periods)
-        return summary.reset_index(drop=True)
-
-    summary = (
-        working.groupby(date_col, as_index=False)[[value_col]]
-        .sum()
-        .sort_values(date_col, kind="stable")
-        .reset_index(drop=True)
-    )
-    summary["growth_rate"] = summary[value_col].pct_change(periods=periods)
-    return summary
-
-
-def share_of_total(
-    data: pd.DataFrame,
-    *,
-    group_by: str,
-    value_col: str,
-) -> pd.DataFrame:
-    missing_columns = [
-        column
-        for column in (group_by, value_col)
-        if column not in data.columns
-    ]
-    if missing_columns:
-        raise KeyError(f"Missing required columns: {missing_columns}")
-
-    summary = (
-        data.groupby(group_by, as_index=False)[[value_col]]
-        .sum()
-        .rename(columns={value_col: "total_value"})
-        .sort_values("total_value", ascending=False, kind="stable")
-        .reset_index(drop=True)
-    )
-    total_value = float(summary["total_value"].sum())
-    summary["share_of_total"] = summary["total_value"] / total_value if total_value else 0.0
-    return summary
-
-
-def distribution_summary(
-    data: pd.DataFrame,
-    *,
-    column: str,
-    bins: int = 10,
-    include_lowest: bool = True,
-) -> pd.DataFrame:
-    if column not in data.columns:
-        raise KeyError(f"Missing required column: {column}")
-
-    if bins <= 0:
-        raise ValueError("bins must be greater than 0")
-
-    values = (
-        pd.to_numeric(
-            data[column],
-            errors="coerce",
-        )
-        .dropna()
-    )
-
-    if values.empty:
-        return pd.DataFrame(
-            columns=[
-                "bin",
-                "count",
-                "min_value",
-                "max_value",
-            ]
-        )
-
-    bins_series = pd.cut(
-        values,
-        bins=bins,
-        include_lowest=include_lowest,
-        duplicates="drop",
-    )
-
-    counts = bins_series.value_counts(sort=False)
-
-    summary = pd.DataFrame(
-        {
-            "bin": counts.index.map(str),
-            "count": counts.to_numpy(dtype=int),
-        }
-    )
-
-    intervals = counts.index
-
-    min_values: list[float] = []
-    max_values: list[float] = []
-
-    for interval in intervals:
-        if isinstance(interval, pd.Interval):
-            min_values.append(float(interval.left))
-            max_values.append(float(interval.right))
-        else:
-            min_values.append(float("nan"))
-            max_values.append(float("nan"))
-
-    summary["min_value"] = min_values
-    summary["max_value"] = max_values
-
-    return summary[
-        ["bin", "count", "min_value", "max_value"]
-    ].reset_index(drop=True)
 
 def cohort_analysis(
     data: pd.DataFrame,
@@ -783,6 +823,98 @@ def attribution_breakdown(
     result["revenue_share"] = result["revenue"] / total_revenue if total_revenue else 0.0
     return result
 
+############################################################################################
+
+def moving_average(
+    data: pd.DataFrame,
+    *,
+    date_col: str,
+    value_col: str,
+    window: int = 7,
+    group_by: str | None = None,
+) -> pd.DataFrame:
+    if window <= 0:
+        raise ValueError("window must be greater than 0")
+
+    working = data.copy().sort_values(date_col)
+    working[date_col] = pd.to_datetime(working[date_col])
+
+    if group_by is not None:
+        if group_by not in working.columns:
+            raise KeyError(f"Missing grouping column: {group_by}")
+        result = working.groupby(group_by, group_keys=False).apply(
+            lambda frame: frame.assign(
+                **{f"rolling_{value_col}_{window}d": frame[value_col].rolling(window=window, min_periods=1).mean()}
+            )
+        )
+        return result.reset_index(drop=True)
+
+    result = working.copy()
+    result[f"rolling_{value_col}_{window}d"] = result[value_col].rolling(window=window, min_periods=1).mean()
+    return result.reset_index(drop=True)
+
+
+def period_over_period_growth(
+    data: pd.DataFrame,
+    *,
+    date_col: str,
+    value_col: str,
+    periods: int = 1,
+    group_by: str | None = None,
+) -> pd.DataFrame:
+    if periods <= 0:
+        raise ValueError("periods must be greater than 0")
+
+    working = data.copy()
+    working[date_col] = pd.to_datetime(working[date_col])
+
+    if group_by is not None:
+        if group_by not in working.columns:
+            raise KeyError(f"Missing grouping column: {group_by}")
+
+        summary = (
+            working.groupby([group_by, date_col], as_index=False)[[value_col]]
+            .sum()
+            .sort_values([group_by, date_col], kind="stable")
+        )
+        summary["growth_rate"] = summary.groupby(group_by)[value_col].pct_change(periods=periods)
+        return summary.reset_index(drop=True)
+
+    summary = (
+        working.groupby(date_col, as_index=False)[[value_col]]
+        .sum()
+        .sort_values(date_col, kind="stable")
+        .reset_index(drop=True)
+    )
+    summary["growth_rate"] = summary[value_col].pct_change(periods=periods)
+    return summary
+
+
+def share_of_total(
+    data: pd.DataFrame,
+    *,
+    group_by: str,
+    value_col: str,
+) -> pd.DataFrame:
+    missing_columns = [
+        column
+        for column in (group_by, value_col)
+        if column not in data.columns
+    ]
+    if missing_columns:
+        raise KeyError(f"Missing required columns: {missing_columns}")
+
+    summary = (
+        data.groupby(group_by, as_index=False)[[value_col]]
+        .sum()
+        .rename(columns={value_col: "total_value"})
+        .sort_values("total_value", ascending=False, kind="stable")
+        .reset_index(drop=True)
+    )
+    total_value = float(summary["total_value"].sum())
+    summary["share_of_total"] = summary["total_value"] / total_value if total_value else 0.0
+    return summary
+
 
 def forecast_metric(
     data: pd.DataFrame,
@@ -825,7 +957,7 @@ def forecast_metric(
     summary["forecast"] = np.nan
     return pd.concat([summary, forecast_df], ignore_index=True)
 
-
+##########################################################################################
 def plot_summary(
     summary: pd.DataFrame,
     x_col: str,
@@ -845,6 +977,32 @@ def plot_summary(
     if ylabel is not None:
         axis.set_ylabel(ylabel)
     axis.tick_params(axis="x", rotation=0)
+    fig.tight_layout()
+    return fig, axis
+
+def plot_metric_comparison(
+    data: pd.DataFrame,
+    *,
+    x_col: str,
+    metrics: list[str],
+    title: str,
+    figsize: tuple[int, int] = (10, 6),
+    style: str = "-o",
+) -> tuple[Figure, Axes]:
+    if not metrics:
+        raise ValueError("At least one metric must be supplied")
+
+    fig, axis = plt.subplots(figsize=figsize)
+    for metric in metrics:
+        if metric not in data.columns:
+            raise KeyError(f"Missing metric column: {metric}")
+        axis.plot(data[x_col].astype(str), data[metric], style, linewidth=2, markersize=5, label=metric)
+
+    axis.set_title(title)
+    axis.set_xlabel(x_col)
+    axis.set_ylabel("Metric")
+    axis.grid(True, alpha=0.3)
+    axis.legend()
     fig.tight_layout()
     return fig, axis
 
@@ -962,31 +1120,7 @@ def build_operational_dashboard(
     }
 
 
-def plot_metric_comparison(
-    data: pd.DataFrame,
-    *,
-    x_col: str,
-    metrics: list[str],
-    title: str,
-    figsize: tuple[int, int] = (10, 6),
-    style: str = "-o",
-) -> tuple[Figure, Axes]:
-    if not metrics:
-        raise ValueError("At least one metric must be supplied")
 
-    fig, axis = plt.subplots(figsize=figsize)
-    for metric in metrics:
-        if metric not in data.columns:
-            raise KeyError(f"Missing metric column: {metric}")
-        axis.plot(data[x_col].astype(str), data[metric], style, linewidth=2, markersize=5, label=metric)
-
-    axis.set_title(title)
-    axis.set_xlabel(x_col)
-    axis.set_ylabel("Metric")
-    axis.grid(True, alpha=0.3)
-    axis.legend()
-    fig.tight_layout()
-    return fig, axis
 
 
 __all__ = [
@@ -1017,4 +1151,5 @@ __all__ = [
     "kpi_monitor_table",
     "plot_metric_comparison",
     "plot_summary",
+    "linear_regression",
 ]
