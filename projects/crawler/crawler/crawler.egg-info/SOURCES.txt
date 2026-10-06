@@ -688,3 +688,5 @@ crawler/crawler.egg-info/dependency_links.txt
 crawler/crawler.egg-info/requires.txt
 crawler/crawler.egg-info/top_level.txt
 tests/test_input_reader.py
+tests/test_notebook_analysis_framework.py
+tests/test_notebook_regression.py

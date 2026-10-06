@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal, cast
-
+from sqlglot import parse_one
 import duckdb
 import matplotlib.pyplot as plt
 import numpy as np
@@ -239,6 +239,23 @@ class NotebookProject:
         fig.tight_layout()
 
         return fig, axis
+
+##############################################################
+class SqlFormatter:
+    @staticmethod
+    def format(sql: str) -> str:
+        expression = parse_one(
+            sql,
+            read="duckdb",
+        )
+
+        return expression.sql(
+            dialect="duckdb",
+            pretty=True,
+            normalize_functions=True,
+        )
+
+######################################################################
 def _normalize_frequency(freq: str) -> str:
     aliases = {
         "M": "ME",
