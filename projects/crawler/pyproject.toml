@@ -37,6 +37,7 @@ dependencies = [
     "jupyterlab>=4.6.3,<5",
     "matplotlib>=3.11.2,<4",
     "sqlglot==30.21.0",
+    "scikit-learn>=1.9.1",
 ]
 
 [dependency-groups]

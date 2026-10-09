@@ -5,10 +5,12 @@ __pycache__/
 # 虚拟环境
 .venv/
 **/.venv/
-
+**/loginin.yaml
 # 数据
 datasets
 **/data/
+**/data-analysis/data/
+**/data-analysis/output/
 
 # IDE
 .vscode/

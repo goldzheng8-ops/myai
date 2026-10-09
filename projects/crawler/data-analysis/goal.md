@@ -88,3 +88,5 @@ ax.grid(...)
 Matplotlib 3.11.2 的 API Reference 本身就明确区分了这种显式的 Axes/object-oriented interface 和隐式的 pyplot interface。
 
 这非常适合你现在的 Chart API。
+
+

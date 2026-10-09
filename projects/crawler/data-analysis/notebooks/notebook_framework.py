@@ -12,6 +12,9 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = PROJECT_ROOT / "data"
+
 Aggregation = Literal[
     "sum",
     "mean",
@@ -34,10 +37,13 @@ ChartKind = Literal[
     "pie",
     "scatter",
 ]
+def data_path(*parts: str | Path) -> Path:
+    """Return a path under the project's data directory."""
+    return DATA_DIR.joinpath(*parts)
 
 @dataclass(slots=True)
 class NotebookProject:
-    repo_root: Path
+    repo_root: Path = PROJECT_ROOT
     data_dir: Path | None = None
 
     def __post_init__(self) -> None:
