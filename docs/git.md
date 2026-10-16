@@ -116,3 +116,20 @@ git tag -a v1.0.0 -m "AI-SPACE first stable release"
 git tag -d v1.0.0
 git tag -a v1.0.0 b222222 -m "release version"
 git commit --amend -m "新的提交说明"
+
+########################################################
+Get-ChildItem ~/.ssh
+ssh-keygen -t ed25519 -C "your_email@example.com"
+Get-Content ~/.ssh/id_ed25519.pub
+ssh -T git@github.com
+git remote -v
+git remote set-url origin git@github.com:USERNAME/REPOSITORY.git
+git push -u origin main
+ssh-keygen -t ed25519 -C "alt mail" -f "$HOME/.ssh/id_ed25519_github_alt"
+Get-Content "$HOME/.ssh/id_ed25519_github_alt.pub"
+notepad "$HOME/.ssh/config"
+Host github-alt
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github_alt
+    IdentitiesOnly yes
